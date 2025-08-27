@@ -173,8 +173,8 @@ const StudentLogin: React.FC = () => {
           <Link to="/owner-login" className="block text-sm text-gray-500 hover:text-gray-700">
             Library Owner Login →
           </Link>
-          <Link to="/login" className="block text-sm text-gray-500 hover:text-gray-700">
-            ← Admin/Staff Login
+          <Link to="/" className="block text-sm text-gray-500 hover:text-gray-700">
+            ← Register Library
           </Link>
         </div>
       </div>
