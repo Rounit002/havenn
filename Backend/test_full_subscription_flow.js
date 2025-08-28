@@ -2,8 +2,8 @@ const axios = require('axios');
 
 // Use environment variable or default to production URL
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://demohavenn.onrender.com/api'
-  : 'https://demohavenn.onrender.com/api';
+  ? 'https://havenn.onrender.com/api'
+  : 'https://havenn.onrender.com/api';
 
 async function testFullSubscriptionFlow() {
   try {

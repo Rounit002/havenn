@@ -32,7 +32,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // CORS - secure configuration for production and mobile apps
 const allowedOrigins = [
-  'https://demohavenn.onrender.com',
+  'https://havenn.onrender.com',
   'file://', // Cordova file:// protocol
   'https://localhost', // Cordova WebView origin (needed for mobile app)
   'capacitor://localhost', // Capacitor apps
