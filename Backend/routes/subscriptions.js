@@ -73,7 +73,7 @@ const createSubscriptionRouter = (pool) => {
       const libraryId = req.session.owner.id;
       
       // Validate plan
-      const validPlans = ['free_trial', '1_month', '3_month', '6_month', '12_month'];
+      const validPlans = ['free_trial', '1_month', '3_month', '6_month', '12_month', '24_month'];
       if (!validPlans.includes(plan)) {
         return res.status(400).json({ message: 'Invalid subscription plan' });
       }
@@ -167,7 +167,7 @@ const createSubscriptionRouter = (pool) => {
       const libraryId = req.session.owner.id;
   
       // Validate plan and amount
-      const validPlans = ['1_month', '3_month', '6_month', '9_month', '12_month'];
+      const validPlans = ['1_month', '3_month', '6_month', '9_month', '12_month', '24_month'];
       if (!validPlans.includes(planId)) {
         return res.status(400).json({ message: 'Invalid subscription plan' });
       }
@@ -210,7 +210,7 @@ const createSubscriptionRouter = (pool) => {
       const libraryId = req.session.owner.id;
       
       // Validate plan
-      const validPlans = ['1_month', '3_month', '6_month', '9_month', '12_month'];
+      const validPlans = ['1_month', '3_month', '6_month', '9_month', '12_month', '24_month'];
       if (!validPlans.includes(planId)) {
         return res.status(400).json({ success: false, message: 'Invalid subscription plan' });
       }
@@ -283,6 +283,9 @@ const calculateEndDate = (planId) => {
       break;
     case '12_month':
       endDate.setFullYear(endDate.getFullYear() + 1);
+      break;
+    case '24_month':
+      endDate.setFullYear(endDate.getFullYear() + 2);
       break;
     default:
       endDate.setMonth(endDate.getMonth() + 1);

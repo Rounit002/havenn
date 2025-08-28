@@ -139,6 +139,9 @@ const SubscriptionPlans = () => {
       case '12_month':
         endDate.setFullYear(endDate.getFullYear() + 1);
         break;
+      case '24_month':
+        endDate.setFullYear(endDate.getFullYear() + 2);
+        break;
       default:
         endDate.setMonth(endDate.getMonth() + 1);
     }
@@ -234,6 +237,21 @@ const SubscriptionPlans = () => {
       ],
       cta: 'Commit to Success',
       isCurrent: isPlanActive('12_month'),
+      disabled: false
+    },
+    {
+      id: '24_month',
+      name: '24-Month Plan',
+      description: 'Lock in peace of mind for 2 years',
+      price: '₹10',
+      amount: 1000, // Amount in paise (₹10 = 1000 paise)
+      features: [
+        'All features for 24 months',
+        'Best long-term stability',
+        'Priority support'
+      ],
+      cta: 'Secure 2 Years Access',
+      isCurrent: isPlanActive('24_month'),
       disabled: false
     }
   ];
