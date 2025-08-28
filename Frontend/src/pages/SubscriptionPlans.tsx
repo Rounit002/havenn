@@ -124,6 +124,9 @@ const SubscriptionPlans = () => {
     const endDate = new Date(startDate);
 
     switch(planId) {
+      case '1_day':
+        endDate.setDate(endDate.getDate() + 1);
+        break;
       case '1_month':
         endDate.setMonth(endDate.getMonth() + 1);
         break;
@@ -138,9 +141,6 @@ const SubscriptionPlans = () => {
         break;
       case '12_month':
         endDate.setFullYear(endDate.getFullYear() + 1);
-        break;
-      case '24_month':
-        endDate.setFullYear(endDate.getFullYear() + 2);
         break;
       default:
         endDate.setMonth(endDate.getMonth() + 1);
@@ -240,18 +240,18 @@ const SubscriptionPlans = () => {
       disabled: false
     },
     {
-      id: '24_month',
-      name: '24-Month Plan',
-      description: 'Lock in peace of mind for 2 years',
+      id: '1_day',
+      name: '1-Day Plan',
+      description: 'Full access for 24 hours',
       price: '₹10',
       amount: 1000, // Amount in paise (₹10 = 1000 paise)
       features: [
-        'All features for 24 months',
-        'Best long-term stability',
+        'All features for 1 day',
+        'Great for quick needs',
         'Priority support'
       ],
-      cta: 'Secure 2 Years Access',
-      isCurrent: isPlanActive('24_month'),
+      cta: 'Get 1 Day Access',
+      isCurrent: isPlanActive('1_day'),
       disabled: false
     }
   ];
