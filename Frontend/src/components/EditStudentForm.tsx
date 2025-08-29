@@ -88,7 +88,7 @@ interface FormData {
   branchId: number | null;
   membershipStart: string;
   membershipEnd: string;
-  shiftId: string;
+  shiftIds: number[];
   seatId: number | null;
   lockerId: number | null;
   totalFee: string;
@@ -145,7 +145,7 @@ const EditStudentForm: React.FC = () => {
     branchId: null,
     membershipStart: '',
     membershipEnd: '',
-    shiftId: '',
+    shiftIds: [],
     seatId: null,
     lockerId: null,
     totalFee: '',
@@ -184,7 +184,7 @@ const EditStudentForm: React.FC = () => {
         ]);
         
         const student: Student = studentResponse;
-        const shiftId = student.assignments?.[0]?.shiftId?.toString() || '';
+        const existingShiftIds = (student.assignments || []).map(a => a.shiftId).filter(Boolean) as number[];
         
         setFormData({
           name: student.name || '',
@@ -197,7 +197,7 @@ const EditStudentForm: React.FC = () => {
           branchId: student.branchId || null,
           membershipStart: student.membershipStart.split('T')[0],
           membershipEnd: student.membershipEnd.split('T')[0],
-          shiftId: shiftId,
+          shiftIds: existingShiftIds,
           seatId: student.assignments?.[0]?.seatId || null,
           lockerId: student.lockerId || null,
           totalFee: student.totalFee.toString(),
@@ -238,21 +238,11 @@ const EditStudentForm: React.FC = () => {
 
       try {
         const shiftsResponse = await api.getSchedules(formData.branchId);
-        
         const formattedSchedules = shiftsResponse.schedules.map((schedule: any) => ({
           ...schedule,
           fee: schedule.fee ?? 0,
         }));
-        
         setShifts(formattedSchedules);
-        
-        if (formData.shiftId) {
-          const currentShiftId = parseInt(formData.shiftId, 10);
-          const shiftExists = formattedSchedules.some((shift: Schedule) => shift.id === currentShiftId);
-          if (!shiftExists) {
-            setFormData(prev => ({ ...prev, shiftId: '', seatId: null, totalFee: '' }));
-          }
-        }
       } catch (error) {
         console.error('Failed to fetch shifts:', error);
         toast.error('Failed to load shifts for the selected branch.');
@@ -265,18 +255,13 @@ const EditStudentForm: React.FC = () => {
 
   useEffect(() => {
     const fetchSeats = async () => {
-      const shiftId = parseInt(formData.shiftId, 10);
       const branchId = formData.branchId;
-      if (branchId && shiftId && !isNaN(shiftId)) {
+      if (branchId) {
         setLoadingSeats(true);
         try {
-          const seatsResponse = await api.getSeats({ branchId, shiftId });
+          const seatsResponse = await api.getSeats({ branchId });
           const allSeats: Seat[] = seatsResponse.seats;
-          const availableSeats = allSeats.filter((seat) => {
-            const shift = seat.shifts.find((s) => s.shiftId === shiftId);
-            return shift && (!shift.isAssigned || seat.id === formData.seatId);
-          });
-          setSeats(availableSeats);
+          setSeats(allSeats);
         } catch (error: any) {
           console.error('Failed to fetch seats:', error);
           toast.error(error.response?.data?.message || 'Failed to load seats');
@@ -288,7 +273,7 @@ const EditStudentForm: React.FC = () => {
       }
     };
     fetchSeats();
-  }, [formData.branchId, formData.shiftId, formData.seatId]);
+  }, [formData.branchId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -302,20 +287,20 @@ const EditStudentForm: React.FC = () => {
         ...prev,
         branchId: value,
         seatId: null,
-        shiftId: '',
+        shiftIds: [],
       }));
     } else if (name === 'seatId') {
       setFormData(prev => ({ ...prev, seatId: value }));
-    } else if (name === 'shiftId') {
-      const selectedShift = shifts.find(shift => shift.id === value);
-      setFormData(prev => ({
-        ...prev,
-        shiftId: value ? value.toString() : '',
-        totalFee: selectedShift ? selectedShift.fee.toString() : prev.totalFee,
-      }));
     } else if (name === 'lockerId') {
       setFormData(prev => ({ ...prev, lockerId: value }));
     }
+  };
+
+  const handleShiftMultiChange = (options: readonly { value: number; label: string }[] | null) => {
+    const ids = options ? options.map(opt => opt.value) : [];
+    // Auto-calc total fee as sum of selected shifts' fees
+    const sum = shifts.filter(s => ids.includes(s.id)).reduce((acc, s) => acc + (s.fee ?? 0), 0);
+    setFormData(prev => ({ ...prev, shiftIds: ids, totalFee: sum ? sum.toString() : prev.totalFee }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof FormData) => {
@@ -386,7 +371,7 @@ const EditStudentForm: React.FC = () => {
         totalFee: parseFloat(formData.totalFee) || 0,
         amountPaid: (parseFloat(formData.cash) || 0) + (parseFloat(formData.online) || 0),
         discount: parseFloat(formData.discount) || 0,
-        shiftIds: formData.shiftId ? [parseInt(formData.shiftId, 10)] : [],
+        shiftIds: formData.shiftIds,
         seatId: formData.seatId,
         lockerId: formData.lockerId,
         cash: parseFloat(formData.cash) || 0,
@@ -577,12 +562,13 @@ const EditStudentForm: React.FC = () => {
           />
         </div>
         <div>
-          <label htmlFor="shiftId" className="block text-sm font-medium text-gray-700 mb-1">Select Shift</label>
+          <label htmlFor="shiftIds" className="block text-sm font-medium text-gray-700 mb-1">Select Shift(s)</label>
           <Select
+            isMulti
             options={shiftOptions}
-            value={shiftOptions.find(option => option.value === parseInt(formData.shiftId, 10)) || null}
-            onChange={(option) => handleSelectChange('shiftId', option)}
-            placeholder="Select a shift"
+            value={shiftOptions.filter(option => formData.shiftIds.includes(option.value))}
+            onChange={handleShiftMultiChange}
+            placeholder={shifts.length === 0 ? 'No shifts for this branch' : 'Select one or more shifts'}
             className="w-full"
             isDisabled={shifts.length === 0}
           />

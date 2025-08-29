@@ -133,11 +133,18 @@ const StudentDetails: React.FC = () => {
   if (error) return <div>{error}</div>;
   if (!student) return <div>Student not found</div>;
 
-  const shiftTitle = student.assignments && student.assignments.length > 0
-    ? student.assignments[0].shiftTitle
+  const shiftTitles = (student.assignments && student.assignments.length > 0)
+    ? student.assignments
+        .map(a => a.shiftTitle)
+        .filter(Boolean)
+        .join(', ')
     : undefined;
-  const seatNumber = student.assignments && student.assignments.length > 0
-    ? student.assignments[0].seatNumber
+  const seatNumbers = (student.assignments && student.assignments.length > 0)
+    ? Array.from(new Set(
+        student.assignments
+          .map(a => a.seatNumber)
+          .filter(Boolean)
+      )).join(', ')
     : undefined;
 
   return (
@@ -265,14 +272,14 @@ const StudentDetails: React.FC = () => {
                     <p className="text-gray-600">{formatDate(student.membershipEnd)}</p>
                   </div>
                   <div>
-                    <h2 className="text-lg font-medium">Assigned Shift</h2>
+                    <h2 className="text-lg font-medium">Assigned Shift(s)</h2>
                     <p className="text-gray-600">
-                      {shiftTitle || 'No shift assigned'}
+                      {shiftTitles || 'No shift assigned'}
                     </p>
                   </div>
                   <div>
-                    <h2 className="text-lg font-medium">Seat Number</h2>
-                    <p className="text-gray-600">{seatNumber || 'None'}</p>
+                    <h2 className="text-lg font-medium">Seat Number(s)</h2>
+                    <p className="text-gray-600">{seatNumbers || 'None'}</p>
                   </div>
                   <div>
                     <h2 className="text-lg font-medium">Locker Number</h2>

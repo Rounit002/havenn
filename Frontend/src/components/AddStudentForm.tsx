@@ -24,6 +24,7 @@ interface Schedule {
   time: string;
   eventDate: string;
   fee: number;
+  isAssigned?: boolean;
 }
 
 // Interface for a Locker
@@ -60,7 +61,7 @@ interface FormData {
   membershipStart: string;
   membershipEnd: string;
   seatId: number | null;
-  shiftId: number | null;
+  shiftIds: number[];
   lockerId: number | null;
   totalFee: string;
   cash: string;
@@ -91,7 +92,7 @@ const AddStudentForm: React.FC = () => {
     membershipStart: '',
     membershipEnd: '',
     seatId: null,
-    shiftId: null,
+    shiftIds: [],
     lockerId: null,
     totalFee: '',
     cash: '',
@@ -112,7 +113,6 @@ const AddStudentForm: React.FC = () => {
   const [seats, setSeats] = useState<Seat[]>([]);
   const [shifts, setShifts] = useState<Schedule[]>([]);
   const [lockers, setLockers] = useState<Locker[]>([]);
-  const [availableShifts, setAvailableShifts] = useState<Schedule[]>([]);
 
   // State for loading indicators and errors
   const [loadingSeats, setLoadingSeats] = useState(false);
@@ -136,42 +136,6 @@ const AddStudentForm: React.FC = () => {
     fetchInitialData();
   }, []);
 
-  // Effect to fetch shifts when a branch is selected
-  useEffect(() => {
-    const fetchShiftsForBranch = async () => {
-      if (!formData.branchId) {
-        setShifts([]);
-        setAvailableShifts([]);
-        return;
-      }
-
-      try {
-        setLoadingShifts(true);
-        // Pass the selected branch ID to get shifts for that branch only
-        const shiftsData = await api.getSchedules(formData.branchId);
-        
-        // Map over schedules to ensure they have a 'fee' property
-        const formattedSchedules = shiftsData.schedules.map((schedule: any) => ({
-          ...schedule,
-          fee: schedule.fee ?? 0, // Default fee to 0 if not provided
-        }));
-        
-        setShifts(formattedSchedules);
-        setAvailableShifts(formattedSchedules);
-        setError(null);
-      } catch (error) {
-        console.error('Failed to fetch shifts:', error);
-        setError('Failed to load shifts for the selected branch.');
-        toast.error('Failed to load shifts. Check your permissions.');
-        setShifts([]);
-        setAvailableShifts([]);
-      } finally {
-        setLoadingShifts(false);
-      }
-    };
-
-    fetchShiftsForBranch();
-  }, [formData.branchId]);
 
   // Effect to fetch seats and lockers when a branch is selected
   useEffect(() => {
@@ -203,41 +167,54 @@ const AddStudentForm: React.FC = () => {
     fetchBranchSpecificData();
   }, [formData.branchId]);
 
-  // Effect to fetch available shifts for a selected seat
+  // Effect to fetch shifts based on branch or seat selection
   useEffect(() => {
-    const fetchAvailableShifts = async () => {
-      if (!formData.seatId) {
-        // If no seat is selected, show all shifts for the selected branch
-        setAvailableShifts(shifts);
-        return;
-      }
-      
-      setLoadingShifts(true);
-      try {
-        const availableShiftsResponse = await api.getAvailableShifts(formData.seatId);
-        
-        // Filter shifts to only include those from the selected branch
-        const shiftsForBranch = availableShiftsResponse.availableShifts
-          .filter((shift: any) => !formData.branchId || shift.branch_id === formData.branchId)
-          .map((shift: any) => ({
-            ...shift,
-            fee: shift.fee ?? 0, // Default fee to 0 if not provided
+    const fetchShifts = async () => {
+      // If a seat is selected, fetch shifts with their assignment status
+      if (formData.seatId) {
+        setLoadingShifts(true);
+        try {
+          const response = await api.getAvailableShifts(formData.seatId);
+          setShifts(response.shifts); // API returns all shifts for the branch with `isAssigned` status
+          setError(null);
+        } catch (error) {
+          console.error('Failed to fetch shifts status:', error);
+          setError('Failed to load shifts for the selected seat.');
+          toast.error('Failed to load shifts status.');
+          setShifts([]);
+        } finally {
+          setLoadingShifts(false);
+        }
+      } 
+      // Otherwise, if only a branch is selected, fetch all shifts for that branch
+      else if (formData.branchId) {
+        setLoadingShifts(true);
+        try {
+          const shiftsData = await api.getSchedules(formData.branchId);
+          const formattedSchedules = shiftsData.schedules.map((schedule: any) => ({
+            ...schedule,
+            fee: schedule.fee ?? 0,
+            isAssigned: false, // Default to not assigned when no seat is selected
           }));
-          
-        setAvailableShifts(shiftsForBranch);
-        setError(null);
-      } catch (error) {
-        console.error('Failed to fetch available shifts:', error);
-        setError('Failed to load available shifts. Check your permissions.');
-        toast.error('Failed to load shifts.');
-        setAvailableShifts([]);
-      } finally {
-        setLoadingShifts(false);
+          setShifts(formattedSchedules);
+          setError(null);
+        } catch (error) {
+          console.error('Failed to fetch shifts for branch:', error);
+          setError('Failed to load shifts for the selected branch.');
+          toast.error('Failed to load shifts.');
+          setShifts([]);
+        } finally {
+          setLoadingShifts(false);
+        }
+      } 
+      // If neither is selected, clear the shifts
+      else {
+        setShifts([]);
       }
     };
-    
-    fetchAvailableShifts();
-  }, [formData.seatId, formData.branchId, shifts]);
+
+    fetchShifts();
+  }, [formData.branchId, formData.seatId]);
 
   // Handle changes to standard input fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -254,7 +231,7 @@ const AddStudentForm: React.FC = () => {
         ...prev,
         branchId: value,
         seatId: null,
-        shiftId: null,
+        shiftIds: [],
         lockerId: null,
         totalFee: '',
       }));
@@ -264,18 +241,17 @@ const AddStudentForm: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         seatId: value,
-        shiftId: null,
-      }));
-    } else if (name === 'shiftId') {
-      const selectedShift = shifts.find(shift => shift.id === value);
-      setFormData(prev => ({
-        ...prev,
-        shiftId: value,
-        totalFee: selectedShift ? selectedShift.fee.toString() : '',
+        shiftIds: [],
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  // Handle multi-select change for shifts
+  const handleShiftMultiChange = (options: readonly ShiftOption[] | null) => {
+    const ids = options ? options.map(opt => opt.value) : [];
+    setFormData(prev => ({ ...prev, shiftIds: ids }));
   };
 
   // Handle file input changes with validation
@@ -349,16 +325,36 @@ const AddStudentForm: React.FC = () => {
   ];
 
   const shiftOptions: ShiftOption[] = shifts.map(shift => {
-    const isAvailable = availableShifts.some(s => s.id === shift.id);
-    const label = formData.seatId !== null
-      ? `${shift.title} - ${shift.description} ${isAvailable ? '(Available)' : '(Assigned)'}`
-      : `${shift.title} -  [${shift.description}] (${shift.fee})`;
+    const feeDisplay = shift.fee ? `(${shift.fee})` : '';
+    const descriptionDisplay = shift.description ? `[${shift.description}]` : '';
+    let label = `${shift.title} [Rs.${shift.fee}] ${descriptionDisplay}`.trim();
+
+    // If a seat is selected, show assignment status
+    if (formData.seatId !== null) {
+      const status = shift.isAssigned ? '(Assigned)' : '(Available)';
+      label = `${shift.title} [Rs.${shift.fee}] ${descriptionDisplay} ${status}`.trim();
+    }
+
     return {
       value: shift.id,
       label,
-      isDisabled: formData.seatId !== null ? !isAvailable : false,
+      isDisabled: shift.isAssigned || false,
     };
   });
+
+  // Auto-calculate total fee as sum of selected shifts' fees (if any selected)
+  useEffect(() => {
+    if (formData.shiftIds && formData.shiftIds.length > 0) {
+      const sum = shifts
+        .filter(s => formData.shiftIds.includes(s.id))
+        .reduce((acc, s) => acc + (s.fee ?? 0), 0);
+      setFormData(prev => ({ ...prev, totalFee: sum.toString() }));
+    } else if (formData.totalFee && formData.totalFee !== '') {
+      // If no shifts selected, leave totalFee as-is to allow manual entry
+    } else {
+      setFormData(prev => ({ ...prev, totalFee: '' }));
+    }
+  }, [formData.shiftIds, shifts]);
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -422,7 +418,7 @@ const AddStudentForm: React.FC = () => {
         aadhaarFrontUrl: aadhaarFrontUrl || undefined,
         aadhaarBackUrl: aadhaarBackUrl || undefined,
         seatId: formData.seatId !== null ? formData.seatId : undefined,
-        shiftIds: formData.shiftId !== null ? [formData.shiftId] : [],
+        shiftIds: formData.shiftIds,
         lockerId: formData.lockerId !== null ? formData.lockerId : undefined,
       };
 
@@ -602,13 +598,22 @@ const AddStudentForm: React.FC = () => {
             Select Shift *
           </label>
           <Select
+            isMulti
             options={shiftOptions}
-            value={shiftOptions.find(option => option.value === formData.shiftId) || null}
-            onChange={(option: ShiftOption | null) => handleSelectChange('shiftId', option)}
+            value={shiftOptions.filter(option => formData.shiftIds.includes(option.value))}
+            onChange={handleShiftMultiChange}
             isLoading={loadingShifts}
-            placeholder="Select a shift"
+            placeholder={
+              loadingShifts
+                ? 'Loading shifts...'
+                : !formData.branchId
+                  ? 'Select a branch first'
+                  : shifts.length === 0
+                    ? 'No shifts found for this branch'
+                    : 'Select one or more shifts'
+            }
             className="w-full"
-            isDisabled={availableShifts.length === 0}
+            isDisabled={!formData.branchId || loadingShifts}
           />
         </div>
         <div>

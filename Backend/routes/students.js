@@ -266,9 +266,9 @@ module.exports = (pool) => {
       const assignments = await pool.query(`
         SELECT sa.seat_id, sa.shift_id, seats.seat_number, sch.title AS shift_title
         FROM seat_assignments sa
-        LEFT JOIN seats ON sa.seat_id = seats.id
+        JOIN seats ON sa.seat_id = seats.id
         LEFT JOIN schedules sch ON sa.shift_id = sch.id
-        WHERE sa.student_id = $1 AND sa.library_id = $2
+        WHERE sa.student_id = $1 AND seats.library_id = $2
       `, [id, req.libraryId]);
       res.json({
         ...studentData,
@@ -502,8 +502,8 @@ module.exports = (pool) => {
       if (shiftIdsNum.length > 0) {
         for (const shiftId of shiftIdsNum) {
           await client.query(
-            'INSERT INTO seat_assignments (seat_id, shift_id, student_id) VALUES ($1, $2, $3)',
-            [seatIdNum, shiftId, student.id]
+            'INSERT INTO seat_assignments (seat_id, shift_id, student_id, library_id) VALUES ($1, $2, $3, $4)',
+            [seatIdNum, shiftId, student.id, req.libraryId]
           );
           if (!firstShiftId) firstShiftId = shiftId;
         }
@@ -732,8 +732,8 @@ module.exports = (pool) => {
       if (shiftIdsNum.length > 0) {
         for (const shiftId of shiftIdsNum) {
           await client.query(
-            'INSERT INTO seat_assignments (seat_id, shift_id, student_id) VALUES ($1, $2, $3)',
-            [seatIdNum, shiftId, id]
+            'INSERT INTO seat_assignments (seat_id, shift_id, student_id, library_id) VALUES ($1, $2, $3, $4)',
+            [seatIdNum, shiftId, id, req.libraryId]
           );
           if (!firstShiftId) firstShiftId = shiftId;
         }

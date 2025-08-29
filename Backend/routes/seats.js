@@ -133,24 +133,74 @@ module.exports = (pool) => {
     }
   });
 
+  router.get('/:seatId/all-shifts-status', checkAdminOrStaff, async (req, res) => {
+    try {
+      const seatId = parseInt(req.params.seatId, 10);
+      if (isNaN(seatId)) {
+        return res.status(400).json({ message: 'Invalid seat ID.' });
+      }
+
+      // Get the branch ID for the given seat
+      const seatResult = await pool.query('SELECT branch_id FROM seats WHERE id = $1 AND library_id = $2', [seatId, req.libraryId]);
+      if (seatResult.rows.length === 0) {
+        return res.status(404).json({ message: 'Seat not found.' });
+      }
+      const { branch_id } = seatResult.rows[0];
+
+      // Get all shifts for the branch and check their assignment status for the specific seat
+      const shiftsResult = await pool.query(`
+        SELECT 
+          sch.id, 
+          sch.title, 
+          sch.time, 
+          sch.event_date, 
+          sch.fee,
+          CASE WHEN sa.seat_id IS NOT NULL THEN true ELSE false END as "isAssigned"
+        FROM schedules sch
+        LEFT JOIN seat_assignments sa ON sch.id = sa.shift_id AND sa.seat_id = $1
+        WHERE sch.branch_id = $2 AND sch.library_id = $3
+        ORDER BY sch.event_date, sch.time
+      `, [seatId, branch_id, req.libraryId]);
+
+      res.json({ shifts: shiftsResult.rows });
+    } catch (err) {
+      console.error('Error fetching all shifts status:', err);
+      res.status(500).json({ message: 'Server error fetching shifts status', error: err.message });
+    }
+  });
+
   router.get('/:seatId/available-shifts', checkAdminOrStaff, async (req, res) => {
     try {
       const seatId = parseInt(req.params.seatId, 10);
+      if (isNaN(seatId)) {
+        return res.status(400).json({ message: 'Invalid seat ID.' });
+      }
+
+      // ✅ FIX: Improved query to ensure shifts are from the same branch as the seat
       const result = await pool.query(`
         SELECT sch.id, sch.title, sch.time, sch.event_date
         FROM schedules sch
+        -- First, get the branch_id for the requested seat
+        JOIN seats s ON s.id = $1
+        -- Now, find all schedules in that same branch that are NOT assigned to the given seat
         LEFT JOIN seat_assignments sa ON sch.id = sa.shift_id AND sa.seat_id = $1
-        WHERE sa.shift_id IS NULL AND sch.library_id = $2
+        WHERE 
+          sch.branch_id = s.branch_id AND -- Ensure schedule and seat are in the same branch
+          sa.student_id IS NULL AND -- Ensure the schedule is not assigned to this seat
+          sch.library_id = $2 -- Ensure it's for the correct library
         ORDER BY sch.event_date, sch.time
       `, [seatId, req.libraryId]);
+
       const availableShifts = result.rows.map(row => ({
         id: row.id,
         title: row.title,
         time: row.time,
         eventDate: row.event_date,
       }));
+
       res.json({ availableShifts });
-    } catch (err) {console.error('Error fetching available shifts:', err);
+    } catch (err) {
+      console.error('Error fetching available shifts:', err);
       res.status(500).json({ message: 'Server error fetching available shifts', error: err.message });
     }
   });
