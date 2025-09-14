@@ -109,10 +109,26 @@ module.exports = (pool) => {
     try {
       const { branchId } = req.query;
       const branchIdNum = branchId ? parseInt(branchId, 10) : null;
-      let query = withCalculatedStatus();
+      
+      let query = `
+        SELECT
+          s.id, s.name, s.phone, s.registration_number, s.father_name, s.aadhar_number,
+          s.email, s.address, s.branch_id, s.membership_start, s.membership_end,
+          s.total_fee, s.amount_paid, s.due_amount, s.cash, s.online, s.security_money,
+          s.remark, s.is_active, s.profile_image_url, s.aadhaar_front_url, s.aadhaar_back_url,
+          s.discount, s.locker_id, s.created_at,
+          CASE
+            WHEN s.membership_end < CURRENT_DATE THEN 'expired'
+            ELSE 'active'
+          END AS status,
+          (SELECT seats.seat_number FROM seat_assignments sa LEFT JOIN seats ON sa.seat_id = seats.id WHERE sa.student_id = s.id ORDER BY sa.id DESC LIMIT 1) AS seat_number,
+          l.locker_number
+        FROM students s
+        LEFT JOIN locker l ON s.locker_id = l.id
+        WHERE s.membership_end >= CURRENT_DATE AND s.library_id = $1`;
+      
       const params = [req.libraryId];
 
-      query += ` WHERE s.membership_end >= CURRENT_DATE AND s.library_id = $1`;
       if (branchIdNum) {
         query += ` AND s.branch_id = $2`;
         params.push(branchIdNum);
@@ -199,10 +215,11 @@ module.exports = (pool) => {
 
   router.get('/expiring-soon', checkAdminOrStaff, async (req, res) => {
     try {
-      const { branchId } = req.query;
+      const { branchId, days } = req.query;
       const branchIdNum = branchId ? parseInt(branchId, 10) : null;
-      const fiveDaysFromNow = new Date();
-      fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
+      const daysNum = days ? parseInt(days, 10) : 5; // Default to 5 days if not specified
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + daysNum);
       
       let query = `
         SELECT
@@ -225,7 +242,7 @@ module.exports = (pool) => {
         LEFT JOIN locker l ON s.locker_id = l.id
         WHERE s.membership_end >= CURRENT_DATE AND s.membership_end <= $1 AND s.library_id = $2
       `;
-      const params = [fiveDaysFromNow, req.libraryId];
+      const params = [targetDate, req.libraryId];
       
       if (branchIdNum) {
         query += ` AND s.branch_id = $3`;
@@ -237,6 +254,114 @@ module.exports = (pool) => {
       res.json({ students: result.rows });
     } catch (err) {
       console.error('Error in students/expiring-soon route:', err.stack);
+      res.status(500).json({ message: 'Server error', error: err.message });
+    }
+  });
+
+  // New endpoint for expiring memberships with specific date ranges
+  router.get('/expiring-by-range', checkAdminOrStaff, async (req, res) => {
+    try {
+      const { branchId, fromDays, toDays } = req.query;
+      const branchIdNum = branchId ? parseInt(branchId, 10) : null;
+      const fromDaysNum = fromDays ? parseInt(fromDays, 10) : 0;
+      const toDaysNum = toDays ? parseInt(toDays, 10) : 7;
+      
+      const fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() + fromDaysNum);
+      const toDate = new Date();
+      toDate.setDate(toDate.getDate() + toDaysNum);
+      
+      let query = `
+        SELECT
+          s.id,
+          s.name,
+          s.phone,
+          TO_CHAR(s.membership_end, 'YYYY-MM-DD') AS membership_end,
+          CASE
+            WHEN s.membership_end < CURRENT_DATE THEN 'expired'
+            ELSE 'active'
+          END AS status,
+          (SELECT seats.seat_number
+           FROM seat_assignments sa
+           LEFT JOIN seats ON sa.seat_id = seats.id
+           WHERE sa.student_id = s.id
+           ORDER BY sa.id DESC
+           LIMIT 1) AS seat_number,
+          l.locker_number
+        FROM students s
+        LEFT JOIN locker l ON s.locker_id = l.id
+        WHERE s.membership_end >= $1 AND s.membership_end <= $2 AND s.library_id = $3
+      `;
+      const params = [fromDate, toDate, req.libraryId];
+      
+      if (branchIdNum) {
+        query += ` AND s.branch_id = $4`;
+        params.push(branchIdNum);
+      }
+      query += ` ORDER BY s.membership_end`;
+
+      const result = await pool.query(query, params);
+      res.json({ students: result.rows });
+    } catch (err) {
+      console.error('Error in students/expiring-by-range route:', err.stack);
+      res.status(500).json({ message: 'Server error', error: err.message });
+    }
+  });
+
+  // New endpoint for expiring membership counts by different ranges
+  router.get('/expiring-counts', checkAdminOrStaff, async (req, res) => {
+    try {
+      const { branchId } = req.query;
+      const branchIdNum = branchId ? parseInt(branchId, 10) : null;
+      
+      // Define date ranges
+      const today = new Date();
+      const twoDaysFromNow = new Date();
+      twoDaysFromNow.setDate(today.getDate() + 2);
+      const fiveDaysFromNow = new Date();
+      fiveDaysFromNow.setDate(today.getDate() + 5);
+      const sevenDaysFromNow = new Date();
+      sevenDaysFromNow.setDate(today.getDate() + 7);
+      
+      let baseQuery = `
+        SELECT COUNT(*) as count
+        FROM students s
+        WHERE s.library_id = $1
+      `;
+      
+      let params = [req.libraryId];
+      let branchCondition = '';
+      
+      if (branchIdNum) {
+        branchCondition = ` AND s.branch_id = $2`;
+        params.push(branchIdNum);
+      }
+      
+      // Query for 1-2 days
+      const query1to2 = baseQuery + ` AND s.membership_end >= CURRENT_DATE AND s.membership_end <= $${params.length + 1}` + branchCondition;
+      const params1to2 = [...params, twoDaysFromNow];
+      
+      // Query for 3-5 days
+      const query3to5 = baseQuery + ` AND s.membership_end > $${params.length + 1} AND s.membership_end <= $${params.length + 2}` + branchCondition;
+      const params3to5 = [...params, twoDaysFromNow, fiveDaysFromNow];
+      
+      // Query for 5-7 days
+      const query5to7 = baseQuery + ` AND s.membership_end > $${params.length + 1} AND s.membership_end <= $${params.length + 2}` + branchCondition;
+      const params5to7 = [...params, fiveDaysFromNow, sevenDaysFromNow];
+      
+      const [result1to2, result3to5, result5to7] = await Promise.all([
+        pool.query(query1to2, params1to2),
+        pool.query(query3to5, params3to5),
+        pool.query(query5to7, params5to7)
+      ]);
+      
+      res.json({
+        expiring1to2Days: parseInt(result1to2.rows[0].count),
+        expiring3to5Days: parseInt(result3to5.rows[0].count),
+        expiring5to7Days: parseInt(result5to7.rows[0].count)
+      });
+    } catch (err) {
+      console.error('Error in students/expiring-counts route:', err.stack);
       res.status(500).json({ message: 'Server error', error: err.message });
     }
   });

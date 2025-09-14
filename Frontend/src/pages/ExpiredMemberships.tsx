@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import api from '../services/api';
-import { Search, ChevronLeft, ChevronRight, Trash2, Eye, MessageCircle } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Trash2, Eye, MessageCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -78,6 +78,10 @@ const ExpiredMemberships = () => {
   const [renewDialogOpen, setRenewDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   
+  // Sorting state
+  const [sortField, setSortField] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
   // State for the new branch filter
   const [selectedBranchFilter, setSelectedBranchFilter] = useState<{ value: number | null; label: string } | null>(null);
   const [branchFilterOptions, setBranchFilterOptions] = useState<any[]>([]);
@@ -107,6 +111,65 @@ const ExpiredMemberships = () => {
   
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Sorting function
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Sort students based on current sort field and direction
+  const sortedStudents = React.useMemo(() => {
+    if (!sortField) return students;
+    
+    return [...students].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortField) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'registrationNumber':
+          aValue = a.registrationNumber?.toLowerCase() || '';
+          bValue = b.registrationNumber?.toLowerCase() || '';
+          break;
+        case 'email':
+          aValue = a.email?.toLowerCase() || '';
+          bValue = b.email?.toLowerCase() || '';
+          break;
+        case 'phone':
+          aValue = a.phone || '';
+          bValue = b.phone || '';
+          break;
+        case 'membershipEnd':
+          aValue = new Date(a.membershipEnd || 0).getTime();
+          bValue = new Date(b.membershipEnd || 0).getTime();
+          break;
+        case 'seat':
+          aValue = a.seatNumber?.toLowerCase() || a.assignments?.[0]?.seatNumber?.toLowerCase() || '';
+          bValue = b.seatNumber?.toLowerCase() || b.assignments?.[0]?.seatNumber?.toLowerCase() || '';
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [students, sortField, sortDirection]);
+
+  // Render sort icon
+  const renderSortIcon = (field: string) => {
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />;
+  };
 
   // Effect to fetch branches for filter and dialog
   useEffect(() => {
@@ -169,11 +232,21 @@ const ExpiredMemberships = () => {
       const fetchSeats = async () => {
         try {
           const response = await api.getSeats({ branchId: selectedBranch.value, shiftId: selectedShift.value });
-          const allSeats: Seat[] = response.seats;
-          const availableSeats = allSeats.filter(seat => !seat.studentId || seat.studentId === selectedStudent.id);
+          const allSeats: any[] = response.seats || [];
+          const availableSeats = allSeats.filter((seat: any) => {
+            const status = (seat.shifts || []).find((s: any) => s.shiftId === selectedShift.value);
+            return status ? !status.isAssigned : true;
+          });
+          // Ensure current assigned seat remains selectable
+          const currentAssignment = selectedStudent.assignments?.[0];
+          if (currentAssignment && !availableSeats.some(s => s.id === currentAssignment.seatId)) {
+            const currentSeat = allSeats.find(s => s.id === currentAssignment.seatId);
+            if (currentSeat) availableSeats.push(currentSeat);
+          }
+
           setSeatOptions([
             { value: null, label: 'None' },
-            ...availableSeats.map(seat => ({ value: seat.id, label: seat.seatNumber }))
+            ...availableSeats.map((seat: any) => ({ value: seat.id, label: seat.seatNumber }))
           ]);
           // Reset seat if the currently selected one is no longer available
           if (selectedSeat && !availableSeats.some(seat => seat.id === selectedSeat.value)) {
@@ -333,16 +406,65 @@ const ExpiredMemberships = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Registration Number</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Expiry</TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-50 select-none"
+                    onClick={() => handleSort('name')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Name</span>
+                      {renderSortIcon('name')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-50 select-none"
+                    onClick={() => handleSort('registrationNumber')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Registration Number</span>
+                      {renderSortIcon('registrationNumber')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-50 select-none"
+                    onClick={() => handleSort('email')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Email</span>
+                      {renderSortIcon('email')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-50 select-none"
+                    onClick={() => handleSort('phone')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Phone</span>
+                      {renderSortIcon('phone')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-50 select-none"
+                    onClick={() => handleSort('seat')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Seat</span>
+                      {renderSortIcon('seat')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-50 select-none"
+                    onClick={() => handleSort('membershipEnd')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Expiry</span>
+                      {renderSortIcon('membershipEnd')}
+                    </div>
+                  </TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {students
+                {sortedStudents
                   .filter(
                     (s) =>
                       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -355,6 +477,7 @@ const ExpiredMemberships = () => {
                       <TableCell>{student.registrationNumber || 'N/A'}</TableCell>
                       <TableCell>{student.email}</TableCell>
                       <TableCell>{student.phone}</TableCell>
+                      <TableCell>{student.seatNumber || student.assignments?.[0]?.seatNumber || 'N/A'}</TableCell>
                       <TableCell>{formatDate(student.membershipEnd)}</TableCell>
                       <TableCell className="space-x-2">
                         <Button onClick={() => navigate(`/students/${student.id}`)} variant="outline">

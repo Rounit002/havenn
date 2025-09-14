@@ -22,8 +22,11 @@ import {
   Megaphone,
   HelpCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import InvoiceButton from '../components/InvoiceButton';
 import api from '../services/api';
 import BarcodeScanner from '../components/BarcodeScanner';
@@ -234,7 +237,6 @@ const StudentDashboard: React.FC = () => {
         }
     }, [activeTab, profile, fetchAttendanceRecords]);
 
-
   const handleScanSuccess = async (scannedData: string) => {
     setShowScanner(false);
     try {
@@ -336,6 +338,32 @@ const StudentDashboard: React.FC = () => {
     return end < now;
   };
 
+  const downloadInvoiceAsPdf = async () => {
+    try {
+      const invoiceElement = document.getElementById('invoice');
+      if (!invoiceElement) return;
+      
+      const canvas = await html2canvas(invoiceElement, { 
+        scale: 2,
+        useCORS: true,
+        logging: true,
+        allowTaint: true
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`invoice-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate invoice PDF');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -385,6 +413,7 @@ const StudentDashboard: React.FC = () => {
                 studentId={profile.id} 
                 studentName={profile.name}
                 className="mr-2 shrink-0"
+                id="invoice"
               >
                 <div className="p-6">
                   <div className="text-center mb-6">

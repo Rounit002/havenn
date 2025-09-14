@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronRight, Users, UserCheck, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Home, QrCode, Calendar, Clock, Search, Download, Printer, Filter } from 'lucide-react';
+import { ChevronRight, Users, UserCheck, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Home, QrCode, Calendar, Clock, Search, Download, Printer, Filter, Grid3X3, LayoutGrid, Rows3 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import StatCard from '../components/StatCard';
@@ -47,6 +47,7 @@ const Dashboard: React.FC = () => {
 
   const [updateTrigger, setUpdateTrigger] = useState(0); // Use a counter instead of boolean for more reliable updates
   const [studentStats, setStudentStats] = useState({ totalStudents: 0, activeStudents: 0, expiredMemberships: 0 });
+  const [expiringStats, setExpiringStats] = useState({ expiring1to2Days: 0, expiring3to5Days: 0, expiring5to7Days: 0 });
   const [financialStats, setFinancialStats] = useState({ totalCollection: 0, totalDue: 0, totalExpense: 0, profitLoss: 0 });
   const [showAddForm, setShowAddForm] = useState(false);
   const [branches, setBranches] = useState<{ id: number; name: string }[]>([]);
@@ -84,6 +85,13 @@ const Dashboard: React.FC = () => {
   
   // Sidebar state
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // Dashboard view state
+  const [dashboardView, setDashboardView] = useState<'standard' | 'compact' | 'detailed'>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('dashboardView') : null;
+    if (saved === 'standard' || saved === 'compact' || saved === 'detailed') return saved;
+    return 'standard';
+  });
 
   useEffect(() => {
     const loadLibraryInfo = async () => {
@@ -106,6 +114,17 @@ const Dashboard: React.FC = () => {
     loadLibraryInfo();
   }, [user]);
 
+  // Persist dashboard view selection
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('dashboardView', dashboardView);
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+  }, [dashboardView]);
+
   const handleBarcodeClick = () => {
     setShowBarcodeGenerator(true);
   };
@@ -127,16 +146,23 @@ const Dashboard: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const [totalStudentsResp, activeStudentsResp, expiredMembershipsResp] = await Promise.all([
+      const [totalStudentsResp, activeStudentsResp, expiredMembershipsResp, expiringCountsResp] = await Promise.all([
         api.getTotalStudentsCount(selectedBranchId ?? undefined).catch(() => 0),
         api.getActiveStudentsCount(selectedBranchId ?? undefined).catch(() => 0),
         api.getExpiredMembershipsCount(selectedBranchId ?? undefined).catch(() => 0),
+        api.getExpiringCounts(selectedBranchId ?? undefined).catch(() => ({ expiring1to2Days: 0, expiring3to5Days: 0, expiring5to7Days: 0 })),
       ]);
 
       setStudentStats({
         totalStudents: Number(totalStudentsResp) || 0,
         activeStudents: Number(activeStudentsResp) || 0,
         expiredMemberships: Number(expiredMembershipsResp) || 0,
+      });
+
+      setExpiringStats({
+        expiring1to2Days: Number(expiringCountsResp.expiring1to2Days) || 0,
+        expiring3to5Days: Number(expiringCountsResp.expiring3to5Days) || 0,
+        expiring5to7Days: Number(expiringCountsResp.expiring5to7Days) || 0,
       });
 
       const financialResponse = await api.getDashboardStats(
@@ -162,6 +188,7 @@ const Dashboard: React.FC = () => {
         toast.error('Failed to load dashboard stats');
         console.error('Error fetching stats:', error);
         setStudentStats({ totalStudents: 0, activeStudents: 0, expiredMemberships: 0 });
+        setExpiringStats({ expiring1to2Days: 0, expiring3to5Days: 0, expiring5to7Days: 0 });
         setFinancialStats({ totalCollection: 0, totalDue: 0, totalExpense: 0, profitLoss: 0 });
       }
     }
@@ -300,7 +327,50 @@ const Dashboard: React.FC = () => {
         <Navbar />
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <h1 className="text-2xl font-bold text-gray-800">Library Dashboard</h1>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-600 hidden sm:inline">View:</span>
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setDashboardView('standard')}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      dashboardView === 'standard'
+                        ? 'bg-white text-purple-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    title="Standard View"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    <span className="hidden sm:inline">Standard</span>
+                  </button>
+                  <button
+                    onClick={() => setDashboardView('compact')}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      dashboardView === 'compact'
+                        ? 'bg-white text-purple-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    title="Compact View"
+                  >
+                    <Grid3X3 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Compact</span>
+                  </button>
+                  <button
+                    onClick={() => setDashboardView('detailed')}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      dashboardView === 'detailed'
+                        ? 'bg-white text-purple-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    title="Detailed View"
+                  >
+                    <Rows3 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Detailed</span>
+                  </button>
+                </div>
+              </div>
+            </div>
             <div className="mb-6">
               <label htmlFor="branch-select" className="text-sm font-medium text-gray-700 mr-2">
                 Filter by Branch:
@@ -319,8 +389,17 @@ const Dashboard: React.FC = () => {
                 ))}
               </select>
             </div>
-            <h2 className="text-xl font-semibold mb-4">Library Statistics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <h2 className={`font-semibold mb-4 ${
+              dashboardView === 'compact' ? 'text-lg' : 
+              dashboardView === 'detailed' ? 'text-2xl' : 'text-xl'
+            }`}>Library Statistics</h2>
+            <div className={`grid gap-4 sm:gap-6 mb-6 ${
+              dashboardView === 'compact' 
+                ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 
+              dashboardView === 'detailed' 
+                ? 'grid-cols-1 sm:grid-cols-2' : 
+                'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+            }`}>
               <Link to="/students" className="block">
                 <StatCard
                   title="Total Students"
@@ -349,46 +428,104 @@ const Dashboard: React.FC = () => {
                 />
               </Link>
             </div>
-            <h2 className="text-xl font-semibold mb-4">Financial Overview (This Month)</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <StatCard
-                title="Total Collection"
-                value={financialStats.totalCollection}
-                icon={<DollarSign className="h-6 w-6 text-green-500" />}
-                iconBgColor="bg-green-100"
-                arrowIcon={<ChevronRight className="h-5 w-5 text-green-400" />}
-              />
-              <StatCard
-                title="Total Due"
-                value={financialStats.totalDue}
-                icon={<AlertTriangle className="h-6 w-6 text-red-500" />}
-                iconBgColor="bg-red-100"
-                arrowIcon={<ChevronRight className="h-5 w-5 text-red-400" />}
-              />
-              <StatCard
-                title="Total Expense"
-                value={financialStats.totalExpense}
-                icon={<TrendingDown className="h-6 w-6 text-yellow-500" />}
-                iconBgColor="bg-yellow-100"
-                arrowIcon={<ChevronRight className="h-5 w-5 text-yellow-400" />}
-              />
-              <StatCard
-                title={financialStats.profitLoss >= 0 ? "Profit" : "Loss"}
-                value={Math.abs(financialStats.profitLoss)}
-                icon={
-                  financialStats.profitLoss >= 0 ? (
-                    <TrendingUp className="h-6 w-6 text-teal-500" />
-                  ) : (
-                    <TrendingDown className="h-6 w-6 text-red-500" />
-                  )
-                }
-                iconBgColor={financialStats.profitLoss >= 0 ? "bg-teal-100" : "bg-red-100"}
-                arrowIcon={
-                  <ChevronRight
-                    className={`h-5 w-5 ${financialStats.profitLoss >= 0 ? "text-teal-400" : "text-red-400"}`}
-                  />
-                }
-              />
+            
+            <h2 className={`font-semibold mb-4 ${
+              dashboardView === 'compact' ? 'text-lg' : 
+              dashboardView === 'detailed' ? 'text-2xl' : 'text-xl'
+            }`}>Expiring Memberships</h2>
+            <div className={`grid gap-4 sm:gap-6 mb-6 ${
+              dashboardView === 'compact' 
+                ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 
+              dashboardView === 'detailed' 
+                ? 'grid-cols-1 sm:grid-cols-2' : 
+                'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+            }`}>
+              <Link to="/expiring-memberships?range=1-2" className="block">
+                <StatCard
+                  title="Expiring in 1-2 Days"
+                  value={expiringStats.expiring1to2Days}
+                  icon={<AlertTriangle className="h-6 w-6 text-red-500" />}
+                  iconBgColor="bg-red-100"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-red-400" />}
+                />
+              </Link>
+              <Link to="/expiring-memberships?range=3-5" className="block">
+                <StatCard
+                  title="Expiring in 3-5 Days"
+                  value={expiringStats.expiring3to5Days}
+                  icon={<AlertTriangle className="h-6 w-6 text-yellow-500" />}
+                  iconBgColor="bg-yellow-100"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-yellow-400" />}
+                />
+              </Link>
+              <Link to="/expiring-memberships?range=5-7" className="block">
+                <StatCard
+                  title="Expiring in 5-7 Days"
+                  value={expiringStats.expiring5to7Days}
+                  icon={<AlertTriangle className="h-6 w-6 text-orange-500" />}
+                  iconBgColor="bg-orange-100"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-orange-400" />}
+                />
+              </Link>
+            </div>
+            
+            <h2 className={`font-semibold mb-4 ${
+              dashboardView === 'compact' ? 'text-lg' : 
+              dashboardView === 'detailed' ? 'text-2xl' : 'text-xl'
+            }`}>Financial Overview (This Month)</h2>
+            <div className={`grid gap-4 sm:gap-6 mb-6 ${
+              dashboardView === 'compact' 
+                ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8' : 
+              dashboardView === 'detailed' 
+                ? 'grid-cols-1 sm:grid-cols-2' : 
+                'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+            }`}>
+              <Link to="/collections" className="block">
+                <StatCard
+                  title="Total Collection"
+                  value={financialStats.totalCollection}
+                  icon={<DollarSign className="h-6 w-6 text-green-500" />}
+                  iconBgColor="bg-green-100"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-green-400" />}
+                />
+              </Link>
+              <Link to="/collections?showOnlyDue=true" className="block">
+                <StatCard
+                  title="Total Due"
+                  value={financialStats.totalDue}
+                  icon={<AlertTriangle className="h-6 w-6 text-red-500" />}
+                  iconBgColor="bg-red-100"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-red-400" />}
+                />
+              </Link>
+              <Link to="/expenses" className="block">
+                <StatCard
+                  title="Total Expense"
+                  value={financialStats.totalExpense}
+                  icon={<TrendingDown className="h-6 w-6 text-yellow-500" />}
+                  iconBgColor="bg-yellow-100"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-yellow-400" />}
+                />
+              </Link>
+              <Link to="/profit-loss" className="block">
+                <StatCard
+                  title={financialStats.profitLoss >= 0 ? "Profit" : "Loss"}
+                  value={Math.abs(financialStats.profitLoss)}
+                  icon={
+                    financialStats.profitLoss >= 0 ? (
+                      <TrendingUp className="h-6 w-6 text-teal-500" />
+                    ) : (
+                      <TrendingDown className="h-6 w-6 text-red-500" />
+                    )
+                  }
+                  iconBgColor={financialStats.profitLoss >= 0 ? "bg-teal-100" : "bg-red-100"}
+                  arrowIcon={
+                    <ChevronRight
+                      className={`h-5 w-5 ${financialStats.profitLoss >= 0 ? "text-teal-400" : "text-red-400"}`}
+                    />
+                  }
+                />
+              </Link>
             </div>
             
             {/* Registration Link Section */}

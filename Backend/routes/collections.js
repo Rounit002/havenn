@@ -22,7 +22,19 @@ module.exports = (pool) => {
       let whereClause = ' WHERE smh.library_id = $1';
       let paramIndex = 2;
 
-      if (req.query.month) {
+      // Handle date filtering - either month or date range
+      if (req.query.fromDate && req.query.toDate) {
+        // Date range filtering
+        const fromDate = req.query.fromDate;
+        const toDate = req.query.toDate;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fromDate) || !/^\d{4}-\d{2}-\d{2}$/.test(toDate)) {
+          return res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD' });
+        }
+        whereClause += ` AND smh.changed_at::date >= $${paramIndex} AND smh.changed_at::date <= $${paramIndex + 1}`;
+        params.push(fromDate, toDate);
+        paramIndex += 2;
+      } else if (req.query.month) {
+        // Month filtering (existing functionality)
         const monthParam = req.query.month;
         if (!/^\d{4}-\d{2}$/.test(monthParam)) {
           return res.status(400).json({ message: 'Invalid month format. Use YYYY-MM' });
@@ -83,7 +95,8 @@ module.exports = (pool) => {
           smh.remark,
           smh.changed_at as "createdAt",
           smh.branch_id as "branchId",
-          b.name as "branchName"
+          b.name as "branchName",
+          (SELECT seats.seat_number FROM seat_assignments sa LEFT JOIN seats ON sa.seat_id = seats.id WHERE sa.student_id = smh.student_id ORDER BY sa.id DESC LIMIT 1) AS "seatNumber"
         FROM student_membership_history smh
         LEFT JOIN schedules sch ON smh.shift_id = sch.id
         LEFT JOIN branches b ON smh.branch_id = b.id
@@ -92,7 +105,19 @@ module.exports = (pool) => {
       let whereClause = ' WHERE smh.library_id = $1';
       let paramIndex = 2;
 
-      if (req.query.month) {
+      // Handle date filtering - either month or date range
+      if (req.query.fromDate && req.query.toDate) {
+        // Date range filtering
+        const fromDate = req.query.fromDate;
+        const toDate = req.query.toDate;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fromDate) || !/^\d{4}-\d{2}-\d{2}$/.test(toDate)) {
+          return res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD' });
+        }
+        whereClause += ` AND smh.changed_at::date >= $${paramIndex} AND smh.changed_at::date <= $${paramIndex + 1}`;
+        params.push(fromDate, toDate);
+        paramIndex += 2;
+      } else if (req.query.month) {
+        // Month filtering (existing functionality)
         const monthParam = req.query.month;
          if (!/^\d{4}-\d{2}$/.test(monthParam)) {
           return res.status(400).json({ message: 'Invalid month format. Use YYYY-MM' });

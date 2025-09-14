@@ -680,10 +680,31 @@ const api = {
     return response.data;
   },
 
-  getExpiringSoon: async (branchId?: number): Promise<{ students: Student[] }> => {
+  getExpiringSoon: async (branchId?: number, days?: number): Promise<{ students: Student[] }> => {
     const params: any = {};
     if (branchId) params.branchId = branchId;
+    if (days) params.days = days;
     const response = await apiClient.get('/students/expiring-soon', { params });
+    return response.data;
+  },
+
+  getExpiringByRange: async (branchId?: number, fromDays?: number, toDays?: number): Promise<{ students: Student[] }> => {
+    const params: any = {};
+    if (branchId) params.branchId = branchId;
+    if (fromDays !== undefined) params.fromDays = fromDays;
+    if (toDays !== undefined) params.toDays = toDays;
+    const response = await apiClient.get('/students/expiring-by-range', { params });
+    return response.data;
+  },
+
+  getExpiringCounts: async (branchId?: number): Promise<{
+    expiring1to2Days: number;
+    expiring3to5Days: number;
+    expiring5to7Days: number;
+  }> => {
+    const params: any = {};
+    if (branchId) params.branchId = branchId;
+    const response = await apiClient.get('/students/expiring-counts', { params });
     return response.data;
   },
 

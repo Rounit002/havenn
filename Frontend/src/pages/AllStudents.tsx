@@ -14,7 +14,7 @@ interface Branch {
   phone?: string;
   email?: string;
 }
-import { Search, ChevronLeft, ChevronRight, Trash2, Eye, ArrowUp, ArrowDown, ToggleLeft, ToggleRight, FileText } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Trash2, Eye, ArrowUp, ArrowDown, ToggleLeft, ToggleRight, FileText, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,6 +28,12 @@ interface Student {
   status: string;
   seatNumber?: string | null;
   isActive: boolean;
+  assignments?: Array<{
+    seatId: number;
+    shiftId: number;
+    seatNumber: string;
+    shiftTitle: string;
+  }>;
 }
 
 const formatDate = (dateString: string | undefined): string => {
@@ -52,6 +58,10 @@ const AllStudents = () => {
   const [toDate, setToDate] = useState('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // New sorting state for all columns
+  const [sortField, setSortField] = useState<string>('createdAt');
+  const [columnSortDirection, setColumnSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showBarcodeGenerator, setShowBarcodeGenerator] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
@@ -133,6 +143,22 @@ const AllStudents = () => {
     setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
   };
 
+  // New sorting function for all columns
+  const handleColumnSort = (field: string) => {
+    if (sortField === field) {
+      setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setColumnSortDirection('asc');
+    }
+  };
+
+  // Render sort icon
+  const renderSortIcon = (field: string) => {
+    if (sortField !== field) return null;
+    return columnSortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />;
+  };
+
   const handleStatusToggle = async (id: number, currentStatus: boolean) => {
     const newStatus = !currentStatus;
     const action = newStatus ? 'activate' : 'deactivate';
@@ -147,13 +173,46 @@ const AllStudents = () => {
     }
   };
   
-  const sortedStudents = [...students].sort((a, b) => {
-    const dateA = new Date(a.createdAt);
-    const dateB = new Date(b.createdAt);
-    const timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
-    const timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
-    return sortDirection === 'asc' ? timeA - timeB : timeB - timeA;
-  });
+  const sortedStudents = React.useMemo(() => {
+    return [...students].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortField) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'registrationNumber':
+          aValue = a.registrationNumber?.toLowerCase() || '';
+          bValue = b.registrationNumber?.toLowerCase() || '';
+          break;
+        case 'phone':
+          aValue = a.phone || '';
+          bValue = b.phone || '';
+          break;
+        case 'status':
+          aValue = a.status?.toLowerCase() || '';
+          bValue = b.status?.toLowerCase() || '';
+          break;
+        case 'seat':
+          aValue = a.seatNumber?.toLowerCase() || a.assignments?.[0]?.seatNumber?.toLowerCase() || '';
+          bValue = b.seatNumber?.toLowerCase() || b.assignments?.[0]?.seatNumber?.toLowerCase() || '';
+          break;
+        case 'createdAt':
+        default:
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          aValue = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
+          bValue = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
+          break;
+      }
+      
+      if (aValue < bValue) return columnSortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return columnSortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [students, sortField, columnSortDirection]);
 
   const filteredStudents = sortedStudents.filter((student: Student) =>
     (student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -241,15 +300,59 @@ const AllStudents = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Registration</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Seat</TableHead>
-                      <TableHead>
-                        <button className="flex items-center gap-1" onClick={handleSort}>
-                          Added On {sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                        </button>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-50 select-none"
+                        onClick={() => handleColumnSort('name')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Name</span>
+                          {renderSortIcon('name')}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-50 select-none"
+                        onClick={() => handleColumnSort('registrationNumber')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Registration</span>
+                          {renderSortIcon('registrationNumber')}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-50 select-none"
+                        onClick={() => handleColumnSort('phone')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Phone</span>
+                          {renderSortIcon('phone')}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-50 select-none"
+                        onClick={() => handleColumnSort('status')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Status</span>
+                          {renderSortIcon('status')}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-50 select-none"
+                        onClick={() => handleColumnSort('seat')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Seat</span>
+                          {renderSortIcon('seat')}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-50 select-none"
+                        onClick={() => handleColumnSort('createdAt')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Added On</span>
+                          {renderSortIcon('createdAt')}
+                        </div>
                       </TableHead>
                       <TableHead>Invoice</TableHead>
                       <TableHead>Action</TableHead>
@@ -273,7 +376,7 @@ const AllStudents = () => {
                               {!student.isActive ? 'Inactive' : student.status === 'active' ? 'Active' : 'Expired'}
                             </span>
                           </TableCell>
-                          <TableCell>{student.seatNumber || 'N/A'}</TableCell>
+                          <TableCell>{student.seatNumber || student.assignments?.[0]?.seatNumber || 'N/A'}</TableCell>
                           <TableCell>{formatDate(student.createdAt)}</TableCell>
                           <TableCell>
                             <button

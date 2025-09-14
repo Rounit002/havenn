@@ -34,6 +34,7 @@ if (process.env.NODE_ENV !== 'production') {
 const allowedOrigins = [
   'https://havenn.onrender.com',
   'file://', // Cordova file:// protocol
+  'null', // Some WebViews send Origin: null for file:// apps
   'https://localhost', // Cordova WebView origin (needed for mobile app)
   'capacitor://localhost', // Capacitor apps
   'ionic://localhost', // Ionic apps
@@ -128,15 +129,18 @@ app.use('/assets', express.static(path.join(__dirname, 'dist/assets'), staticOpt
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  store: new pgSession({ pool: pool, ttl: 24 * 60 * 60 }),
+  // Keep server-side session alive for the same duration as the cookie (30 days)
+  store: new pgSession({ pool: pool, ttl: 30 * 24 * 60 * 60 }),
   secret: process.env.SESSION_SECRET || 'your-very-secure-secret-key-please-change',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    maxAge: 24 * 60 * 60 * 1000, 
-    httpOnly: false, // Allow JavaScript access for mobile apps
-    secure: false, // Disable secure cookies for Cordova compatibility
-    sameSite: 'lax' // Compatible with both web and mobile apps
+    // Extend maxAge to 30 days so users stay signed in unless they log out
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    // In production (served over HTTPS), use cross-site compatible cookie so it works from file:// WebView
+    httpOnly: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   },
 }));
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
@@ -35,6 +36,7 @@ interface ApiExpenseResponse {
 }
 
 const Expenses: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -45,6 +47,21 @@ const Expenses: React.FC = () => {
   const [isOtherTitle, setIsOtherTitle] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
+  const [highlightedMonth, setHighlightedMonth] = useState<string | null>(null);
+
+  // Initialize from URL parameters
+  useEffect(() => {
+    const monthParam = searchParams.get('month');
+    const viewParam = searchParams.get('view');
+    
+    if (monthParam) {
+      setHighlightedMonth(monthParam);
+    }
+    
+    if (viewParam === 'profit') {
+      toast.info('Viewing profit/loss details for the selected month');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -252,7 +269,7 @@ const Expenses: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#fef9f6]">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {loading ? (
           <div className="text-center text-gray-500">Loading...</div>
@@ -380,15 +397,18 @@ const Expenses: React.FC = () => {
               .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
               .map(([monthYear, monthExpenses], index) => {
                 const total = monthExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+                const isHighlighted = highlightedMonth && monthYear.includes(new Date(highlightedMonth + '-01').toLocaleString('default', { month: 'long', year: 'numeric' }));
                 return (
                   <motion.div
                     key={monthYear}
-                    className="mb-8"
+                    className={`mb-8 ${isHighlighted ? 'ring-2 ring-blue-500 rounded-lg p-4 bg-blue-50' : ''}`}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 + index * 0.1 }}
                   >
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">{monthYear}</h2>
+                    <h2 className={`text-xl font-semibold mb-4 ${isHighlighted ? 'text-blue-800' : 'text-gray-800'}`}>
+                      {monthYear} {isHighlighted && '🎯'}
+                    </h2>
                     <div className="overflow-x-auto bg-white shadow-md rounded-lg">
                       <table className="min-w-full text-sm">
                         <thead className="bg-gray-100 text-gray-700 font-semibold">

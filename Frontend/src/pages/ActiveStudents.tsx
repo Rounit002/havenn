@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import api from '../services/api';
-import { Search, ChevronLeft, ChevronRight, Trash2, Eye } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Trash2, Eye, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +22,13 @@ interface Student {
   amountPaid: number;
   status: string; // Can be 'active', 'expired', etc.
   createdAt: string;
+  seatNumber?: string | null;
+  assignments?: Array<{
+    seatId: number;
+    shiftId: number;
+    seatNumber: string;
+    shiftTitle: string;
+  }>;
 }
 
 // Utility function to format date to YYYY-MM-DD
@@ -37,6 +44,11 @@ const ActiveStudents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [studentsPerPage, setStudentsPerPage] = useState(10);
   const [isCollapsed, setIsCollapsed] = useState(false); // Added for Sidebar
+  
+  // Sorting state
+  const [sortField, setSortField] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,7 +73,66 @@ const ActiveStudents = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const filteredStudents = students.filter((student: Student) =>
+  // Sorting function
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Sort students based on current sort field and direction
+  const sortedStudents = React.useMemo(() => {
+    if (!sortField) return students;
+    
+    return [...students].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortField) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'registrationNumber':
+          aValue = a.registrationNumber?.toLowerCase() || '';
+          bValue = b.registrationNumber?.toLowerCase() || '';
+          break;
+        case 'phone':
+          aValue = a.phone || '';
+          bValue = b.phone || '';
+          break;
+        case 'status':
+          aValue = a.status?.toLowerCase() || '';
+          bValue = b.status?.toLowerCase() || '';
+          break;
+        case 'seat':
+          aValue = a.seatNumber?.toLowerCase() || a.assignments?.[0]?.seatNumber?.toLowerCase() || '';
+          bValue = b.seatNumber?.toLowerCase() || b.assignments?.[0]?.seatNumber?.toLowerCase() || '';
+          break;
+        case 'membershipEnd':
+          aValue = new Date(a.membershipEnd || 0).getTime();
+          bValue = new Date(b.membershipEnd || 0).getTime();
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [students, sortField, sortDirection]);
+
+  // Render sort icon
+  const renderSortIcon = (field: string) => {
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />;
+  };
+
+  const filteredStudents = sortedStudents.filter((student: Student) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (student.registrationNumber && student.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -91,7 +162,7 @@ const ActiveStudents = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
         <div className="flex-1 overflow-y-auto p-6">
@@ -122,11 +193,60 @@ const ActiveStudents = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Registration Number</TableHead>
-                          <TableHead className="hidden md:table-cell">Phone</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="hidden md:table-cell">Membership End</TableHead>
+                          <TableHead 
+                            className="cursor-pointer hover:bg-gray-50 select-none"
+                            onClick={() => handleSort('name')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Name</span>
+                              {renderSortIcon('name')}
+                            </div>
+                          </TableHead>
+                          <TableHead 
+                            className="cursor-pointer hover:bg-gray-50 select-none"
+                            onClick={() => handleSort('registrationNumber')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Registration Number</span>
+                              {renderSortIcon('registrationNumber')}
+                            </div>
+                          </TableHead>
+                          <TableHead 
+                            className="hidden md:table-cell cursor-pointer hover:bg-gray-50 select-none"
+                            onClick={() => handleSort('phone')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Phone</span>
+                              {renderSortIcon('phone')}
+                            </div>
+                          </TableHead>
+                          <TableHead 
+                            className="cursor-pointer hover:bg-gray-50 select-none"
+                            onClick={() => handleSort('status')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Status</span>
+                              {renderSortIcon('status')}
+                            </div>
+                          </TableHead>
+                          <TableHead 
+                            className="cursor-pointer hover:bg-gray-50 select-none"
+                            onClick={() => handleSort('seat')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Seat</span>
+                              {renderSortIcon('seat')}
+                            </div>
+                          </TableHead>
+                          <TableHead 
+                            className="hidden md:table-cell cursor-pointer hover:bg-gray-50 select-none"
+                            onClick={() => handleSort('membershipEnd')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Membership End</span>
+                              {renderSortIcon('membershipEnd')}
+                            </div>
+                          </TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -146,6 +266,7 @@ const ActiveStudents = () => {
                                   {student.status === 'active' ? 'Active' : 'Expired'}
                                 </span>
                               </TableCell>
+                              <TableCell>{student.seatNumber || student.assignments?.[0]?.seatNumber || 'N/A'}</TableCell>
                               <TableCell className="hidden md:table-cell">{formatDate(student.membershipEnd)}</TableCell>
                               <TableCell>
                                 <button
@@ -165,7 +286,7 @@ const ActiveStudents = () => {
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                            <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                               {filteredStudents.length === 0
                                 ? 'No active students found matching your search.'
                                 : 'No active students on this page.'}

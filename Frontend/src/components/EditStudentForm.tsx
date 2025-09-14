@@ -26,7 +26,7 @@ interface Student {
   cash: number;
   online: number;
   securityMoney: number;
-  discount: number;
+  discount?: number;
   remark: string | null;
   profileImageUrl?: string | null;
   aadhaarFrontUrl?: string | null;
@@ -253,27 +253,45 @@ const EditStudentForm: React.FC = () => {
     fetchShiftsForBranch();
   }, [formData.branchId]);
 
+  // Fetch seats filtered by selected branch and primary shift (first selected shift)
   useEffect(() => {
     const fetchSeats = async () => {
       const branchId = formData.branchId;
-      if (branchId) {
+      const primaryShiftId = formData.shiftIds && formData.shiftIds.length > 0 ? formData.shiftIds[0] : null;
+      if (branchId && primaryShiftId) {
         setLoadingSeats(true);
         try {
-          const seatsResponse = await api.getSeats({ branchId });
-          const allSeats: Seat[] = seatsResponse.seats;
-          setSeats(allSeats);
+          const seatsResponse = await api.getSeats({ branchId, shiftId: primaryShiftId });
+          const allSeats: Seat[] = seatsResponse.seats || [];
+          // Filter seats that are available for the selected shift
+          const availableSeats = allSeats.filter((seat: any) => {
+            const status = (seat.shifts || []).find((s: any) => s.shiftId === primaryShiftId);
+            return status ? !status.isAssigned : true;
+          });
+
+          // Ensure current seat stays selectable even if assigned
+          if (formData.seatId && !availableSeats.some(s => s.id === formData.seatId)) {
+            const currentSeat = allSeats.find(s => s.id === formData.seatId);
+            if (currentSeat) availableSeats.push(currentSeat);
+          }
+
+          setSeats(availableSeats);
         } catch (error: any) {
           console.error('Failed to fetch seats:', error);
           toast.error(error.response?.data?.message || 'Failed to load seats');
+          setSeats([]);
         } finally {
           setLoadingSeats(false);
         }
+      } else if (!branchId) {
+        setSeats([]);
       } else {
+        // Branch is selected but no shift yet
         setSeats([]);
       }
     };
     fetchSeats();
-  }, [formData.branchId]);
+  }, [formData.branchId, formData.shiftIds]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -580,9 +598,13 @@ const EditStudentForm: React.FC = () => {
             value={seatOptions.find(option => option.value === formData.seatId) || null}
             onChange={(option) => handleSelectChange('seatId', option)}
             isLoading={loadingSeats}
-            placeholder={formData.branchId ? "Select a seat" : "Select a branch and shift first"}
+            placeholder={
+              !formData.branchId
+                ? 'Select a branch first'
+                : (formData.shiftIds.length === 0 ? 'Select a shift first' : 'Select a seat')
+            }
             className="w-full"
-            isDisabled={!formData.branchId || seats.length === 0}
+            isDisabled={!formData.branchId || formData.shiftIds.length === 0 || seats.length === 0}
           />
         </div>
         <div>
