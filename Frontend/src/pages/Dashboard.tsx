@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronRight, Users, UserCheck, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Home, QrCode, Calendar, Clock, Search, Download, Printer, Filter, Grid3X3, LayoutGrid, Rows3 } from 'lucide-react';
+import { ChevronRight, Users, UserCheck, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Home, QrCode, Calendar, Clock, Search, Download, Printer, Filter, Grid3X3, LayoutGrid, Rows3, UserPlus, Share2, Megaphone, UserX } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import StatCard from '../components/StatCard';
@@ -127,6 +127,21 @@ const Dashboard: React.FC = () => {
 
   const handleBarcodeClick = () => {
     setShowBarcodeGenerator(true);
+  };
+
+  // Smoothly navigate to the Public Registration Link section
+  const goToRegistrationLink = () => {
+    setDashboardView('standard');
+    setTimeout(() => {
+      const el = document.getElementById('registration-link-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.classList.add('ring-2', 'ring-purple-300');
+        setTimeout(() => el.classList.remove('ring-2', 'ring-purple-300'), 1500);
+      } else {
+        navigate('/dashboard');
+      }
+    }, 50);
   };
 
   const fetchBranches = async () => {
@@ -321,219 +336,466 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={handleBarcodeClick} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <h1 className="text-2xl font-bold text-gray-800">Library Dashboard</h1>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-600 hidden sm:inline">View:</span>
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setDashboardView('standard')}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                      dashboardView === 'standard'
-                        ? 'bg-white text-purple-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    title="Standard View"
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                    <span className="hidden sm:inline">Standard</span>
-                  </button>
-                  <button
-                    onClick={() => setDashboardView('compact')}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                      dashboardView === 'compact'
-                        ? 'bg-white text-purple-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    title="Compact View"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Compact</span>
-                  </button>
-                  <button
-                    onClick={() => setDashboardView('detailed')}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                      dashboardView === 'detailed'
-                        ? 'bg-white text-purple-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    title="Detailed View"
-                  >
-                    <Rows3 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Detailed</span>
-                  </button>
+            <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 border border-slate-200 rounded-2xl p-4 sm:p-5 mb-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-2xl font-bold text-slate-800">Library Dashboard</h1>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-600 hidden sm:inline">View:</span>
+                  <div className="flex bg-slate-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setDashboardView('standard')}
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                        dashboardView === 'standard'
+                          ? 'bg-white text-purple-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-800'
+                      }`}
+                      title="Standard View"
+                    >
+                      <LayoutGrid className="h-4 w-4" />
+                      <span className="hidden sm:inline">Standard</span>
+                    </button>
+                    <button
+                      onClick={() => setDashboardView('compact')}
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                        dashboardView === 'compact'
+                          ? 'bg-white text-purple-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-800'
+                      }`}
+                      title="Compact View"
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Compact</span>
+                    </button>
+                    <button
+                      onClick={() => setDashboardView('detailed')}
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                        dashboardView === 'detailed'
+                          ? 'bg-white text-purple-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-800'
+                      }`}
+                      title="Detailed View"
+                    >
+                      <Rows3 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Detailed</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="mb-6">
-              <label htmlFor="branch-select" className="text-sm font-medium text-gray-700 mr-2">
-                Filter by Branch:
-              </label>
-              <select
-                id="branch-select"
-                value={selectedBranchId ?? 'all'}
-                onChange={(e) => setSelectedBranchId(e.target.value === 'all' ? null : parseInt(e.target.value, 10))}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
-              >
-                <option value="all">All Branches</option>
-                {branches.map((branch) => (
-                  <option key={branch.id} value={branch.id.toString()}>
-                    {branch.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="mb-6">
+            <label htmlFor="branch-select" className="text-sm font-medium text-gray-700 mr-2">
+              Filter by Branch:
+            </label>
+            <select
+              id="branch-select"
+              value={selectedBranchId ?? 'all'}
+              onChange={(e) => setSelectedBranchId(e.target.value === 'all' ? null : parseInt(e.target.value, 10))}
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+            >
+              <option value="all">All Branches</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id.toString()}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {dashboardView === 'compact' && (
+            <div className="grid items-stretch gap-3 sm:gap-4 mb-8 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8">
+              {/* Metrics */}
+              <Link to="/students" className="block h-full">
+                <StatCard
+                  title="Total Students"
+                  value={studentStats.totalStudents}
+                  icon={<Users className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-purple-400 to-fuchsia-500 relative overflow-hidden transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/active-students" className="block h-full">
+                <StatCard
+                  title="Active Students"
+                  value={studentStats.activeStudents}
+                  icon={<UserCheck className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-sky-400 to-blue-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/expired-memberships" className="block h-full">
+                <StatCard
+                  title="Total Expired Memberships"
+                  value={studentStats.expiredMemberships}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-amber-400 to-orange-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/expiring-memberships?range=1-2" className="block h-full">
+                <StatCard
+                  title="Expiring in 1-2 Days"
+                  value={expiringStats.expiring1to2Days}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-rose-400 to-red-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/expiring-memberships?range=3-5" className="block h-full">
+                <StatCard
+                  title="Expiring in 3-5 Days"
+                  value={expiringStats.expiring3to5Days}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-yellow-400 to-amber-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/expiring-memberships?range=5-7" className="block h-full">
+                <StatCard
+                  title="Expiring in 5-7 Days"
+                  value={expiringStats.expiring5to7Days}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-orange-400 to-pink-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/attendance" className="block h-full">
+                <StatCard
+                  title="Total Check-ins (Today)"
+                  value={attendanceStats.totalCheckedIn}
+                  icon={<Clock className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-emerald-400 to-teal-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/attendance" className="block h-full">
+                <StatCard
+                  title="Total Check-outs (Today)"
+                  value={attendanceStats.totalCheckedOut}
+                  icon={<Clock className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-red-400 to-rose-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/collections" className="block h-full">
+                <StatCard
+                  title="Total Collection (This Month)"
+                  value={financialStats.totalCollection}
+                  icon={<DollarSign className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-green-400 to-lime-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/collections?showOnlyDue=true" className="block h-full">
+                <StatCard
+                  title="Total Due (This Month)"
+                  value={financialStats.totalDue}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-red-400 to-orange-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/expenses" className="block h-full">
+                <StatCard
+                  title="Total Expense (This Month)"
+                  value={financialStats.totalExpense}
+                  icon={<TrendingDown className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br from-yellow-500 to-amber-500 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+              <Link to="/profit-loss" className="block h-full">
+                <StatCard
+                  title={financialStats.profitLoss >= 0 ? 'Profit (This Month)' : 'Loss (This Month)'}
+                  value={Math.abs(financialStats.profitLoss)}
+                  icon={financialStats.profitLoss >= 0 ? (<TrendingUp className="h-6 w-6 text-white" />) : (<TrendingDown className="h-6 w-6 text-white" />)}
+                  iconBgColor="bg-white/20"
+                  containerClassName={`h-full min-h-[120px] rounded-lg p-4 text-white shadow-md border-0 bg-gradient-to-br transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg] ${financialStats.profitLoss >= 0 ? 'from-teal-400 to-emerald-500' : 'from-red-400 to-rose-500'}`}
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
+                />
+              </Link>
+
+                {/* Action Cards */}
+                <Link to="/students/add" className="block h-full">
+                  <div className="h-full min-h-[120px] bg-gradient-to-br from-violet-400 to-pink-500 text-white rounded-lg shadow-md border-0 p-3 sm:p-4 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-full bg-white/20">
+                        <UserPlus className="h-5 w-5 text-white" />
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-white/70" />
+                    </div>
+                    <div className="mt-3 text-sm font-semibold">Add Student</div>
+                    <div className="text-xs text-white/80">Create a new student record</div>
+                  </div>
+                </Link>
+                <Link to="/attendance" className="block h-full">
+                  <div className="h-full min-h-[120px] bg-gradient-to-br from-sky-400 to-cyan-500 text-white rounded-lg shadow-md border-0 p-3 sm:p-4 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-full bg-white/20">
+                        <Calendar className="h-5 w-5 text-white" />
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-white/70" />
+                    </div>
+                    <div className="mt-3 text-sm font-semibold">Manage Attendance</div>
+                    <div className="text-xs text-white/80">View and manage attendance</div>
+                  </div>
+                </Link>
+                <Link to="/public-registration" className="block h-full">
+                  <div className="h-full min-h-[120px] bg-gradient-to-br from-emerald-400 to-lime-500 text-white rounded-lg shadow-md border-0 p-3 sm:p-4 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-full bg-white/20">
+                        <Share2 className="h-5 w-5 text-white" />
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-white/70" />
+                    </div>
+                    <div className="mt-3 text-sm font-semibold">Public Registration Link</div>
+                    <div className="text-xs text-white/80">Share/manage the public link</div>
+                  </div>
+                </Link>
+                <Link to={library ? `/registration-status/${library.library_code}` : '/registration-status'} className="block h-full">
+                  <div className="h-full min-h-[120px] bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-lg shadow-md border-0 p-3 sm:p-4 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-full bg-white/20">
+                        <Search className="h-5 w-5 text-white" />
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-white/70" />
+                    </div>
+                    <div className="mt-3 text-sm font-semibold">Check Registration Status</div>
+                    <div className="text-xs text-white/80">Lookup public application status</div>
+                  </div>
+                </Link>
+
+                {/* New: Announcements Card */}
+                <Link to="/announcements" className="block h-full">
+                  <div className="h-full min-h-[120px] bg-gradient-to-br from-indigo-400 to-violet-500 text-white rounded-lg shadow-md border-0 p-3 sm:p-4 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-full bg-white/20">
+                        <Megaphone className="h-5 w-5 text-white" />
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-white/70" />
+                    </div>
+                    <div className="mt-3 text-sm font-semibold">Announcements</div>
+                    <div className="text-xs text-white/80">View and post updates</div>
+                  </div>
+                </Link>
+
+                {/* New: Inactive Students Card */}
+                <Link to="/inactive-students" className="block h-full">
+                  <div className="h-full min-h-[120px] bg-gradient-to-br from-rose-400 to-red-500 text-white rounded-lg shadow-md border-0 p-3 sm:p-4 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-full bg-white/20">
+                        <UserX className="h-5 w-5 text-white" />
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-white/70" />
+                    </div>
+                    <div className="mt-3 text-sm font-semibold">Inactive Students</div>
+                    <div className="text-xs text-white/80">Review inactive accounts</div>
+                  </div>
+                </Link>
+              </div>
+            )}
+            {dashboardView !== 'compact' && (
+            <>
             <h2 className={`font-semibold mb-4 ${
-              dashboardView === 'compact' ? 'text-lg' : 
               dashboardView === 'detailed' ? 'text-2xl' : 'text-xl'
             }`}>Library Statistics</h2>
             <div className={`grid gap-4 sm:gap-6 mb-6 ${
-              dashboardView === 'compact' 
-                ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 
               dashboardView === 'detailed' 
                 ? 'grid-cols-1 sm:grid-cols-2' : 
-                'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+              'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
             }`}>
               <Link to="/students" className="block">
                 <StatCard
                   title="Total Students"
                   value={studentStats.totalStudents}
-                  icon={<Users className="h-6 w-6 text-purple-500" />}
-                  iconBgColor="bg-purple-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-purple-400" />}
+                  icon={<Users className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-purple-400 to-fuchsia-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
               <Link to="/active-students" className="block">
                 <StatCard
                   title="Active Students"
                   value={studentStats.activeStudents}
-                  icon={<UserCheck className="h-6 w-6 text-blue-500" />}
-                  iconBgColor="bg-blue-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-blue-400" />}
+                  icon={<UserCheck className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-sky-400 to-blue-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
               <Link to="/expired-memberships" className="block">
                 <StatCard
                   title="Expired Memberships"
                   value={studentStats.expiredMemberships}
-                  icon={<AlertTriangle className="h-6 w-6 text-orange-500" />}
-                  iconBgColor="bg-orange-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-orange-400" />}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-amber-400 to-orange-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
             </div>
             
             <h2 className={`font-semibold mb-4 ${
-              dashboardView === 'compact' ? 'text-lg' : 
               dashboardView === 'detailed' ? 'text-2xl' : 'text-xl'
             }`}>Expiring Memberships</h2>
             <div className={`grid gap-4 sm:gap-6 mb-6 ${
-              dashboardView === 'compact' 
-                ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 
               dashboardView === 'detailed' 
                 ? 'grid-cols-1 sm:grid-cols-2' : 
-                'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
+              'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
             }`}>
               <Link to="/expiring-memberships?range=1-2" className="block">
                 <StatCard
                   title="Expiring in 1-2 Days"
                   value={expiringStats.expiring1to2Days}
-                  icon={<AlertTriangle className="h-6 w-6 text-red-500" />}
-                  iconBgColor="bg-red-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-red-400" />}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-rose-400 to-red-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
               <Link to="/expiring-memberships?range=3-5" className="block">
                 <StatCard
                   title="Expiring in 3-5 Days"
                   value={expiringStats.expiring3to5Days}
-                  icon={<AlertTriangle className="h-6 w-6 text-yellow-500" />}
-                  iconBgColor="bg-yellow-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-yellow-400" />}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-yellow-400 to-amber-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
               <Link to="/expiring-memberships?range=5-7" className="block">
                 <StatCard
                   title="Expiring in 5-7 Days"
                   value={expiringStats.expiring5to7Days}
-                  icon={<AlertTriangle className="h-6 w-6 text-orange-500" />}
-                  iconBgColor="bg-orange-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-orange-400" />}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-orange-400 to-pink-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
             </div>
             
             <h2 className={`font-semibold mb-4 ${
-              dashboardView === 'compact' ? 'text-lg' : 
               dashboardView === 'detailed' ? 'text-2xl' : 'text-xl'
             }`}>Financial Overview (This Month)</h2>
             <div className={`grid gap-4 sm:gap-6 mb-6 ${
-              dashboardView === 'compact' 
-                ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8' : 
               dashboardView === 'detailed' 
                 ? 'grid-cols-1 sm:grid-cols-2' : 
-                'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+              'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
             }`}>
               <Link to="/collections" className="block">
                 <StatCard
                   title="Total Collection"
                   value={financialStats.totalCollection}
-                  icon={<DollarSign className="h-6 w-6 text-green-500" />}
-                  iconBgColor="bg-green-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-green-400" />}
+                  icon={<DollarSign className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-green-400 to-lime-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
               <Link to="/collections?showOnlyDue=true" className="block">
                 <StatCard
                   title="Total Due"
                   value={financialStats.totalDue}
-                  icon={<AlertTriangle className="h-6 w-6 text-red-500" />}
-                  iconBgColor="bg-red-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-red-400" />}
+                  icon={<AlertTriangle className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-red-400 to-orange-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
               <Link to="/expenses" className="block">
                 <StatCard
                   title="Total Expense"
                   value={financialStats.totalExpense}
-                  icon={<TrendingDown className="h-6 w-6 text-yellow-500" />}
-                  iconBgColor="bg-yellow-100"
-                  arrowIcon={<ChevronRight className="h-5 w-5 text-yellow-400" />}
+                  icon={<TrendingDown className="h-6 w-6 text-white" />}
+                  iconBgColor="bg-white/20"
+                  containerClassName="rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br from-amber-400 to-yellow-500"
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
               <Link to="/profit-loss" className="block">
                 <StatCard
                   title={financialStats.profitLoss >= 0 ? "Profit" : "Loss"}
                   value={Math.abs(financialStats.profitLoss)}
-                  icon={
-                    financialStats.profitLoss >= 0 ? (
-                      <TrendingUp className="h-6 w-6 text-teal-500" />
-                    ) : (
-                      <TrendingDown className="h-6 w-6 text-red-500" />
-                    )
-                  }
-                  iconBgColor={financialStats.profitLoss >= 0 ? "bg-teal-100" : "bg-red-100"}
-                  arrowIcon={
-                    <ChevronRight
-                      className={`h-5 w-5 ${financialStats.profitLoss >= 0 ? "text-teal-400" : "text-red-400"}`}
-                    />
-                  }
+                  icon={financialStats.profitLoss >= 0 ? (<TrendingUp className="h-6 w-6 text-white" />) : (<TrendingDown className="h-6 w-6 text-white" />)}
+                  iconBgColor="bg-white/20"
+                  containerClassName={`rounded-lg p-5 text-white shadow-md border-0 bg-gradient-to-br ${financialStats.profitLoss >= 0 ? 'from-teal-400 to-emerald-500' : 'from-red-400 to-rose-500'}`}
+                  titleClassName="text-white/80"
+                  valueClassName="text-white"
+                  arrowIcon={<ChevronRight className="h-5 w-5 text-white/70" />}
                 />
               </Link>
             </div>
             
-            {/* Registration Link Section */}
-            {library && (
-              <RegistrationLinkCard 
-                libraryCode={library.library_code} 
-                libraryName={library.name} 
-              />
+            </>
+            )}
+
+            {/* Registration Link Section (hidden in Compact View) */}
+            {dashboardView !== 'compact' && library && (
+              <div id="registration-link-card">
+                <RegistrationLinkCard 
+                  libraryCode={library.library_code} 
+                  libraryName={library.name} 
+                />
+              </div>
             )}
             
             {/* <div className="my-8">
@@ -607,8 +869,8 @@ const Dashboard: React.FC = () => {
               )}
             </div> */}
 
-            {/* Attendance Management Section */}
-            {canManageStudents && library && (
+            {/* Attendance Management Section (hidden in Compact View) */}
+            {dashboardView !== 'compact' && canManageStudents && library && (
               <div className="mb-8">
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white mb-6">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
@@ -794,7 +1056,7 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            {canManageStudents && (
+            {dashboardView !== 'compact' && canManageStudents && (
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">Manage Library Students</h2>
@@ -821,10 +1083,12 @@ const Dashboard: React.FC = () => {
                 <StudentList key={updateTrigger.toString()} selectedBranchId={selectedBranchId} />
               </div>
             )}
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Expiring Soon (Library)</h2>
-              <ExpiringMemberships selectedBranchId={selectedBranchId} />
-            </div>
+            {dashboardView !== 'compact' && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Expiring Soon (Library)</h2>
+                <ExpiringMemberships selectedBranchId={selectedBranchId} />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -41,7 +41,7 @@ const ProfitLoss: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#fef9f6]">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -52,16 +52,17 @@ const ProfitLoss: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <motion.h1
-            className="text-2xl md:text-3xl font-bold mb-6 text-gray-800 flex items-center gap-2"
+            className="text-2xl md:text-3xl font-bold mb-2 text-gray-800 dark:text-gray-100 flex items-center gap-2"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             📈 Profit & Loss
           </motion.h1>
+          <div className="mb-6 h-2 rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-sky-500 dark:from-indigo-600 dark:via-fuchsia-600 dark:to-sky-600 shadow-sm ring-1 ring-white/30" />
 
           <motion.div
-            className="bg-white rounded-lg shadow p-6 mb-6"
+            className="bg-white/95 dark:bg-gray-800/95 rounded-xl shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700 ring-1 ring-indigo-100/70 dark:ring-indigo-900/40"
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
@@ -77,7 +78,7 @@ const ProfitLoss: React.FC = () => {
               id="month"
               value={month}
               onChange={(e) => setMonth(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4"
+              className="w-full px-4 py-2 border border-indigo-200 dark:border-indigo-700 rounded-lg bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 shadow-sm mb-4"
             />
             <label
               htmlFor="branch"
@@ -89,7 +90,7 @@ const ProfitLoss: React.FC = () => {
               id="branch"
               value={selectedBranchId || ''}
               onChange={(e) => setSelectedBranchId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4"
+              className="w-full px-4 py-2 border border-emerald-200 dark:border-emerald-700 rounded-lg bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-sm mb-4"
             >
               <option value="">All Branches</option>
               {branches.map((branch) => (
@@ -100,7 +101,7 @@ const ProfitLoss: React.FC = () => {
             </select>
             <button
               onClick={handleFetch}
-              className="w-full sm:w-auto bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
+              className="w-full sm:w-auto bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 text-white px-6 py-2 rounded-md shadow-md hover:from-violet-500 hover:via-fuchsia-400 hover:to-sky-400 focus:ring-2 focus:ring-violet-300 ring-1 ring-white/20 transition"
             >
               Fetch Report
             </button>
@@ -108,24 +109,23 @@ const ProfitLoss: React.FC = () => {
 
           {data && (
             <motion.div
-              className="bg-white p-6 rounded-lg shadow"
+              className="rounded-2xl p-[3px] bg-gradient-to-br from-indigo-600/80 via-amber-500/80 to-rose-500/80 shadow-lg"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
             >
-              <h2 className="text-lg font-semibold mb-4 text-gray-800">
-                Financial Summary for {data.month}
-              </h2>
-              <div className="space-y-2 text-sm sm:text-base">
-                <p>Total Collected: <span className="font-semibold">{data.totalCollected.toFixed(2)}</span></p>
-                <p>Total Expenses: <span className="font-semibold">{data.totalExpenses.toFixed(2)}</span></p>
-                <p
-                  className={`font-semibold ${
-                    data.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {data.profitLoss >= 0 ? 'Profit' : 'Loss'}: {Math.abs(data.profitLoss).toFixed(2)}
-                </p>
+              <div className="rounded-[14px] bg-white/95 dark:bg-gray-800/95 border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="h-10 bg-gradient-to-r from-indigo-600 to-violet-600 text-white flex items-center px-4 font-semibold">
+                  Financial Summary
+                </div>
+                <div className="p-6 space-y-3 text-sm sm:text-base">
+                  <p className="text-gray-700 dark:text-gray-200">Month: <span className="font-semibold">{data.month}</span></p>
+                  <p className="text-emerald-700 dark:text-emerald-300">Total Collected: <span className="font-semibold">{data.totalCollected.toFixed(2)}</span></p>
+                  <p className="text-rose-700 dark:text-rose-300">Total Expenses: <span className="font-semibold">{data.totalExpenses.toFixed(2)}</span></p>
+                  <p className={`font-semibold ${data.profitLoss >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                    {data.profitLoss >= 0 ? 'Profit' : 'Loss'}: {Math.abs(data.profitLoss).toFixed(2)}
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}

@@ -120,6 +120,12 @@ const ExpiringMembershipsPage = () => {
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-gray-800">{getRangeTitle()}</h1>
               <p className="text-gray-500">View memberships expiring in the selected time range.</p>
+              <div className="mt-3 rounded-xl p-4 text-white bg-gradient-to-br from-amber-500 to-orange-600 ring-1 ring-white/10">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-sm sm:text-base font-medium text-white/90">Reach out proactively to reduce expiries</div>
+                  <span className="text-xs bg-white/20 px-2 py-0.5 rounded-md">Reminder</span>
+                </div>
+              </div>
             </div>
             
             {/* Filter Controls */}

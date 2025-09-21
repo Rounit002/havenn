@@ -55,6 +55,7 @@ import QueryDetail from './pages/QueryDetail';
 import NewQuery from './pages/NewQuery';
 import AdmissionRequests from './pages/AdmissionRequests';
 import PublicRegistration from './pages/PublicRegistration';
+import ManagePublicRegistration from './pages/ManagePublicRegistration';
 import RegistrationStatus from './pages/RegistrationStatus';
 
 const queryClient = new QueryClient();
@@ -114,6 +115,7 @@ function AppRoutes() {
       <Route path="/collections" element={<ProtectedRoute><CollectionDue /></ProtectedRoute>} />
       <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
       <Route path="/profit-loss" element={<ProtectedRoute><ProfitLoss /></ProtectedRoute>} />
+      <Route path="/public-registration" element={<ProtectedRoute><ManagePublicRegistration /></ProtectedRoute>} />
       <Route path="/branches" element={<ProtectedRoute><ManageBranches /></ProtectedRoute>} /> 
       <Route path="/products" element={<ProtectedRoute><ProductsPage /></ProtectedRoute>} /> 
       <Route path="/announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />

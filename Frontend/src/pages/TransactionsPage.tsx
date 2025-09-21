@@ -36,7 +36,7 @@ const TransactionPage: React.FC = () => {
   const transactions = data?.transactions || [];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#fef9f6]">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -45,15 +45,16 @@ const TransactionPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+          <h1 className="text-3xl font-bold mb-2 text-gray-800 dark:text-gray-100 flex items-center gap-2">
             <span role="img" aria-label="money">💰</span> Transactions
           </h1>
+          <div className="mb-6 h-2 rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-sky-500 dark:from-indigo-600 dark:via-fuchsia-600 dark:to-sky-600 shadow-sm ring-1 ring-white/30" />
 
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
-            className="bg-white shadow-lg rounded-xl p-4 mb-6 w-full"
+            className="bg-white/95 dark:bg-gray-800/95 shadow-sm rounded-xl p-4 mb-6 w-full border border-gray-200 dark:border-gray-700 ring-1 ring-indigo-100/70 dark:ring-indigo-900/40"
           >
             <AddTransactionForm onAddSuccess={handleAddSuccess} />
           </motion.div>
@@ -73,10 +74,10 @@ const TransactionPage: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.4 }}
-              className="overflow-x-auto bg-white shadow-md rounded-xl w-full"
+              className="overflow-x-auto bg-white/95 dark:bg-gray-800/95 shadow-sm rounded-xl w-full border border-gray-200 dark:border-gray-700"
             >
               <table className="w-full text-sm text-left table-auto">
-                <thead className="bg-gray-100 text-gray-700 font-semibold">
+                <thead className="bg-gradient-to-r from-indigo-50 via-fuchsia-50 to-sky-50 dark:from-gray-700 dark:via-gray-700 dark:to-gray-700 text-gray-700 dark:text-gray-200 font-semibold">
                   <tr>
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Cash Receipt</th>

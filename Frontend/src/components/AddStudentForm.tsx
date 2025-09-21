@@ -226,7 +226,7 @@ const AddStudentForm: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle changes to react-select dropdowns
+  // Handle changes to react-select dropdowns (excluding shiftId which has its own handler)
   const handleSelectChange = (name: keyof FormData, option: SelectOption | ShiftOption | null) => {
     const value = option ? option.value : null;
     if (name === 'branchId') {
@@ -245,7 +245,6 @@ const AddStudentForm: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         seatId: value,
-        shiftIds: [],
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -358,9 +357,10 @@ const AddStudentForm: React.FC = () => {
       !formData.phone ||
       formData.branchId === null ||
       !formData.membershipStart ||
-      !formData.membershipEnd
+      !formData.membershipEnd ||
+      formData.shiftIds.length === 0
     ) {
-      toast.error('Please fill in all required fields (Name, Phone, Branch, Membership Start, Membership End)');
+      toast.error('Please fill in all required fields (Name, Phone, Branch, Membership Start, Membership End, Shift)');
       return;
     }
 

@@ -177,6 +177,19 @@ const SeatsPage = () => {
     return seat.seatNumber.includes(searchQuery);
   });
 
+  // Derive simple contextual stats for the current filter/selection
+  const totalSeats = filteredSeats.length;
+  const assignedSeats = selectedShiftId
+    ? filteredSeats.filter(seat => seat.shifts.some(s => s.shiftId === selectedShiftId && s.isAssigned)).length
+    : filteredSeats.filter(seat => seat.shifts.some(s => s.isAssigned)).length;
+  const availableSeats = selectedShiftId
+    ? filteredSeats.filter(seat => {
+        const sh = seat.shifts.find(s => s.shiftId === selectedShiftId);
+        // If no record for this shift, treat as available
+        return !sh || (sh && !sh.isAssigned);
+      }).length
+    : filteredSeats.filter(seat => seat.shifts.some(s => !s.isAssigned) || seat.shifts.length === 0).length;
+
   if (authLoading) {
     return (
       <div className="flex min-h-screen justify-center items-center">
@@ -196,20 +209,21 @@ const SeatsPage = () => {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-200">Seat Assignments</h1>
                 <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-1">Manage library seat availability</p>
+                <div className="mt-3 h-2 rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-sky-500 dark:from-indigo-600 dark:via-fuchsia-600 dark:to-sky-600 shadow-sm ring-1 ring-white/30" />
               </div>
-              <button onClick={() => navigate(-1)} className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
+              <button onClick={() => navigate(-1)} className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors">
                 <ArrowLeft size={20} className="mr-1" /> Back
               </button>
             </div>
 
             <div className="mb-4 flex flex-wrap gap-4">
-              <div>
-                <label htmlFor="branch-select" className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Filter by Branch:</label>
+              <div className="rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-2 shadow-sm ring-1 ring-indigo-100/80 dark:ring-indigo-900/40 hover:ring-indigo-300/60 transition">
+                <label htmlFor="branch-select" className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 mr-2">Branch</label>
                 <select
                   id="branch-select"
                   value={selectedBranchId ?? ''}
                   onChange={(e) => setSelectedBranchId(e.target.value ? parseInt(e.target.value, 10) : null)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="border border-indigo-200 dark:border-indigo-700 rounded-md px-3 py-2 text-sm bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm"
                 >
                   <option value="">All Branches</option>
                   {branches.map((branch) => (
@@ -217,28 +231,46 @@ const SeatsPage = () => {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Search Seat:</label>
+              <div className="rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 p-2 shadow-sm ring-1 ring-cyan-100/80 dark:ring-cyan-900/40 hover:ring-cyan-300/60 transition">
+                <label className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 mr-2">Search</label>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Enter seat number"
-                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  className="border border-cyan-200 dark:border-cyan-700 rounded-md px-3 py-2 text-sm bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-cyan-400 focus:outline-none shadow-sm"
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Filter by Shift:</label>
+              <div className="rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 p-2 shadow-sm ring-1 ring-sky-100/80 dark:ring-sky-900/40 hover:ring-sky-300/60 transition">
+                <label className="text-xs font-semibold text-sky-700 dark:text-sky-300 mr-2">Shift</label>
                 <select
                   value={selectedShiftId ?? ''}
                   onChange={(e) => setSelectedShiftId(e.target.value ? parseInt(e.target.value, 10) : null)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm"
+                  className="border border-sky-200 dark:border-sky-700 rounded-md px-3 py-2 text-sm bg-white/95 dark:bg-gray-800/95 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-sky-400 focus:outline-none shadow-sm"
                 >
                   <option value="">All Shifts</option>
                   {schedules.map((schedule) => (
                     <option key={schedule.id} value={schedule.id}>{schedule.title}</option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Contextual Stats */}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-gray-800 dark:to-gray-800 border border-indigo-200/70 dark:border-gray-700/70 ring-1 ring-indigo-100/60 shadow">
+                <span className="text-xs font-medium text-gray-500">Total</span>
+                <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{totalSeats}</span>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-300 dark:border-emerald-800/70 ring-1 ring-emerald-200/70 shadow">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Available</span>
+                <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{availableSeats}</span>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 bg-gradient-to-r from-rose-100 to-pink-100 dark:from-rose-900/20 dark:to-pink-900/20 border border-rose-300 dark:border-rose-800/70 ring-1 ring-rose-200/70 shadow">
+                <span className="h-2 w-2 rounded-full bg-rose-500" />
+                <span className="text-xs font-medium text-rose-700 dark:text-rose-300">Assigned</span>
+                <span className="text-sm font-semibold text-rose-700 dark:text-rose-300">{assignedSeats}</span>
               </div>
             </div>
 
@@ -253,30 +285,79 @@ const SeatsPage = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                 {filteredSeats.map((seat) => (
-                    <div key={seat.id} className="p-3 border rounded-lg shadow-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Seat {seat.seatNumber}</h3>
-                        <button onClick={() => handleDeleteSeat(seat.id)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-800/50">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                      {seat.shifts.length === 0 ? (
-                        <p className="text-gray-500 dark:text-gray-400 text-xs">No shifts available.</p>
-                      ) : (
-                        <div className="max-h-40 overflow-y-auto space-y-1">
-                          {seat.shifts.map((shift) => (
-                            <div key={shift.shiftId} className={`flex items-center gap-1 p-1 rounded-md text-xs ${shift.isAssigned ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-500' : 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'}`}>
-                              <span className="flex-1 truncate">
-                                {shift.shiftTitle}
-                                {shift.description && ` (${shift.description})`}
-                              </span>
-                              {shift.isAssigned && shift.studentName && <span className="text-[15px] italic truncate">{shift.studentName}</span>}
-                            </div>
-                          ))}
+                  <div
+                    key={seat.id}
+                    className="rounded-2xl p-[3px] bg-gradient-to-br from-indigo-600/80 via-fuchsia-600/80 to-sky-500/80 hover:from-indigo-600/90 hover:via-fuchsia-600/90 hover:to-sky-500/90 transition-colors hover:shadow-xl shadow-lg"
+                  >
+                    <div className={`rounded-[14px] border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all min-h-[180px] overflow-hidden 
+                      ${(() => {
+                        const assigned = selectedShiftId
+                          ? seat.shifts.some(s => s.shiftId === selectedShiftId && s.isAssigned)
+                          : seat.shifts.some(s => s.isAssigned);
+                        return assigned 
+                          ? 'bg-gradient-to-b from-rose-100 to-rose-200 dark:from-gray-800 dark:to-gray-800'
+                          : 'bg-gradient-to-b from-emerald-100 to-emerald-200 dark:from-gray-800 dark:to-gray-800';
+                      })()}
+                    `}>
+                      {(() => {
+                        const assigned = selectedShiftId
+                          ? seat.shifts.some(s => s.shiftId === selectedShiftId && s.isAssigned)
+                          : seat.shifts.some(s => s.isAssigned);
+                        const bandClass = assigned
+                          ? 'from-rose-600 to-pink-600'
+                          : 'from-emerald-600 to-teal-600';
+                        const labelText = assigned ? 'Assigned' : 'Available';
+                        return (
+                          <div className={`h-9 rounded-t-[14px] bg-gradient-to-r ${bandClass} flex items-center justify-between px-3 text-white`}>
+                            <span className="text-sm font-semibold">Seat {seat.seatNumber}</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/20 border border-white/30">{labelText}</span>
+                          </div>
+                        );
+                      })()}
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {/* Secondary small chip retained for quick scanning */}
+                            {(() => {
+                              const hasAssignedForSelected = selectedShiftId ? seat.shifts.some(s => s.shiftId === selectedShiftId && s.isAssigned) : seat.shifts.some(s => s.isAssigned);
+                              return hasAssignedForSelected ? (
+                                <span className="text-[11px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 ring-1 ring-rose-200/70 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800">Assigned</span>
+                              ) : (
+                                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300 ring-1 ring-emerald-200/70 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">Available</span>
+                              );
+                            })()}
+                          </div>
+                          <button onClick={() => handleDeleteSeat(seat.id)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-800/50">
+                            <Trash2 size={14} />
+                          </button>
                         </div>
-                      )}
+                        {seat.shifts.length === 0 ? (
+                          <p className="text-gray-500 dark:text-gray-400 text-xs">No shifts available.</p>
+                        ) : (
+                          <div className="max-h-40 overflow-y-auto space-y-1">
+                            {seat.shifts.map((shift) => (
+                              <div
+                                key={shift.shiftId}
+                                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs border ${shift.isAssigned
+                                  ? 'bg-rose-200/90 dark:bg-red-900/30 text-rose-800 dark:text-red-300 border-rose-300 dark:border-red-800 ring-1 ring-rose-200/70'
+                                  : 'bg-emerald-200/90 dark:bg-green-900/30 text-emerald-800 dark:text-green-300 border-emerald-300 dark:border-green-800 ring-1 ring-emerald-200/70'}`}
+                              >
+                                <span className={`h-1.5 w-1.5 rounded-full ${shift.isAssigned ? 'bg-rose-500' : 'bg-emerald-600'}`} />
+                                <span className="flex-1 truncate">
+                                  {shift.shiftTitle}
+                                  {shift.description && ` (${shift.description})`}
+                                </span>
+                                {shift.isAssigned && shift.studentName && (
+                                  <span className="text-[11px] font-medium truncate">{shift.studentName}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
               </div>
             )}
 
@@ -297,7 +378,7 @@ const SeatsPage = () => {
                 </div>
                 <button
                   onClick={handleAddSeats}
-                  className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 text-white px-4 py-2 rounded-md shadow-md hover:from-violet-500 hover:via-fuchsia-400 hover:to-sky-400 focus:ring-2 focus:ring-violet-300 ring-1 ring-white/20 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isAdding || !newSeatNumbers.trim() || !selectedBranchId}
                 >
                   {isAdding ? (<><Loader2 size={16} className="animate-spin" /> Adding...</>) : (<><PlusCircle size={16} /> Add Seats</>)}

@@ -6,6 +6,7 @@ import AnnouncementForm from '../components/AnnouncementForm';
 import { useIsMobile } from '../hooks/use-mobile';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import MobileNav from '../components/MobileNav';
+import { Grid, Rows3, PanelTop } from 'lucide-react';
 
 // Match the camelCase Announcement shape used by list and form
 interface Announcement {
@@ -31,6 +32,8 @@ const Announcements: React.FC = () => {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | undefined>();
   // A simple and effective trigger to force the list to refetch data after a change
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  // View mode for list rendering
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'compact'>(isMobile ? 'grid' : 'grid');
 
   // Dummy state for sidebar - assuming these exist from your original setup
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -75,11 +78,20 @@ const Announcements: React.FC = () => {
           </button>
         </header>
         <main className="p-4 pb-24">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-xs text-slate-500">View</div>
+            <div className="flex bg-slate-100 rounded-lg p-1">
+              <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md text-sm ${viewMode==='list'?'bg-white text-indigo-600 shadow-sm':'text-gray-600'}`}><Rows3 className="h-4 w-4"/></button>
+              <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md text-sm ${viewMode==='grid'?'bg-white text-indigo-600 shadow-sm':'text-gray-600'}`}><Grid className="h-4 w-4"/></button>
+              <button onClick={() => setViewMode('compact')} className={`px-3 py-1.5 rounded-md text-sm ${viewMode==='compact'?'bg-white text-indigo-600 shadow-sm':'text-gray-600'}`}><PanelTop className="h-4 w-4"/></button>
+            </div>
+          </div>
           <AnnouncementList
             key={refreshTrigger}
             isAdmin={true}
             onEdit={handleEdit}
             onAdd={handleAdd}
+            viewMode={viewMode}
           />
         </main>
         <MobileNav />
@@ -97,18 +109,27 @@ const Announcements: React.FC = () => {
   // Desktop layout remains unchanged
   return (
     <div className="flex h-screen bg-gray-50/50">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
 
       <div className="flex flex-col flex-1">
         <Navbar />
 
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-slate-600">View</div>
+              <div className="flex bg-slate-100 rounded-lg p-1">
+                <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md text-sm ${viewMode==='list'?'bg-white text-indigo-600 shadow-sm':'text-gray-600'}`}><Rows3 className="h-4 w-4"/></button>
+                <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md text-sm ${viewMode==='grid'?'bg-white text-indigo-600 shadow-sm':'text-gray-600'}`}><Grid className="h-4 w-4"/></button>
+                <button onClick={() => setViewMode('compact')} className={`px-3 py-1.5 rounded-md text-sm ${viewMode==='compact'?'bg-white text-indigo-600 shadow-sm':'text-gray-600'}`}><PanelTop className="h-4 w-4"/></button>
+              </div>
+            </div>
             <AnnouncementList
               key={refreshTrigger}
               isAdmin={true}
               onEdit={handleEdit}
               onAdd={handleAdd}
+              viewMode={viewMode}
             />
           </div>
         </main>

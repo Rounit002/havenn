@@ -153,17 +153,18 @@ const LockerManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={handleBarcodeClick} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 sm:mb-6">Locker Management</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 sm:mb-3 text-gray-800 dark:text-gray-100">Locker Management</h1>
+            <div className="mb-6 h-2 rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-sky-500 dark:from-indigo-600 dark:via-fuchsia-600 dark:to-sky-600 shadow-sm ring-1 ring-white/30" />
 
             {/* Branch Selector */}
             <div className="mb-6 max-w-sm">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Branch</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Branch</label>
               <Select
                 options={branchOptions}
                 value={selectedBranch}
@@ -174,7 +175,7 @@ const LockerManagement: React.FC = () => {
             </div>
 
             {/* Create/Edit Locker Form */}
-            <div className={`mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-4 ${!selectedBranch ? 'opacity-50' : ''}`}>
+            <div className={`mb-6 bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 ring-1 ring-indigo-100/70 dark:ring-indigo-900/40 ${!selectedBranch ? 'opacity-50' : ''}`}>
               <h2 className="text-lg font-medium mb-4">{editingLocker ? `Editing Locker: ${editingLocker.lockerNumber}` : 'Add New Locker'}</h2>
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                 <input
@@ -182,7 +183,7 @@ const LockerManagement: React.FC = () => {
                   value={newLockerData.lockerNumber}
                   onChange={(e) => setNewLockerData(prev => ({ ...prev, lockerNumber: e.target.value }))}
                   placeholder="Enter locker number"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  className="flex-1 px-4 py-2 border border-indigo-200 dark:border-indigo-700 rounded-lg bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 shadow-sm"
                   disabled={!selectedBranch && !editingLocker}
                 />
                 {editingLocker && (
@@ -196,15 +197,15 @@ const LockerManagement: React.FC = () => {
                 )}
                 {editingLocker ? (
                   <div className="flex gap-2 sm:gap-3">
-                    <button onClick={handleUpdateLocker} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <button onClick={handleUpdateLocker} className="flex items-center px-4 py-2 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 text-white rounded-md shadow-md hover:from-violet-500 hover:via-fuchsia-400 hover:to-sky-400 focus:ring-2 focus:ring-violet-300 ring-1 ring-white/20">
                       <Save size={16} className="mr-2" /> Save
                     </button>
-                    <button onClick={cancelEdit} className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    <button onClick={cancelEdit} className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                       <X size={16} className="mr-2" /> Cancel
                     </button>
                   </div>
                 ) : (
-                  <button onClick={handleCreateLocker} disabled={!selectedBranch} className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400">
+                  <button onClick={handleCreateLocker} disabled={!selectedBranch} className="flex items-center px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-md shadow-md hover:from-emerald-500 hover:to-teal-400 disabled:bg-gray-400">
                     <Plus size={16} className="mr-2" /> Add Locker
                   </button>
                 )}
@@ -213,10 +214,10 @@ const LockerManagement: React.FC = () => {
             </div>
 
             {/* Locker List */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
+            <div className="bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-x-auto">
               <table className="w-full min-w-[640px]">
                 <thead>
-                  <tr className="bg-gray-50">
+                  <tr className="bg-gradient-to-r from-indigo-50 via-amber-50 to-rose-50 dark:from-gray-700 dark:via-gray-700 dark:to-gray-700">
                     <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500">Locker Number</th>
                     <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500">Branch</th>
                     <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500">Status</th>
@@ -240,10 +241,10 @@ const LockerManagement: React.FC = () => {
                         <td className="px-4 sm:px-6 py-4 text-gray-600">{locker.studentName || 'N/A'}</td>
                         <td className="px-4 sm:px-6 py-4">
                           <div className="flex gap-3 sm:gap-4">
-                            <button onClick={() => startEdit(locker)} className="text-blue-600 hover:text-blue-800" title="Edit Locker">
+                            <button onClick={() => startEdit(locker)} className="px-2 py-1 text-xs rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800" title="Edit Locker">
                               <Edit size={16} />
                             </button>
-                            <button onClick={() => handleDeleteLocker(locker.id)} className="text-red-600 hover:text-red-800" title="Delete Locker">
+                            <button onClick={() => handleDeleteLocker(locker.id)} className="px-2 py-1 text-xs rounded-md bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800" title="Delete Locker">
                               <Trash2 size={16} />
                             </button>
                           </div>

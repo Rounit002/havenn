@@ -46,47 +46,47 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex flex-col bg-white">
+    <div className="flex flex-col bg-gradient-to-br from-slate-50 via-white to-indigo-50">
       {/* Subscription status banner */}
       {user?.is_trial && daysLeft !== null && daysLeft > 0 && (
-        <div className="bg-green-100 border-b border-green-400 text-green-700 px-4 py-2 text-center text-sm font-medium">
+        <div className="bg-emerald-50 border-b border-emerald-200 text-emerald-700 px-4 py-2 text-center text-sm font-medium">
           🟢 {subscriptionPlanName} Active – {daysLeft} Days Left
         </div>
       )}
       {user?.is_subscription_active && !user?.is_trial && (
-        <div className="bg-blue-100 border-b border-blue-400 text-blue-700 px-4 py-2 text-center text-sm font-medium">
+        <div className="bg-indigo-50 border-b border-indigo-200 text-indigo-700 px-4 py-2 text-center text-sm font-medium">
           🔵 {subscriptionPlanName} Active
         </div>
       )}
       {!user?.is_subscription_active && !user?.is_trial && user?.role === 'admin' && (
-        <div className="bg-yellow-100 border-b border-yellow-400 text-yellow-700 px-4 py-2 text-center text-sm font-medium">
+        <div className="bg-amber-50 border-b border-amber-200 text-amber-700 px-4 py-2 text-center text-sm font-medium">
           ⚠️ No Active Subscription – <a href="/subscription-plans" className="underline font-bold">Subscribe Now</a>
         </div>
       )}
-      <div className="flex items-center justify-between py-2 px-4 border-b border-gray-200">
+      <div className="flex items-center justify-between py-2 px-4 border-b border-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-sm">
         <div className="flex-1 max-w-md">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/80 h-4 w-4" />
             <input 
               type="text" 
               placeholder="Search..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-300"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-white/30 bg-white/20 placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-white/60"
             />
           </div>
         </div>
       
         <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full hover:bg-gray-100">
-            <Bell className="h-5 w-5 text-gray-600" />
+          <button className="p-2 rounded-full hover:bg-white/10">
+            <Bell className="h-5 w-5 text-white" />
           </button>
           
           <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-full bg-purple-600 flex items-center justify-center text-white">
+            <div className="h-9 w-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white">
               {user && user.username ? user.username.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="hidden md:block">
               <p className="text-sm font-medium">{user?.username || 'User'}</p>
-              <button onClick={handleLogout} className="text-xs text-gray-500 hover:text-purple-600">
+              <button onClick={handleLogout} className="text-xs text-white/80 hover:text-white">
                 Sign out
               </button>
             </div>

@@ -268,7 +268,7 @@ const Expenses: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#fef9f6]">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {loading ? (
@@ -281,24 +281,25 @@ const Expenses: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <motion.h1
-              className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2"
+              className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
               💸 Expenses
             </motion.h1>
+            <div className="mb-6 h-2 rounded-full bg-gradient-to-r from-indigo-500 via-amber-500 to-rose-500 dark:from-indigo-600 dark:via-amber-600 dark:to-rose-600 shadow-sm ring-1 ring-white/30" />
             <motion.div
-              className="bg-white shadow-md rounded-lg p-6 mb-4"
+              className="bg-white/95 dark:bg-gray-800/95 shadow-sm rounded-xl p-6 mb-4 border border-gray-200 dark:border-gray-700 ring-1 ring-indigo-100/70 dark:ring-indigo-900/40"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15 }}
             >
-              <label className="block text-gray-700 font-semibold mb-2">Filter by Branch</label>
+              <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Filter by Branch</label>
               <select
                 value={selectedBranchId ?? ''}
                 onChange={handleBranchChange}
-                className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 rounded-md"
+                className="w-full sm:w-1/3 px-4 py-2 border border-indigo-200 dark:border-indigo-700 rounded-md bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 shadow-sm"
               >
                 <option value="">All Branches</option>
                 {branches.map(branch => (
@@ -309,7 +310,7 @@ const Expenses: React.FC = () => {
               </select>
             </motion.div>
             <motion.div
-              className="bg-white shadow-md rounded-lg p-6 mb-8"
+              className="bg-white/95 dark:bg-gray-800/95 shadow-sm rounded-xl p-6 mb-8 border border-gray-200 dark:border-gray-700 ring-1 ring-indigo-100/70 dark:ring-indigo-900/40"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15 }}
@@ -320,7 +321,7 @@ const Expenses: React.FC = () => {
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-4 py-2 border border-indigo-200 dark:border-indigo-700 rounded-md bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 shadow-sm"
                 >
                   <option value="">Select Title</option>
                   {products.map(product => (
@@ -335,7 +336,7 @@ const Expenses: React.FC = () => {
                     value={customTitle}
                     onChange={handleCustomTitleChange}
                     placeholder="Enter custom title"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-4 py-2 border border-cyan-200 dark:border-cyan-700 rounded-md bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-300 shadow-sm"
                   />
                 )}
                 <input
@@ -345,7 +346,7 @@ const Expenses: React.FC = () => {
                   onChange={handleChange}
                   placeholder="Amount"
                   step="0.01"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-4 py-2 border border-emerald-200 dark:border-emerald-700 rounded-md bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-sm"
                 />
                 <input
                   type="text"
@@ -353,20 +354,20 @@ const Expenses: React.FC = () => {
                   value={formData.remark}
                   onChange={handleChange}
                   placeholder="Remark"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-4 py-2 border border-violet-200 dark:border-violet-700 rounded-md bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-300 shadow-sm"
                 />
                 <input
                   type="date"
                   name="date"
                   value={formData.date}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-4 py-2 border border-sky-200 dark:border-sky-700 rounded-md bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-300 shadow-sm"
                 />
                 <select
                   name="branchId"
                   value={formData.branchId}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-4 py-2 border border-emerald-200 dark:border-emerald-700 rounded-md bg-white/95 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-sm"
                 >
                   <option value="">Select Branch (Optional)</option>
                   {branches.map(branch => (
@@ -379,14 +380,14 @@ const Expenses: React.FC = () => {
               <div className="mt-4 flex justify-end space-x-2">
                 <button
                   onClick={handleSubmit}
-                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
+                  className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-sky-500 text-white px-6 py-2 rounded-md shadow-md hover:from-violet-500 hover:via-fuchsia-400 hover:to-sky-400 focus:ring-2 focus:ring-violet-300 ring-1 ring-white/20 transition"
                 >
                   {editingExpense ? 'Update Expense' : 'Add Expense'}
                 </button>
                 {editingExpense && (
                   <button
                     onClick={() => setEditingExpense(null)}
-                    className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition"
+                    className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition"
                   >
                     Cancel
                   </button>
@@ -409,9 +410,9 @@ const Expenses: React.FC = () => {
                     <h2 className={`text-xl font-semibold mb-4 ${isHighlighted ? 'text-blue-800' : 'text-gray-800'}`}>
                       {monthYear} {isHighlighted && '🎯'}
                     </h2>
-                    <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+                    <div className="overflow-x-auto bg-white/95 dark:bg-gray-800/95 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
                       <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100 text-gray-700 font-semibold">
+                        <thead className="bg-gradient-to-r from-indigo-50 via-amber-50 to-rose-50 dark:from-gray-700 dark:via-gray-700 dark:to-gray-700 text-gray-700 dark:text-gray-200 font-semibold">
                           <tr>
                             <th className="py-3 px-4 text-left">Title</th>
                             <th className="py-3 px-4 text-left">Amount</th>
@@ -428,7 +429,7 @@ const Expenses: React.FC = () => {
                               initial={{ opacity: 0, y: 6 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: 0.25 + idx * 0.02 }}
-                              className="hover:bg-gray-50 transition"
+                              className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
                             >
                               <td className="py-3 px-4 border-b">{expense.title || 'Untitled'}</td>
                               <td className="py-3 px-4 border-b">{(expense.amount || 0).toFixed(2)}</td>
@@ -436,18 +437,20 @@ const Expenses: React.FC = () => {
                               <td className="py-3 px-4 border-b">{formatDate(expense.date)}</td>
                               <td className="py-3 px-4 border-b">{getBranchName(expense)}</td>
                               <td className="py-3 px-4 border-b">
-                                <button
-                                  onClick={() => handleEdit(expense)}
-                                  className="text-blue-600 hover:underline mr-2"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(expense.id)}
-                                  className="text-red-600 hover:underline"
-                                >
-                                  Delete
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleEdit(expense)}
+                                    className="px-2 py-1 text-xs rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(expense.id)}
+                                    className="px-2 py-1 text-xs rounded-md bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
                               </td>
                             </motion.tr>
                           ))}

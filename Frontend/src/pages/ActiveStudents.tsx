@@ -3,9 +3,9 @@ import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import api from '../services/api';
-import { Search, ChevronLeft, ChevronRight, Trash2, Eye, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Trash2, Eye, ChevronUp, ChevronDown, Grid, Rows3, Phone, Armchair, Calendar, Users, UserCheck, AlertTriangle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 // Define the Student type with the dynamic status field
 interface Student {
@@ -44,12 +44,14 @@ const ActiveStudents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [studentsPerPage, setStudentsPerPage] = useState(10);
   const [isCollapsed, setIsCollapsed] = useState(false); // Added for Sidebar
+  const [viewMode, setViewMode] = useState<'list' | 'card'>('card');
   
   // Sorting state
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -165,6 +167,41 @@ const ActiveStudents = () => {
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
+        {/* Sub Navigation */}
+        <div className="border-b bg-white/80 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex gap-3 overflow-x-auto py-3">
+              <Link
+                to="/students"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm md:text-base font-medium shadow-sm bg-gradient-to-r from-indigo-50 via-sky-50 to-indigo-100 text-indigo-700 ring-1 ring-indigo-200/50 ${location.pathname.startsWith('/students') && !location.pathname.startsWith('/students/') ? 'ring-2 ring-indigo-300' : ''}`}
+              >
+                <Users className="h-4 w-4" />
+                All Students
+              </Link>
+              <Link
+                to="/active-students"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm md:text-base font-medium shadow-sm bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100 text-emerald-700 ring-1 ring-emerald-200/50 ${location.pathname.startsWith('/active-students') ? 'ring-2 ring-emerald-300' : ''}`}
+              >
+                <UserCheck className="h-4 w-4" />
+                Active Students
+              </Link>
+              <Link
+                to="/expired-memberships"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm md:text-base font-medium shadow-sm bg-gradient-to-r from-rose-50 via-pink-50 to-rose-100 text-rose-700 ring-1 ring-rose-200/50 ${location.pathname.startsWith('/expired-memberships') ? 'ring-2 ring-rose-300' : ''}`}
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Expired Memberships
+              </Link>
+              <Link
+                to="/expiring-memberships?range=1-2"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm md:text-base font-medium shadow-sm bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100 text-amber-700 ring-1 ring-amber-200/50 ${location.pathname.startsWith('/expiring-memberships') ? 'ring-2 ring-amber-300' : ''}`}
+              >
+                <Clock className="h-4 w-4" />
+                Expiring 1–2 Days
+              </Link>
+            </div>
+          </div>
+        </div>
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
             <div className="mb-6">
@@ -172,8 +209,28 @@ const ActiveStudents = () => {
               <p className="text-gray-500">Manage all your active students</p>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0">
-                <h3 className="text-lg font-medium">Active Students List</h3>
+              <div className="p-4 border-b border-gray-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 w-full">
+                  <h3 className="text-lg font-medium flex-1">Active Students</h3>
+                  <div className="flex bg-slate-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'}`}
+                      title="List View"
+                    >
+                      <Rows3 className="h-4 w-4" />
+                      <span className="hidden sm:inline">List</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('card')}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm ${viewMode === 'card' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'}`}
+                      title="Card View"
+                    >
+                      <Grid className="h-4 w-4" />
+                      <span className="hidden sm:inline">Cards</span>
+                    </button>
+                  </div>
+                </div>
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <input
@@ -185,10 +242,10 @@ const ActiveStudents = () => {
                   />
                 </div>
               </div>
-              {loading ? (
-                <div className="flex justify-center p-8">Loading active students...</div>
-              ) : (
-                <>
+              {viewMode === 'list' ? (
+                loading ? (
+                  <div className="flex justify-center p-8">Loading active students...</div>
+                ) : (
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
@@ -296,7 +353,49 @@ const ActiveStudents = () => {
                       </TableBody>
                     </Table>
                   </div>
-                </>
+                )
+              ) : (
+                <div className="p-4">
+                  {loading ? (
+                    <div className="text-center text-gray-500 py-8">Loading active students...</div>
+                  ) : currentStudents.length > 0 ? (
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
+                      {currentStudents.map((student: Student) => (
+                        <div key={student.id} className="rounded-xl border shadow-md p-4 flex flex-col h-full bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100 border-emerald-200 ring-1 ring-white/60 transition-transform duration-200 ease-out transform-gpu will-change-transform hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.5deg]">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h4 className="font-semibold text-gray-800">{student.name}</h4>
+                              <p className="text-xs text-gray-500 flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-indigo-400"/> Reg: {student.registrationNumber || 'N/A'}</p>
+                            </div>
+                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Active</span>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-gray-700">
+                            <div className="rounded-lg p-3 bg-white/70 border border-white/60">
+                              <div className="text-[11px] uppercase tracking-wide text-slate-600 flex items-center gap-1"><Phone className="h-3.5 w-3.5 text-slate-400"/> Phone</div>
+                              <div className="mt-0.5 font-semibold text-slate-800">{student.phone}</div>
+                            </div>
+                            <div className="rounded-lg p-3 bg-white/70 border border-white/60">
+                              <div className="text-[11px] uppercase tracking-wide text-slate-600 flex items-center gap-1"><Armchair className="h-3.5 w-3.5 text-slate-400"/> Seat</div>
+                              <div className="mt-0.5 font-semibold text-slate-800">{student.seatNumber || student.assignments?.[0]?.seatNumber || 'N/A'}</div>
+                            </div>
+                            <div className="rounded-lg p-3 bg-white/70 border border-white/60 col-span-2">
+                              <div className="text-[11px] uppercase tracking-wide text-slate-600 flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-slate-400"/> Membership End</div>
+                              <div className="mt-0.5 font-semibold text-slate-800">{formatDate(student.membershipEnd)}</div>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => handleViewDetails(student.id)} className="text-blue-600 hover:text-blue-800 p-2 rounded hover:bg-blue-50" title="View Details"><Eye size={16} /></button>
+                              <button onClick={() => handleDelete(student.id)} className="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50" title="Delete"><Trash2 size={16} /></button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500 py-8">No active students found.</div>
+                  )}
+                </div>
               )}
               {!loading && filteredStudents.length > 0 && (
                 <div className="flex flex-col md:flex-row items-center justify-between border-t border-gray-200 px-6 py-3 space-y-2 md:space-y-0">

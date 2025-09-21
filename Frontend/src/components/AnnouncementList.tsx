@@ -36,6 +36,7 @@ interface AnnouncementListProps {
   branchId?: number;
   onEdit?: (announcement: Announcement) => void;
   onAdd?: () => void;
+  viewMode?: 'list' | 'grid' | 'compact';
 }
 
 // --- Helper Components ---
@@ -75,7 +76,8 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
   isAdmin = false, 
   branchId,
   onEdit,
-  onAdd 
+  onAdd,
+  viewMode = 'list'
 }) => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,8 +153,20 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
     return <LoadingSpinner />;
   }
 
+  const isGrid = viewMode !== 'list';
+  const cardBaseClasses = "rounded-xl border shadow-md transition-transform duration-200 ease-out transform-gpu will-change-transform ring-1 ring-white/20 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:rotate-[1.25deg] overflow-hidden text-white";
+  const pickGradient = (ann: Announcement) => {
+    // Strong, dashboard-like gradients
+    if (ann.isGlobal) return 'bg-gradient-to-br from-indigo-500 to-violet-600 border-transparent';
+    // Branch-specific: alternate by id for visual interest
+    const mod = ann.id % 3;
+    if (mod === 0) return 'bg-gradient-to-br from-emerald-500 to-teal-600 border-transparent';
+    if (mod === 1) return 'bg-gradient-to-br from-amber-500 to-orange-600 border-transparent';
+    return 'bg-gradient-to-br from-rose-500 to-red-600 border-transparent';
+  };
+
   return (
-    <div className="space-y-6">
+    <div className={isGrid ? "space-y-6" : "space-y-6"}>
       {/* Page Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -178,22 +192,21 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
       {announcements.length === 0 ? (
         <EmptyState isAdmin={isAdmin} onAdd={onAdd} />
       ) : (
-        <div className="space-y-4">
+        <div className={isGrid ? "grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "space-y-4"}>
           {announcements.map((ann) => (
             <div
               key={ann.id}
-              className={`bg-white border rounded-xl shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden ${
-                !ann.isActive ? 'opacity-60 bg-gray-50' : 'border-gray-200'
-              }`}
+              className={`${cardBaseClasses} ${pickGradient(ann)} ${!ann.isActive ? 'opacity-90' : ''}`}
             >
               {/* Card Header with Status and Actions */}
-              <div className="p-5 border-b border-gray-200 flex justify-between items-start gap-4">
+              <div className={`${viewMode === 'compact' ? 'p-3' : 'p-5'} border-b border-white/20 flex justify-between items-start gap-4`}
+              >
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800">
+                  <h3 className={`${viewMode === 'compact' ? 'text-lg' : 'text-xl'} font-bold text-white`}>
                     {ann.title}
                   </h3>
                   {!ann.isActive && (
-                    <span className="text-xs font-medium bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full mt-2 inline-block">
+                    <span className="text-xs font-medium bg-white/20 text-white px-2 py-0.5 rounded-full mt-2 inline-block border border-white/20">
                       Inactive
                     </span>
                   )}
@@ -202,7 +215,7 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
                   <div className="flex space-x-1 flex-shrink-0">
                     <button
                       onClick={() => onEdit && onEdit(ann)}
-                      className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                      className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors"
                       title="Edit announcement"
                     >
                       <Edit className="h-5 w-5" />
@@ -210,11 +223,11 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
                     <button
                       onClick={() => handleDelete(ann.id)}
                       disabled={deletingId === ann.id}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                      className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors disabled:opacity-50"
                       title="Delete announcement"
                     >
                        {deletingId === ann.id ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       ) : (
                         <Trash2 className="h-5 w-5" />
                       )}
@@ -224,12 +237,13 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
               </div>
 
               {/* Card Content */}
-              <div className="p-5 text-gray-600 text-base leading-relaxed whitespace-pre-wrap">
+              <div className={`${viewMode === 'compact' ? 'p-3' : 'p-5'} text-white/95 text-base leading-relaxed whitespace-pre-wrap`}>
                 {ann.content}
               </div>
 
               {/* Card Footer with Metadata */}
-              <div className="px-5 py-4 bg-gray-50/70 border-t border-gray-200 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-500">
+              <div className={`${viewMode === 'compact' ? 'px-3 py-3' : 'px-5 py-4'} bg-white/10 border-t border-white/20 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-white/90`}
+              >
                 <div className="flex items-center space-x-2" title="Author">
                   <User className="h-4 w-4" />
                   <span>{ann.createdByName}</span>
@@ -239,14 +253,14 @@ const AnnouncementList: React.FC<AnnouncementListProps> = ({
                   <span>{formatDate(ann.createdAt)}</span>
                 </div>
                 <div className="flex items-center space-x-2" title={ann.isGlobal ? "Global Announcement" : `Branch: ${ann.branchName || 'Unknown'}` }>
-                  {ann.isGlobal ? <Globe className="h-4 w-4 text-blue-500" /> : <MapPin className="h-4 w-4 text-green-500" />}
+                  {ann.isGlobal ? <Globe className="h-4 w-4 text-white" /> : <MapPin className="h-4 w-4 text-white" />}
                   <span>
                     {ann.isGlobal ? 'Global' : (ann.branchName ? `Branch: ${ann.branchName}` : 'Branch Specific')}
                   </span>
                 </div>
                 {(ann.startDate || ann.endDate) && (
                   <div className="flex items-center space-x-2" title="Active Dates">
-                    <Clock className="h-4 w-4 text-orange-500" />
+                    <Clock className="h-4 w-4 text-white" />
                     <span>
                       {formatDate(ann.startDate)} - {formatDate(ann.endDate) || 'Ongoing'}
                     </span>

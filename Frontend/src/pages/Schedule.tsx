@@ -378,10 +378,10 @@ const SchedulePage: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-1 space-y-8">
                   <Card className="shadow-lg border-gray-200 dark:border-gray-700">
-                    <CardHeader>
+                    <CardHeader className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-t-lg">
                       <CardTitle className="flex items-center justify-between">
                         <span>Calendar</span>
-                        <CalendarIcon className="h-5 w-5 text-gray-400" />
+                        <CalendarIcon className="h-5 w-5 text-white" />
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -419,7 +419,7 @@ const SchedulePage: React.FC = () => {
 
                 <div className="lg:col-span-2">
                   <Card className="shadow-lg border-gray-200 dark:border-gray-700">
-                    <CardHeader>
+                    <CardHeader className="bg-gradient-to-br from-sky-500 to-cyan-600 text-white rounded-t-lg">
                       <CardTitle>
                         {selectedDate ? `Events for ${formatDateForDisplay(selectedDate)}` : 'All Upcoming Events'}
                       </CardTitle>
