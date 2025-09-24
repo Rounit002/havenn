@@ -391,9 +391,9 @@ module.exports = (pool) => {
       const assignments = await pool.query(`
         SELECT sa.seat_id, sa.shift_id, seats.seat_number, sch.title AS shift_title
         FROM seat_assignments sa
-        JOIN seats ON sa.seat_id = seats.id
+        LEFT JOIN seats ON sa.seat_id = seats.id
         LEFT JOIN schedules sch ON sa.shift_id = sch.id
-        WHERE sa.student_id = $1 AND seats.library_id = $2
+        WHERE sa.student_id = $1 AND sa.library_id = $2
       `, [id, req.libraryId]);
       res.json({
         ...studentData,
