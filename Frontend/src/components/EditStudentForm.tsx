@@ -5,6 +5,9 @@ import api from '../services/api';
 import Select from 'react-select';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import Sidebar from './Sidebar';
+import Navbar from './Navbar';
+import { UserCog } from 'lucide-react';
 
 interface Student {
   id: number;
@@ -168,6 +171,7 @@ const EditStudentForm: React.FC = () => {
   const [loadingSeats, setLoadingSeats] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const studentId = id ? parseInt(id, 10) : NaN;
   if (isNaN(studentId)) {
@@ -447,22 +451,39 @@ const EditStudentForm: React.FC = () => {
   const dueAmount = effectiveTotalFee - totalAmountPaid;
 
   if (loading) {
-    return <div className="p-6 text-center">Loading...</div>;
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <div className="flex-1 flex items-center justify-center text-gray-600">Loading...</div>
+      </div>
+    );
   }
 
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="flex items-center mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(`/students/${studentId}`)}
-          className="mr-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back
-        </Button>
-        <h1 className="text-2xl font-bold">Edit Student</h1>
-      </div>
-      <div className="space-y-4">
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Navbar />
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md">
+                  <UserCog className="w-5 h-5" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-gray-800">Edit Student</h1>
+                  <Button variant="ghost" onClick={() => navigate(`/students/${studentId}`)} className="ml-2">
+                    <ArrowLeft className="h-4 w-4 mr-2" /> Back
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Content Card */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+              <div className="p-6 space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
           <input
@@ -764,13 +785,17 @@ const EditStudentForm: React.FC = () => {
             </div>
           )}
         </div>
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" onClick={() => navigate(`/students/${studentId}`)} disabled={submitting}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={submitting}>
             {submitting ? 'Updating...' : 'Update Student'}
           </Button>
+        </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

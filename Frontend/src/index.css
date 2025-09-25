@@ -109,3 +109,13 @@
 .stat-card .stat-icon {
   @apply p-2 rounded-lg mb-2;
 }
+
+/* Print utility classes */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

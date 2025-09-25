@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import api from '../services/api';
 import Select from 'react-select';
+import Sidebar from './Sidebar';
+import Navbar from './Navbar';
+import { UserPlus } from 'lucide-react';
 
 // Interface for a Branch
 interface Branch {
@@ -452,13 +455,35 @@ const AddStudentForm: React.FC = () => {
   const effectiveTotalFee = (parseFloat(formData.totalFee) || 0) - (parseFloat(formData.discount) || 0);
   const dueAmount = effectiveTotalFee - totalAmountPaid;
 
+  // Sidebar collapse state
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Add New Student</h1>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      <div className="space-y-4">
-        {/* Form Fields */}
-        <div>
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Navbar />
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">Add New Student</h1>
+                  <p className="text-gray-500 text-sm">Create a new student profile and assign shifts, seats and lockers</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content Card */}
+            {error && <div className="text-red-500 mb-4">{error}</div>}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+              <div className="p-6 space-y-5">
+                {/* Form Fields */}
+                <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
             Name *
           </label>
@@ -807,11 +832,15 @@ const AddStudentForm: React.FC = () => {
         </div>
         <button
           onClick={handleSubmit}
-          className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-200"
+          className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-indigo-700 hover:via-purple-700 hover:to-fuchsia-700 transition-all duration-200 shadow-md hover:shadow-lg"
           disabled={!!error}
         >
           Add Student
         </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

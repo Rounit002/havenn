@@ -18,7 +18,7 @@ import { format, addMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import Select from 'react-select';
+import Select, { MultiValue } from 'react-select';
 
 // Comprehensive Student interface combining details from all pages
 interface Student {
@@ -101,7 +101,7 @@ const ExpiredMemberships = () => {
   const [isShiftsLoading, setIsShiftsLoading] = useState(false);
   const [seatOptions, setSeatOptions] = useState<any[]>([]);
   const [branchOptions, setBranchOptions] = useState<any[]>([]);
-  const [selectedShift, setSelectedShift] = useState<any>(null);
+  const [selectedShifts, setSelectedShifts] = useState<any[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<any>(null);
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const [totalFee, setTotalFee] = useState<string>('');
@@ -228,30 +228,50 @@ const ExpiredMemberships = () => {
     }
   }, [selectedBranch]);
 
-  // Effect to fetch seats when branch or shift changes
+  // Effect to fetch seats when branch or shifts change
   useEffect(() => {
-    if (selectedShift?.value && selectedBranch?.value && selectedStudent) {
+    if (selectedShifts.length > 0 && selectedBranch?.value && selectedStudent) {
       const fetchSeats = async () => {
         try {
-          const response = await api.getSeats({ branchId: selectedBranch.value, shiftId: selectedShift.value });
-          const allSeats: any[] = response.seats || [];
-          const availableSeats = allSeats.filter((seat: any) => {
-            const status = (seat.shifts || []).find((s: any) => s.shiftId === selectedShift.value);
-            return status ? !status.isAssigned : true;
-          });
+          // Get seats for all selected shifts
+          const allAvailableSeats = new Map();
+          
+          for (const shift of selectedShifts) {
+            const response = await api.getSeats({ branchId: selectedBranch.value, shiftId: shift.value });
+            const allSeats: any[] = response.seats || [];
+            const availableSeats = allSeats.filter((seat: any) => {
+              const status = (seat.shifts || []).find((s: any) => s.shiftId === shift.value);
+              return status ? !status.isAssigned : true;
+            });
+            
+            // Add available seats to the map
+            availableSeats.forEach(seat => {
+              if (!allAvailableSeats.has(seat.id)) {
+                allAvailableSeats.set(seat.id, seat);
+              }
+            });
+          }
+          
           // Ensure current assigned seat remains selectable
           const currentAssignment = selectedStudent.assignments?.[0];
-          if (currentAssignment && !availableSeats.some(s => s.id === currentAssignment.seatId)) {
+          if (currentAssignment && !allAvailableSeats.has(currentAssignment.seatId)) {
+            // Fetch all seats to find the current one
+            const response = await api.getSeats({ branchId: selectedBranch.value });
+            const allSeats: any[] = response.seats || [];
             const currentSeat = allSeats.find(s => s.id === currentAssignment.seatId);
-            if (currentSeat) availableSeats.push(currentSeat);
+            if (currentSeat) {
+              allAvailableSeats.set(currentSeat.id, currentSeat);
+            }
           }
 
+          const seatOptionsArray = Array.from(allAvailableSeats.values());
           setSeatOptions([
             { value: null, label: 'None' },
-            ...availableSeats.map((seat: any) => ({ value: seat.id, label: seat.seatNumber }))
+            ...seatOptionsArray.map((seat: any) => ({ value: seat.id, label: seat.seatNumber }))
           ]);
+          
           // Reset seat if the currently selected one is no longer available
-          if (selectedSeat && !availableSeats.some(seat => seat.id === selectedSeat.value)) {
+          if (selectedSeat && !seatOptionsArray.some(seat => seat.id === selectedSeat.value)) {
             setSelectedSeat(null);
           }
         } catch (error) {
@@ -264,7 +284,7 @@ const ExpiredMemberships = () => {
     } else {
       setSeatOptions([]);
     }
-  }, [selectedShift, selectedBranch, selectedStudent]);
+  }, [selectedShifts, selectedBranch, selectedStudent]);
 
   const handleRenewClick = async (student: Student) => {
     try {
@@ -286,13 +306,17 @@ const ExpiredMemberships = () => {
         setAddressInput(fullStudentDetails.address || '');
         setSelectedBranch(fullStudentDetails.branchId ? { value: fullStudentDetails.branchId, label: fullStudentDetails.branchName } : null);
         
-        const currentAssignment = fullStudentDetails.assignments?.[0];
-        setSelectedShift(currentAssignment ? { value: currentAssignment.shiftId, label: currentAssignment.shiftTitle } : null);
+        const currentAssignments = fullStudentDetails.assignments || [];
+        setSelectedShifts(currentAssignments.map(assignment => ({ 
+          value: assignment.shiftId, 
+          label: assignment.shiftTitle 
+        })));
         
-        // This slight delay allows the seat options to populate based on the selected shift
-        // The useEffect for seats will trigger once shift is set, so we can pre-fill the seat.
+        // This slight delay allows the seat options to populate based on the selected shifts
+        // The useEffect for seats will trigger once shifts are set, so we can pre-fill the seat.
         // A small delay might still be needed if state updates are not immediate.
         setTimeout(() => {
+          const currentAssignment = currentAssignments[0]; // Use the first assignment for seat selection
           setSelectedSeat(currentAssignment ? { value: currentAssignment.seatId, label: currentAssignment.seatNumber } : null);
         }, 200); // Increased delay slightly to ensure shifts are loaded
 
@@ -325,9 +349,9 @@ const ExpiredMemberships = () => {
     if (
       !selectedStudent || !startDate || !endDate ||
       !nameInput.trim() || !phoneInput.trim() || !addressInput.trim() ||
-      !selectedShift?.value || !totalFee || !selectedBranch?.value
+      selectedShifts.length === 0 || !totalFee || !selectedBranch?.value
     ) {
-      toast.error('Please ensure Name, Phone, Address, Branch, Shift, and Fee are filled correctly.');
+      toast.error('Please ensure Name, Phone, Address, Branch, at least one Shift, and Fee are filled correctly.');
       return;
     }
     // **FIX END**
@@ -344,7 +368,7 @@ const ExpiredMemberships = () => {
         email: emailInput,
         phone: phoneInput,
         branchId: selectedBranch.value,
-        shiftIds: [selectedShift.value],
+        shiftIds: selectedShifts.map(shift => shift.value),
         seatId: selectedSeat ? selectedSeat.value : undefined,
         totalFee: parseFloat(totalFee),
         cash: parseFloat(cash) || 0,
@@ -642,7 +666,7 @@ const ExpiredMemberships = () => {
                   onChange={(option) => {
                     setSelectedBranch(option);
                     // Reset dependent fields
-                    setSelectedShift(null);
+                    setSelectedShifts([]);
                     setSelectedSeat(null);
                     setTotalFee('');
                   }}
@@ -730,12 +754,14 @@ const ExpiredMemberships = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">Shift</label>
+                <label className="block text-sm font-medium">Shifts</label>
                 <Select
                   options={shiftOptions}
-                  value={selectedShift}
-                  onChange={setSelectedShift}
-                  placeholder="Select Shift"
+                  value={selectedShifts}
+                  onChange={(selectedOptions: MultiValue<any>) => setSelectedShifts([...selectedOptions])}
+                  placeholder="Select Shifts"
+                  isMulti
+                  closeMenuOnSelect={false}
                 />
               </div>
               <div>
@@ -745,7 +771,7 @@ const ExpiredMemberships = () => {
                   value={selectedSeat}
                   onChange={setSelectedSeat}
                   placeholder="Select Seat"
-                  isDisabled={!selectedShift}
+                  isDisabled={selectedShifts.length === 0}
                 />
               </div>
               <div>

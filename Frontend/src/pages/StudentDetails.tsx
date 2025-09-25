@@ -57,6 +57,7 @@ const StudentDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -180,8 +181,10 @@ const StudentDetails: React.FC = () => {
         `}
       </style>
 
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen bg-gray-50 no-print">
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
         <div className="flex-1 flex flex-col overflow-hidden">
+          <Navbar />
           <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-7xl mx-auto print-container" ref={printRef}>
               <h1 className="print-title hidden print:block">Student Details</h1>
