@@ -47,6 +47,7 @@ import OwnerLogin from './pages/OwnerLogin';
 import StudentLogin from './pages/StudentLogin';
 import StudentDashboard from './pages/StudentDashboard';
 import LandingPage from './pages/LandingPage';
+import Root from './pages/Root';
 import BarcodePage from './pages/BarcodePage';
 import Announcements from './pages/Announcements';
 import PublicQueries from './pages/PublicQueries';
@@ -79,7 +80,7 @@ function AppRoutes() {
 
       
       {/* Landing page as default */}
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<Root />} />
       
       {/* Admin/staff access through owner login - dashboard still accessible */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
