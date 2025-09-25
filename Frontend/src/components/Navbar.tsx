@@ -118,15 +118,17 @@ const Navbar = () => {
               <p className="text-sm font-semibold text-gray-800">
                 {user?.username || 'User'}
               </p>
-              <button 
-                onClick={handleLogout} 
-                className="flex items-center text-xs text-gray-500 hover:text-gray-700 font-medium transition-colors"
-              >
-                <LogOut className="h-3 w-3 mr-1" />
-                Sign out
-              </button>
             </div>
           </div>
+
+          {/* Sign Out Button */}
+          <button 
+            onClick={handleLogout} 
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-5 w-5 text-gray-600" />
+          </button>
         </div>
       </div>
     </div>
