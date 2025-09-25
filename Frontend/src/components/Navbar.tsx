@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Search, Bell, User } from 'lucide-react';
+import { Search, Bell, User, Crown, Sparkles, Star, Award, LogOut, BookOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import logo from './logo.jpg';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -47,46 +48,81 @@ const Navbar = () => {
 
   return (
     <div className="flex flex-col bg-gradient-to-br from-slate-50 via-white to-indigo-50">
-      {/* Subscription status banner */}
+      {/* Clean Subscription Status Banner */}
       {user?.is_trial && daysLeft !== null && daysLeft > 0 && (
-        <div className="bg-emerald-50 border-b border-emerald-200 text-emerald-700 px-4 py-2 text-center text-sm font-medium">
-          🟢 {subscriptionPlanName} Active – {daysLeft} Days Left
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 text-center text-sm font-medium">
+          <div className="flex items-center justify-center space-x-2">
+            <Star className="h-4 w-4" />
+            <span>{subscriptionPlanName} Active - {daysLeft} Days Left</span>
+          </div>
         </div>
       )}
       {user?.is_subscription_active && !user?.is_trial && (
-        <div className="bg-indigo-50 border-b border-indigo-200 text-indigo-700 px-4 py-2 text-center text-sm font-medium">
-          🔵 {subscriptionPlanName} Active
+        <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 text-center text-sm font-medium">
+          <div className="flex items-center justify-center space-x-2">
+            <Award className="h-4 w-4" />
+            <span>{subscriptionPlanName} Active</span>
+          </div>
         </div>
       )}
       {!user?.is_subscription_active && !user?.is_trial && user?.role === 'admin' && (
-        <div className="bg-amber-50 border-b border-amber-200 text-amber-700 px-4 py-2 text-center text-sm font-medium">
-          ⚠️ No Active Subscription – <a href="/subscription-plans" className="underline font-bold">Subscribe Now</a>
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 text-center text-sm font-medium">
+          <div className="flex items-center justify-center space-x-2">
+            <Bell className="h-4 w-4" />
+            <span>No Active Subscription -</span>
+            <a href="/subscription-plans" className="underline font-semibold hover:text-yellow-200 transition-colors">
+              Subscribe Now
+            </a>
+          </div>
         </div>
       )}
-      <div className="flex items-center justify-between py-2 px-4 border-b border-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-sm">
-        <div className="flex-1 max-w-md">
+      {/* Clean Modern Navbar */}
+      <div className="flex items-center justify-between py-3 px-6 bg-white border-b border-gray-200 shadow-sm">
+        {/* Logo and Brand */}
+        <div className="flex items-center space-x-3">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl shadow-lg">
+            <img src={logo} alt="HAVENN Logo" className="h-6 w-6 rounded object-cover" />
+          </div>
+          <div className="hidden md:block">
+            <h1 className="text-lg font-bold text-gray-800">HAVENN</h1>
+            <p className="text-xs text-gray-500 font-medium">Library Management</p>
+          </div>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md mx-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/80 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input 
               type="text" 
               placeholder="Search..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-white/30 bg-white/20 placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-white/60"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 bg-gray-50 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             />
           </div>
         </div>
       
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full hover:bg-white/10">
-            <Bell className="h-5 w-5 text-white" />
+        {/* User Actions */}
+        <div className="flex items-center gap-3">
+          {/* Notifications */}
+          <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
+            <Bell className="h-5 w-5 text-gray-600" />
+            <div className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></div>
           </button>
           
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white">
+          {/* User Profile */}
+          <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-2 hover:bg-gray-100 transition-colors">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
               {user && user.username ? user.username.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-medium">{user?.username || 'User'}</p>
-              <button onClick={handleLogout} className="text-xs text-white/80 hover:text-white">
+              <p className="text-sm font-semibold text-gray-800">
+                {user?.username || 'User'}
+              </p>
+              <button 
+                onClick={handleLogout} 
+                className="flex items-center text-xs text-gray-500 hover:text-gray-700 font-medium transition-colors"
+              >
+                <LogOut className="h-3 w-3 mr-1" />
                 Sign out
               </button>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, UserPlus, Building2, Calendar, Clock, Grid, DollarSign, Wallet, ShoppingBag, BarChart2, Settings, ChevronRight, UserCheck, AlertTriangle, Menu, X, LogOut, MapPin, Package, ToggleLeft, Archive, Users, QrCode, Megaphone, HelpCircle, ShieldCheck, UserCog } from 'lucide-react';
+import { Home, UserPlus, Building2, Calendar, Clock, Grid, DollarSign, Wallet, ShoppingBag, BarChart2, Settings, ChevronRight, UserCheck, AlertTriangle, Menu, X, LogOut, MapPin, Package, ToggleLeft, Archive, Users, QrCode, Megaphone, HelpCircle, ShieldCheck, UserCog, BookOpen, Sparkles, Crown, Star } from 'lucide-react';
 import { useMediaQuery } from 'react-responsive';
 import logo from './logo.jpg';
 import { useAuth } from '../context/AuthContext';
@@ -31,7 +31,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, onBarcod
   const [showHostelDropdown, setShowHostelDropdown] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
-  const effectiveIsCollapsed = isMobile ? false : isCollapsed;
+  // Allow collapse on all screen sizes
+  const effectiveIsCollapsed = isCollapsed;
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -39,27 +40,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, onBarcod
   };
   
   const menuItems = [
-    { path: '/dashboard', icon: Home, label: 'Home', permission: null, iconBg: 'bg-indigo-100', iconBgHover: 'group-hover:bg-indigo-200', iconActive: 'bg-indigo-200', iconColor: 'text-indigo-600' },
-    { path: '/students', icon: UserPlus, label: 'Library Students', hasDropdown: true, permission: 'manage_library_students', iconBg: 'bg-violet-100', iconBgHover: 'group-hover:bg-violet-200', iconActive: 'bg-violet-200', iconColor: 'text-violet-600' },
-    { path: '/attendance', icon: Users, label: 'Attendance', permission: 'manage_library_students', iconBg: 'bg-cyan-100', iconBgHover: 'group-hover:bg-cyan-200', iconActive: 'bg-cyan-200', iconColor: 'text-cyan-600' },
-    { path: '#', icon: QrCode, label: 'Barcode', permission: 'manage_library_students', onClick: onBarcodeClick, iconBg: 'bg-emerald-100', iconBgHover: 'group-hover:bg-emerald-200', iconActive: 'bg-emerald-200', iconColor: 'text-emerald-600' },
-    { path: '/announcements', icon: Megaphone, label: 'Announcements', permission: 'manage_library_students', iconBg: 'bg-amber-100', iconBgHover: 'group-hover:bg-amber-200', iconActive: 'bg-amber-200', iconColor: 'text-amber-600' },
-    { path: '/admission-requests', icon: UserCog, label: 'Admission Requests', permission: 'manage_library_students', iconBg: 'bg-indigo-100', iconBgHover: 'group-hover:bg-indigo-200', iconActive: 'bg-indigo-200', iconColor: 'text-indigo-600' },
-    // { path: '/public-queries', icon: HelpCircle, label: 'Public Queries', permission: 'manage_library_students', iconBg: 'bg-teal-100', iconBgHover: 'group-hover:bg-teal-200', iconActive: 'bg-teal-200', iconColor: 'text-teal-600' },
-    { path: '/admin/queries', icon: ShieldCheck, label: 'Admin Queries', permission: 'admin_only', iconBg: 'bg-rose-100', iconBgHover: 'group-hover:bg-rose-200', iconActive: 'bg-rose-200', iconColor: 'text-rose-600' },
-    // { path: '/hostel', icon: Building2, label: 'Hostel Students', hasDropdown: true, permission: 'manage_hostel_students', iconBg: 'bg-blue-100', iconBgHover: 'group-hover:bg-blue-200', iconActive: 'bg-blue-200', iconColor: 'text-blue-600' },
-    { path: '/schedule', icon: Calendar, label: 'Schedule', permission: 'manage_schedules', iconBg: 'bg-sky-100', iconBgHover: 'group-hover:bg-sky-200', iconActive: 'bg-sky-200', iconColor: 'text-sky-600' },
-    { path: '/shifts', icon: Clock, label: 'Shifts', permission: 'manage_schedules', iconBg: 'bg-teal-100', iconBgHover: 'group-hover:bg-teal-200', iconActive: 'bg-teal-200', iconColor: 'text-teal-600' },
-    { path: '/seats', icon: Grid, label: 'Seats', permission: 'manage_seats', iconBg: 'bg-purple-100', iconBgHover: 'group-hover:bg-purple-200', iconActive: 'bg-purple-200', iconColor: 'text-purple-600' },
-    { path: '/branches', icon: MapPin, label: 'Manage Branches', permission: 'manage_branches', iconBg: 'bg-fuchsia-100', iconBgHover: 'group-hover:bg-fuchsia-200', iconActive: 'bg-fuchsia-200', iconColor: 'text-fuchsia-600' },
-    { path: '/products', icon: Package, label: 'Products', permission: 'manage_products', iconBg: 'bg-pink-100', iconBgHover: 'group-hover:bg-pink-200', iconActive: 'bg-pink-200', iconColor: 'text-pink-600' },
-    { path: '/transactions', icon: DollarSign, label: 'Transactions', permission: 'view_transactions', iconBg: 'bg-emerald-100', iconBgHover: 'group-hover:bg-emerald-200', iconActive: 'bg-emerald-200', iconColor: 'text-emerald-600' },
-    { path: '/collections', icon: Wallet, label: 'Collection & Due', permission: 'view_collections', iconBg: 'bg-green-100', iconBgHover: 'group-hover:bg-green-200', iconActive: 'bg-green-200', iconColor: 'text-green-600' },
-    { path: '/expenses', icon: ShoppingBag, label: 'Expenses', permission: 'manage_expenses', iconBg: 'bg-amber-100', iconBgHover: 'group-hover:bg-amber-200', iconActive: 'bg-amber-200', iconColor: 'text-amber-600' },
-    { path: '/profit-loss', icon: BarChart2, label: 'Profit & Loss', permission: 'view_reports', iconBg: 'bg-indigo-100', iconBgHover: 'group-hover:bg-indigo-200', iconActive: 'bg-indigo-200', iconColor: 'text-indigo-600' },
-    { path: '/lockers', icon: Archive, label: 'Lockers', permission: 'manage_lockers_or_staff', iconBg: 'bg-slate-100', iconBgHover: 'group-hover:bg-slate-200', iconActive: 'bg-slate-200', iconColor: 'text-slate-600' },
-    { path: '/settings', icon: Settings, label: 'Settings', permission: 'admin_only', iconBg: 'bg-gray-100', iconBgHover: 'group-hover:bg-gray-200', iconActive: 'bg-gray-200', iconColor: 'text-gray-700' },
-    { path: '/subscription', icon: ShoppingBag, label: 'Subscription', permission: 'admin_only', iconBg: 'bg-violet-100', iconBgHover: 'group-hover:bg-violet-200', iconActive: 'bg-violet-200', iconColor: 'text-violet-600' },
+    { path: '/dashboard', icon: Home, label: 'Dashboard', permission: null, iconBg: 'bg-gradient-to-r from-indigo-100 to-indigo-200', iconBgHover: 'group-hover:from-indigo-200 group-hover:to-indigo-300', iconActive: 'from-indigo-300 to-indigo-400', iconColor: 'text-indigo-600', iconColorHover: 'group-hover:text-indigo-700', iconColorActive: 'text-indigo-800' },
+    { path: '/students', icon: UserPlus, label: 'Library Students', hasDropdown: true, permission: 'manage_library_students', iconBg: 'bg-gradient-to-r from-violet-100 to-violet-200', iconBgHover: 'group-hover:from-violet-200 group-hover:to-violet-300', iconActive: 'from-violet-300 to-violet-400', iconColor: 'text-violet-600', iconColorHover: 'group-hover:text-violet-700', iconColorActive: 'text-violet-800' },
+    { path: '/attendance', icon: Users, label: 'Attendance', permission: 'manage_library_students', iconBg: 'bg-gradient-to-r from-cyan-100 to-cyan-200', iconBgHover: 'group-hover:from-cyan-200 group-hover:to-cyan-300', iconActive: 'from-cyan-300 to-cyan-400', iconColor: 'text-cyan-600', iconColorHover: 'group-hover:text-cyan-700', iconColorActive: 'text-cyan-800' },
+    { path: '#', icon: QrCode, label: 'Barcode Scanner', permission: 'manage_library_students', onClick: onBarcodeClick, iconBg: 'bg-gradient-to-r from-emerald-100 to-emerald-200', iconBgHover: 'group-hover:from-emerald-200 group-hover:to-emerald-300', iconActive: 'from-emerald-300 to-emerald-400', iconColor: 'text-emerald-600', iconColorHover: 'group-hover:text-emerald-700', iconColorActive: 'text-emerald-800' },
+    { path: '/announcements', icon: Megaphone, label: 'Announcements', permission: 'manage_library_students', iconBg: 'bg-gradient-to-r from-amber-100 to-amber-200', iconBgHover: 'group-hover:from-amber-200 group-hover:to-amber-300', iconActive: 'from-amber-300 to-amber-400', iconColor: 'text-amber-600', iconColorHover: 'group-hover:text-amber-700', iconColorActive: 'text-amber-800' },
+    { path: '/admission-requests', icon: UserCog, label: 'Admission Requests', permission: 'manage_library_students', iconBg: 'bg-gradient-to-r from-blue-100 to-blue-200', iconBgHover: 'group-hover:from-blue-200 group-hover:to-blue-300', iconActive: 'from-blue-300 to-blue-400', iconColor: 'text-blue-600', iconColorHover: 'group-hover:text-blue-700', iconColorActive: 'text-blue-800' },
+    { path: '/admin/queries', icon: ShieldCheck, label: 'Admin Queries', permission: 'admin_only', iconBg: 'bg-gradient-to-r from-rose-100 to-rose-200', iconBgHover: 'group-hover:from-rose-200 group-hover:to-rose-300', iconActive: 'from-rose-300 to-rose-400', iconColor: 'text-rose-600', iconColorHover: 'group-hover:text-rose-700', iconColorActive: 'text-rose-800' },
+    { path: '/schedule', icon: Calendar, label: 'Schedule', permission: 'manage_schedules', iconBg: 'bg-gradient-to-r from-sky-100 to-sky-200', iconBgHover: 'group-hover:from-sky-200 group-hover:to-sky-300', iconActive: 'from-sky-300 to-sky-400', iconColor: 'text-sky-600', iconColorHover: 'group-hover:text-sky-700', iconColorActive: 'text-sky-800' },
+    { path: '/shifts', icon: Clock, label: 'Shifts', permission: 'manage_schedules', iconBg: 'bg-gradient-to-r from-teal-100 to-teal-200', iconBgHover: 'group-hover:from-teal-200 group-hover:to-teal-300', iconActive: 'from-teal-300 to-teal-400', iconColor: 'text-teal-600', iconColorHover: 'group-hover:text-teal-700', iconColorActive: 'text-teal-800' },
+    { path: '/seats', icon: Grid, label: 'Seats', permission: 'manage_seats', iconBg: 'bg-gradient-to-r from-purple-100 to-purple-200', iconBgHover: 'group-hover:from-purple-200 group-hover:to-purple-300', iconActive: 'from-purple-300 to-purple-400', iconColor: 'text-purple-600', iconColorHover: 'group-hover:text-purple-700', iconColorActive: 'text-purple-800' },
+    { path: '/branches', icon: MapPin, label: 'Manage Branches', permission: 'manage_branches', iconBg: 'bg-gradient-to-r from-fuchsia-100 to-fuchsia-200', iconBgHover: 'group-hover:from-fuchsia-200 group-hover:to-fuchsia-300', iconActive: 'from-fuchsia-300 to-fuchsia-400', iconColor: 'text-fuchsia-600', iconColorHover: 'group-hover:text-fuchsia-700', iconColorActive: 'text-fuchsia-800' },
+    { path: '/products', icon: Package, label: 'Products', permission: 'manage_products', iconBg: 'bg-gradient-to-r from-pink-100 to-pink-200', iconBgHover: 'group-hover:from-pink-200 group-hover:to-pink-300', iconActive: 'from-pink-300 to-pink-400', iconColor: 'text-pink-600', iconColorHover: 'group-hover:text-pink-700', iconColorActive: 'text-pink-800' },
+    { path: '/transactions', icon: DollarSign, label: 'Transactions', permission: 'view_transactions', iconBg: 'bg-gradient-to-r from-green-100 to-green-200', iconBgHover: 'group-hover:from-green-200 group-hover:to-green-300', iconActive: 'from-green-300 to-green-400', iconColor: 'text-green-600', iconColorHover: 'group-hover:text-green-700', iconColorActive: 'text-green-800' },
+    { path: '/collections', icon: Wallet, label: 'Collection & Due', permission: 'view_collections', iconBg: 'bg-gradient-to-r from-emerald-100 to-emerald-200', iconBgHover: 'group-hover:from-emerald-200 group-hover:to-emerald-300', iconActive: 'from-emerald-300 to-emerald-400', iconColor: 'text-emerald-600', iconColorHover: 'group-hover:text-emerald-700', iconColorActive: 'text-emerald-800' },
+    { path: '/expenses', icon: ShoppingBag, label: 'Expenses', permission: 'manage_expenses', iconBg: 'bg-gradient-to-r from-orange-100 to-orange-200', iconBgHover: 'group-hover:from-orange-200 group-hover:to-orange-300', iconActive: 'from-orange-300 to-orange-400', iconColor: 'text-orange-600', iconColorHover: 'group-hover:text-orange-700', iconColorActive: 'text-orange-800' },
+    { path: '/profit-loss', icon: BarChart2, label: 'Profit & Loss', permission: 'view_reports', iconBg: 'bg-gradient-to-r from-indigo-100 to-indigo-200', iconBgHover: 'group-hover:from-indigo-200 group-hover:to-indigo-300', iconActive: 'from-indigo-300 to-indigo-400', iconColor: 'text-indigo-600', iconColorHover: 'group-hover:text-indigo-700', iconColorActive: 'text-indigo-800' },
+    { path: '/lockers', icon: Archive, label: 'Lockers', permission: 'manage_lockers_or_staff', iconBg: 'bg-gradient-to-r from-slate-100 to-slate-200', iconBgHover: 'group-hover:from-slate-200 group-hover:to-slate-300', iconActive: 'from-slate-300 to-slate-400', iconColor: 'text-slate-600', iconColorHover: 'group-hover:text-slate-700', iconColorActive: 'text-slate-800' },
+    { path: '/settings', icon: Settings, label: 'Settings', permission: 'admin_only', iconBg: 'bg-gradient-to-r from-gray-100 to-gray-200', iconBgHover: 'group-hover:from-gray-200 group-hover:to-gray-300', iconActive: 'from-gray-300 to-gray-400', iconColor: 'text-gray-600', iconColorHover: 'group-hover:text-gray-700', iconColorActive: 'text-gray-800' },
+    { path: '/subscription', icon: Crown, label: 'Subscription', permission: 'admin_only', iconBg: 'bg-gradient-to-r from-violet-100 to-violet-200', iconBgHover: 'group-hover:from-violet-200 group-hover:to-violet-300', iconActive: 'from-violet-300 to-violet-400', iconColor: 'text-violet-600', iconColorHover: 'group-hover:text-violet-700', iconColorActive: 'text-violet-800' },
   ];
 
   const handleLogout = () => {
@@ -84,33 +83,63 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, onBarcod
         ></div>
       )}
       <div
-        className={`h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 border-r border-gray-100 flex flex-col min-h-0 transition-all duration-300 ${
+        className={`h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 border-r-2 border-purple-200 flex flex-col min-h-0 transition-all duration-300 shadow-2xl ${
           isMobile ? (isSidebarOpen ? 'fixed top-0 left-0 z-50 w-64' : 'hidden') : (effectiveIsCollapsed ? 'w-16' : 'w-64')
         }`}
       >
-        <div className="p-4 flex items-center justify-between">
+        {/* Clean Logo Section */}
+        <div className="p-4 flex items-center justify-between bg-white border-b border-gray-200">
           {!effectiveIsCollapsed && (
-            <div className="flex items-center gap-2">
-              <img src={logo} alt="Library Logo" className="h-10 w-10 rounded-full object-cover" />
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-500 text-transparent bg-clip-text">
-                HAVENN <br />
-                <p className="text-sm text-gray-500">Library into Heaven</p>
-              </h1>
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl shadow-lg">
+                <img src={logo} alt="HAVENN Logo" className="h-6 w-6 rounded object-cover" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-800">
+                  HAVENN
+                </h1>
+                <p className="text-xs text-gray-500 font-medium">
+                  Library Management
+                </p>
+              </div>
+            </div>
+          )}
+          {effectiveIsCollapsed && (
+            <div className="flex justify-center w-full">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-xl shadow-lg">
+                <img src={logo} alt="HAVENN Logo" className="h-5 w-5 rounded object-cover" />
+              </div>
             </div>
           )}
           {isMobile ? (
-            <button onClick={() => setIsSidebarOpen(false)} className="p-1 rounded-full hover:bg-gray-100">
-              <X size={20} />
+            <button onClick={() => setIsSidebarOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <X size={18} className="text-gray-600" />
             </button>
           ) : (
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-1 rounded-full hover:bg-gray-100"
-            >
-              <ChevronRight size={20} className={`${isCollapsed ? 'rotate-180' : ''}`} />
-            </button>
+            !effectiveIsCollapsed && (
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <ChevronRight size={18} className="text-gray-600" />
+              </button>
+            )
           )}
         </div>
+        {/* Collapse Button - Always Visible */}
+        {!isMobile && (
+          <div className="px-4 py-2 border-b border-gray-200">
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
+              title={effectiveIsCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              <ChevronRight size={18} className={`transition-transform ${effectiveIsCollapsed ? 'rotate-180' : ''}`} />
+              {!effectiveIsCollapsed && <span className="ml-2 text-sm font-medium">Collapse</span>}
+            </button>
+          </div>
+        )}
+        
         <nav className="flex-1 px-2 py-4 overflow-y-auto">
           <ul className="space-y-1">
             {menuItems.map((item) => {
@@ -138,19 +167,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, onBarcod
                           }
                           if (isMobile) setIsSidebarOpen(false);
                         }}
-                        className={`group flex items-center w-full text-left py-2.5 px-4 rounded-lg transition-colors duration-200 ${
+                        className={`group flex items-center w-full text-left py-3 px-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
                           effectiveIsCollapsed ? 'justify-center' : ''
                         } ${
                           isActive(item.path)
-                            ? 'bg-indigo-100 text-indigo-700'
-                            : 'text-gray-700 hover:bg-slate-100'
+                            ? 'bg-gradient-to-r from-indigo-200 to-indigo-300 text-indigo-800 shadow-xl'
+                            : 'text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200'
                         }`}>
-                        <span className={`mr-3 ${effectiveIsCollapsed ? '' : ''}`}>
-                          <span className={`inline-flex items-center justify-center p-1.5 rounded-md ${item.iconBg} ${item.iconBgHover} ${isActive(item.path) ? item.iconActive : ''}`}>
-                            {(() => { const Icon = item.icon; return <Icon size={18} className={`${item.iconColor}`} />; })()}
+                        <span className={`${effectiveIsCollapsed ? '' : 'mr-4'}`}>
+                          <span className={`inline-flex items-center justify-center p-2 rounded-xl shadow-md transition-all duration-300 ${
+                            isActive(item.path) 
+                              ? `bg-gradient-to-r ${item.iconActive} ${item.iconColorActive}` 
+                              : `${item.iconBg} ${item.iconBgHover} ${item.iconColor} ${item.iconColorHover}`
+                          }`}>
+                            {(() => { const Icon = item.icon; return <Icon size={20} className="transition-all duration-300" />; })()}
                           </span>
                         </span>
-                        {!effectiveIsCollapsed && <span className="font-medium">{item.label}</span>}
+                        {!effectiveIsCollapsed && <span className="font-bold text-sm tracking-wide">{item.label}</span>}
                       </button>
                     ) : (
                       <Link
@@ -167,21 +200,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, onBarcod
                             setIsSidebarOpen(false);
                           }
                         }}
-                        className={`group flex items-center py-2.5 px-4 rounded-lg transition-colors duration-200 ${
+                        className={`group flex items-center py-3 px-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
                           effectiveIsCollapsed ? 'justify-center' : ''
                         } ${
                           isActive(item.path)
-                            ? 'bg-indigo-100 text-indigo-700'
-                            : 'text-gray-700 hover:bg-slate-100'
+                            ? 'bg-gradient-to-r from-indigo-200 to-indigo-300 text-indigo-800 shadow-xl'
+                            : 'text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200'
                         }`}>
-                        <span className={`mr-3 ${effectiveIsCollapsed ? '' : ''}`}>
-                          <span className={`inline-flex items-center justify-center p-1.5 rounded-md ${item.iconBg} ${item.iconBgHover} ${isActive(item.path) ? item.iconActive : ''}`}>
-                            {(() => { const Icon = item.icon; return <Icon size={18} className={`${item.iconColor}`} />; })()}
+                        <span className={`${effectiveIsCollapsed ? '' : 'mr-4'}`}>
+                          <span className={`inline-flex items-center justify-center p-2 rounded-xl shadow-md transition-all duration-300 ${
+                            isActive(item.path) 
+                              ? `bg-gradient-to-r ${item.iconActive} ${item.iconColorActive}` 
+                              : `${item.iconBg} ${item.iconBgHover} ${item.iconColor} ${item.iconColorHover}`
+                          }`}>
+                            {(() => { const Icon = item.icon; return <Icon size={20} className="transition-all duration-300" />; })()}
                           </span>
                         </span>
                         {!effectiveIsCollapsed && (
                           <div className="flex justify-between items-center w-full">
-                            <span className="font-medium">{item.label}</span>
+                            <span className="font-bold text-sm tracking-wide">{item.label}</span>
                             {item.hasDropdown && (
                               <ChevronRight
                                 size={16}

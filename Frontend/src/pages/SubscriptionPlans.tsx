@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 
 // Load Razorpay script
 declare global {
@@ -29,6 +31,8 @@ const SubscriptionPlans = () => {
   const { user } = useAuth();
   const [subscriptionInfo, setSubscriptionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Load subscription info on component mount
   useEffect(() => {
@@ -157,13 +161,14 @@ const SubscriptionPlans = () => {
     return Boolean(subscriptionInfo.isActive) && !!end && end.getTime() > now.getTime();
   };
 
-  // Subscription plans data
+  // Subscription plans data with Durga Puja Festival Offer
   const plans = [
     {
       id: 'free_trial',
       name: 'Free Trial Plan',
       description: 'Kickstart Your Journey – 7 Days Free',
       price: '₹0',
+      originalPrice: null,
       amount: 0,
       features: [
         'Full access to all features',
@@ -173,14 +178,16 @@ const SubscriptionPlans = () => {
       ],
       cta: 'Current Plan',
       isCurrent: isPlanActive('free_trial'),
-      disabled: true
+      disabled: true,
+      discount: null
     },
     {
       id: '1_month',
       name: '1-Month Plan',
       description: 'One Month to Build a Routine',
-      price: '₹300',
-      amount: 30000, // Amount in paise (₹300 = 30000 paise)
+      price: '₹225',
+      originalPrice: '₹300',
+      amount: 22500, // Amount in paise (₹225 = 22500 paise)
       features: [
         'Unlimited student addition',
         'All library management features',
@@ -189,14 +196,16 @@ const SubscriptionPlans = () => {
       ],
       cta: 'Start My Focus Journey',
       isCurrent: isPlanActive('1_month'),
-      disabled: false
+      disabled: false,
+      discount: '25% OFF'
     },
     {
       id: '3_month',
       name: '3-Month Plan',
       description: 'Stay Focused for 90 Days',
-      price: '₹850',
-      amount: 85000, // Amount in paise (₹850 = 85000 paise)
+      price: '₹650',
+      originalPrice: '₹850',
+      amount: 65000, // Amount in paise (₹650 = 65000 paise)
       features: [
         'Unlimited students',
         'All features included',
@@ -205,14 +214,16 @@ const SubscriptionPlans = () => {
       ],
       cta: "I'm In – Let's Go",
       isCurrent: isPlanActive('3_month'),
-      disabled: false
+      disabled: false,
+      discount: '24% OFF'
     },
     {
       id: '6_month',
       name: '6-Month Plan',
       description: 'Make This Your Growth Phase',
-      price: '₹1600',
-      amount: 160000, // Amount in paise (₹1600 = 160000 paise)
+      price: '₹1200',
+      originalPrice: '₹1600',
+      amount: 120000, // Amount in paise (₹1200 = 120000 paise)
       features: [
         'Great value package',
         'All premium features',
@@ -221,29 +232,33 @@ const SubscriptionPlans = () => {
       ],
       cta: 'Fuel My Discipline',
       isCurrent: isPlanActive('6_month'),
-      disabled: false
+      disabled: false,
+      discount: '25% OFF'
     },
     {
       id: '12_month',
       name: '12-Month Plan',
       description: 'All In for the Year',
-      price: '₹3000',
-      amount: 300000, // Amount in paise (₹3000 = 300000 paise)
+      price: '₹1999',
+      originalPrice: '₹3000',
+      amount: 199900, // Amount in paise (₹1999 = 199900 paise)
       features: [
-        'Best ;-) value',
+        'Best value',
         'All features unlocked',
         '24/7 priority support',
         'Focus for the long term'
       ],
       cta: 'Commit to Success',
       isCurrent: isPlanActive('12_month'),
-      disabled: false
+      disabled: false,
+      discount: '33% OFF'
     },
     {
       id: '1_day',
       name: '1-Day Plan',
       description: 'Full access for 24 hours',
       price: '₹10',
+      originalPrice: null,
       amount: 1000, // Amount in paise (₹10 = 1000 paise)
       features: [
         'All features for 1 day',
@@ -252,28 +267,80 @@ const SubscriptionPlans = () => {
       ],
       cta: 'Get 1 Day Access',
       isCurrent: isPlanActive('1_day'),
-      disabled: false
+      disabled: false,
+      discount: null
     }
   ];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading subscription details...</p>
+      <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div
+          className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 ${isCollapsed ? 'md:w-16' : 'md:w-64'}`}>
+          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
+        </div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Navbar />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading subscription details...</p>
+            </div>
+          </main>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Subscription Plans</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Choose a plan that fits your library's growth journey
+    <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div
+        className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 ${isCollapsed ? 'md:w-16' : 'md:w-64'}`}>
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
+      </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Navbar />
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-6xl mx-auto space-y-8">
+        {/* Durga Puja Festival Offer Banner */}
+        <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-3xl shadow-2xl p-10 mb-16 text-center relative overflow-hidden transform hover:scale-105 transition-all duration-300">
+          <div className="absolute inset-0 bg-black opacity-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 opacity-20 animate-pulse"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-center mb-6">
+              <span className="text-5xl mr-4 animate-bounce">🪔</span>
+              <h2 className="text-4xl md:text-5xl font-black text-white tracking-wide drop-shadow-lg">Durga Puja Festival Offer</h2>
+              <span className="text-5xl ml-4 animate-bounce">🎉</span>
+            </div>
+            <p className="text-2xl md:text-3xl text-white font-bold mb-4 drop-shadow-md">
+              Celebrate with up to 35% OFF on all plans!
+            </p>
+            <p className="text-xl text-orange-100 font-medium">
+              Limited time offer - Transform your library management this festive season
+            </p>
+            <div className="mt-6 inline-flex items-center bg-gradient-to-r from-yellow-400 to-orange-400 text-orange-900 rounded-full px-8 py-3 font-black text-lg shadow-xl transform hover:scale-110 transition-all duration-300">
+              <span>🕉️ Festival Special Pricing 🕉️</span>
+            </div>
+          </div>
+          {/* Decorative elements */}
+          <div className="absolute top-4 left-4 text-yellow-300 opacity-50">
+            <span className="text-2xl">✨</span>
+          </div>
+          <div className="absolute top-8 right-8 text-yellow-300 opacity-50">
+            <span className="text-3xl">🌟</span>
+          </div>
+          <div className="absolute bottom-4 left-8 text-yellow-300 opacity-50">
+            <span className="text-2xl">✨</span>
+          </div>
+          <div className="absolute bottom-8 right-4 text-yellow-300 opacity-50">
+            <span className="text-2xl">🎊</span>
+          </div>
+        </div>
+
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-6 tracking-tight">Subscription Plans</h1>
+          <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium leading-relaxed">
+            Choose a plan that fits your library's growth journey and unlock the full potential of modern library management
           </p>
         </div>
 
@@ -285,35 +352,64 @@ const SubscriptionPlans = () => {
         )}
 
         {/* Motivational section */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-10 text-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Most people don't finish what they start. Not you.</h2>
-          <p className="text-gray-600">
-            This subscription isn't just a payment — it's your decision to run things smarter.
-            And it starts now.
-          </p>
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl shadow-2xl p-8 mb-12 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-20 animate-pulse"></div>
+          <div className="relative z-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 drop-shadow-lg">Most people don't finish what they start. Not you.</h2>
+            <p className="text-lg text-blue-100 font-medium leading-relaxed">
+              This subscription isn't just a payment — it's your decision to run things smarter.
+              And it starts now.
+            </p>
+          </div>
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.map((plan) => (
             <div 
               key={plan.id} 
-              className={`bg-white rounded-xl shadow-lg overflow-hidden border-2 ${
-                plan.isCurrent ? 'border-purple-500' : 'border-gray-200'
+              className={`bg-white rounded-2xl shadow-2xl overflow-hidden border-2 relative transform hover:scale-105 transition-all duration-300 hover:shadow-3xl ${
+                plan.isCurrent ? 'border-purple-500 ring-4 ring-purple-200' : 'border-gray-200'
               }`}
             >
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-gray-600 mb-4">{plan.description}</p>
-                <div className="text-3xl font-bold text-purple-600 mb-4">{plan.price}</div>
+              {/* Festival Discount Badge */}
+              {plan.discount && (
+                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 via-pink-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-black shadow-2xl z-10 animate-pulse">
+                  {plan.discount}
+                </div>
+              )}
+              
+              {/* Card Header with Gradient */}
+              <div className={`h-2 ${plan.discount ? 'bg-gradient-to-r from-orange-400 to-red-500' : 'bg-gradient-to-r from-blue-400 to-purple-500'}`}></div>
+              
+              <div className="p-8">
+                <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">{plan.name}</h3>
+                <p className="text-gray-600 mb-6 font-medium text-lg leading-relaxed">{plan.description}</p>
                 
-                <ul className="space-y-2 mb-6">
+                {/* Enhanced Pricing with original price strikethrough */}
+                <div className="mb-8">
+                  {plan.originalPrice ? (
+                    <div className="space-y-2">
+                      <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{plan.price}</div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500 font-medium">Previously:</span>
+                        <div className="text-xl text-red-500 line-through font-bold bg-red-50 px-3 py-1 rounded-full">{plan.originalPrice}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{plan.price}</div>
+                  )}
+                </div>
+                
+                <ul className="space-y-4 mb-8">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-gray-700">{feature}</span>
+                    <li key={index} className="flex items-center group">
+                      <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-full p-1 mr-4 group-hover:scale-110 transition-transform duration-200">
+                        <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-700 font-medium text-lg group-hover:text-gray-900 transition-colors duration-200">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -321,45 +417,71 @@ const SubscriptionPlans = () => {
                 <button
                   onClick={() => handlePayment(plan)}
                   disabled={plan.disabled || plan.isCurrent}
-                  className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                  className={`w-full py-4 px-6 rounded-xl font-black text-lg transition-all duration-300 transform hover:scale-105 ${
                     plan.isCurrent
-                      ? 'bg-gray-200 text-gray-700 cursor-default'
+                      ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 cursor-default shadow-lg'
                       : plan.disabled
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:from-blue-600 hover:to-green-600'
+                      : plan.discount
+                      ? 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-600 shadow-2xl hover:shadow-3xl'
+                      : 'bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 text-white hover:from-blue-600 hover:via-purple-600 hover:to-indigo-600 shadow-xl hover:shadow-2xl'
                   }`}
                 >
-                  {plan.isCurrent ? 'Current Plan' : plan.cta}
+                  {plan.isCurrent ? '✅ Current Plan' : plan.cta}
                 </button>
               </div>
             </div>
           ))}
           
           {/* Additional plan for 9-month option */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">9-Month Plan</h3>
-              <p className="text-gray-600 mb-4">The Transformation Period</p>
-              <div className="text-3xl font-bold text-purple-600 mb-4">₹2200</div>
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-200 relative transform hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+            {/* Festival Discount Badge */}
+            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 via-pink-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-black shadow-2xl z-10 animate-pulse">
+              25% OFF
+            </div>
+            
+            {/* Card Header with Gradient */}
+            <div className="h-2 bg-gradient-to-r from-orange-400 to-red-500"></div>
+            
+            <div className="p-8">
+              <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">9-Month Plan</h3>
+              <p className="text-gray-600 mb-6 font-medium text-lg leading-relaxed">The Transformation Period</p>
               
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-center">
-                  <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">All premium features</span>
+              {/* Enhanced Pricing with original price strikethrough */}
+              <div className="mb-8">
+                <div className="space-y-2">
+                  <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">₹1650</div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500 font-medium">Previously:</span>
+                    <div className="text-xl text-red-500 line-through font-bold bg-red-50 px-3 py-1 rounded-full">₹2200</div>
+                  </div>
+                </div>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-center group">
+                  <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-full p-1 mr-4 group-hover:scale-110 transition-transform duration-200">
+                    <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-700 font-medium text-lg group-hover:text-gray-900 transition-colors duration-200">All premium features</span>
                 </li>
-                <li className="flex items-center">
-                  <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Best value for serious libraries</span>
+                <li className="flex items-center group">
+                  <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-full p-1 mr-4 group-hover:scale-110 transition-transform duration-200">
+                    <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-700 font-medium text-lg group-hover:text-gray-900 transition-colors duration-200">Best value for serious libraries</span>
                 </li>
-                <li className="flex items-center">
-                  <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Extended support period</span>
+                <li className="flex items-center group">
+                  <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-full p-1 mr-4 group-hover:scale-110 transition-transform duration-200">
+                    <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-700 font-medium text-lg group-hover:text-gray-900 transition-colors duration-200">Extended support period</span>
                 </li>
               </ul>
               
@@ -367,15 +489,15 @@ const SubscriptionPlans = () => {
                 const current = isPlanActive('9_month');
                 return (
                   <button
-                    onClick={() => handlePayment({ id: '9_month', name: '9-Month Plan', amount: 220000 })}
+                    onClick={() => handlePayment({ id: '9_month', name: '9-Month Plan', amount: 165000 })}
                     disabled={current}
-                    className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                    className={`w-full py-4 px-6 rounded-xl font-black text-lg transition-all duration-300 transform hover:scale-105 ${
                       current
-                        ? 'bg-gray-200 text-gray-700 cursor-default'
-                        : 'bg-gradient-to-r from-blue-500 to-green-500 text-white hover:from-blue-600 hover:to-green-600'
+                        ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 cursor-default shadow-lg'
+                        : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-600 shadow-2xl hover:shadow-3xl'
                     }`}
                   >
-                    {current ? 'Current Plan' : 'Transform My Library'}
+                    {current ? '✅ Current Plan' : 'Transform My Library'}
                   </button>
                 );
               })()}
@@ -383,11 +505,43 @@ const SubscriptionPlans = () => {
           </div>
         </div>
 
-        {/* Motivational microtext */}
-        <div className="mt-10 text-center">
-          <p className="text-gray-600 mb-2">"Just ₹10/day to manage your study space professionally."</p>
-          <p className="text-gray-600">"Join 300+ libraries building distraction-free environments."</p>
+        {/* Enhanced Motivational Footer */}
+        <div className="mt-16 text-center">
+          <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl shadow-2xl p-8 mb-8">
+            <div className="relative z-10">
+              <h3 className="text-2xl md:text-3xl font-black text-white mb-4 drop-shadow-lg">
+                💡 Smart Investment, Smarter Results
+              </h3>
+              <p className="text-xl text-emerald-100 font-bold mb-2">
+                "Just ₹10/day to manage your study space professionally."
+              </p>
+              <p className="text-lg text-emerald-100 font-medium">
+                "Join 300+ libraries building distraction-free environments."
+              </p>
+            </div>
+          </div>
+          
+          {/* Trust indicators */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300">
+              <div className="text-3xl mb-3">🚀</div>
+              <h4 className="font-bold text-gray-900 mb-2">Fast Setup</h4>
+              <p className="text-gray-600">Get started in minutes, not hours</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300">
+              <div className="text-3xl mb-3">🔒</div>
+              <h4 className="font-bold text-gray-900 mb-2">Secure & Reliable</h4>
+              <p className="text-gray-600">Your data is safe with us</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300">
+              <div className="text-3xl mb-3">💬</div>
+              <h4 className="font-bold text-gray-900 mb-2">24/7 Support</h4>
+              <p className="text-gray-600">We're here when you need us</p>
+            </div>
+          </div>
         </div>
+          </div>
+        </main>
       </div>
     </div>
   );

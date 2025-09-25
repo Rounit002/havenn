@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authFetch } from '../utils/apiConfig';
 import { Eye, EyeOff, GraduationCap, Code, Phone, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import FestivalBanner from '../components/FestivalBanner';
 
 interface StudentLoginData {
   libraryCode: string;
@@ -70,112 +71,119 @@ const StudentLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-            <GraduationCap className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Student Login</h1>
-          <p className="text-gray-600 mt-2">Access your library account</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Library Code */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Library Code
-            </label>
-            <div className="relative">
-              <Code className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                name="libraryCode"
-                value={formData.libraryCode}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
-                placeholder="Enter library code"
-                maxLength={20}
-                required
-              />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-50 to-cyan-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Festival Banner */}
+        <FestivalBanner variant="compact" clickable={false} />
+        
+        <div className="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm border border-white/20">
+          <div className="text-center mb-8">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl">
+              <GraduationCap className="w-10 h-10 text-white" />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Ask your library for the library code
-            </p>
+            <h1 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">Student Login</h1>
+            <p className="text-gray-600 font-medium">Access your library account</p>
           </div>
 
-          {/* Phone Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your phone number"
-                maxLength={10}
-                required
-              />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Enhanced Library Code */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                🏛️ Library Code
+              </label>
+              <div className="relative">
+                <Code className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  name="libraryCode"
+                  value={formData.libraryCode}
+                  onChange={handleInputChange}
+                  className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white font-medium uppercase"
+                  placeholder="Enter library code"
+                  maxLength={20}
+                  required
+                />
+              </div>
+              <p className="text-xs text-blue-600 mt-2 font-medium">
+                💡 Ask your library for the library code
+              </p>
+            </div>
+
+            {/* Enhanced Phone Number */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                📱 Phone Number
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white font-medium"
+                  placeholder="Enter your phone number"
+                  maxLength={10}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Enhanced Password */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                🔒 Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white font-medium"
+                  placeholder="Enter your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <p className="text-xs text-blue-600 mt-2 font-medium">
+                💡 Your password is the same as your phone number
+              </p>
+            </div>
+
+            {/* Enhanced Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl font-black text-lg hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
+            >
+              {isLoading ? '🔄 Signing In...' : '🎓 Sign In'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-xl p-4">
+              <p className="text-gray-700 text-sm font-medium">
+                📚 Don't have an account? Contact your library to get registered.
+              </p>
             </div>
           </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your password"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Your password is the same as your phone number
-            </p>
+          <div className="mt-4 text-center space-y-2">
+            <Link to="/owner-login" className="block text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors duration-200">
+              🏢 Library Owner Login →
+            </Link>
+            <Link to="/" className="block text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors duration-200">
+              ← 🏛️ Register Library
+            </Link>
           </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          >
-            {isLoading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm">
-            Don't have an account? Contact your library to get registered.
-          </p>
-        </div>
-
-        <div className="mt-4 text-center space-y-2">
-          <Link to="/owner-login" className="block text-sm text-gray-500 hover:text-gray-700">
-            Library Owner Login →
-          </Link>
-          <Link to="/" className="block text-sm text-gray-500 hover:text-gray-700">
-            ← Register Library
-          </Link>
         </div>
       </div>
     </div>

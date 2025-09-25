@@ -10,6 +10,7 @@ import AddStudentForm from '../components/AddStudentForm';
 import ExpiringMemberships from '../components/ExpiringMemberships';
 import BarcodeGenerator from '../components/BarcodeGenerator';
 import RegistrationLinkCard from '../components/RegistrationLinkCard';
+import FestivalBanner from '../components/FestivalBanner';
 import api, { AttendanceRecord } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -342,9 +343,14 @@ const Dashboard: React.FC = () => {
         <Navbar />
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
+            {/* Festival Banner */}
+            <div className="mb-6">
+              <FestivalBanner variant="compact" clickable={true} />
+            </div>
+            
             <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 border border-slate-200 rounded-2xl p-4 sm:p-5 mb-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-2xl font-bold text-slate-800">Library Dashboard</h1>
+                <h1 className="text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">🏛️ Library Dashboard</h1>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium text-gray-600 hidden sm:inline">View:</span>
                   <div className="flex bg-slate-100 rounded-lg p-1">

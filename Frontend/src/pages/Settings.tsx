@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import StaffManagement from '../components/StaffManagement';
+import { Settings as SettingsIcon, User, Lock, Mail, Phone, Building2, Shield, Sparkles, Star, Zap, Crown, Award, Palette, Globe, Save, Eye, EyeOff } from 'lucide-react';
 
 // Define interfaces
 interface UserData {
@@ -215,7 +216,7 @@ const Settings = () => {
   if (error) return <div>Error loading profile: {error.message}</div>;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <div
         className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-40 ${isCollapsed ? 'md:w-16' : 'md:w-64'}`}>
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onBarcodeClick={() => {}} />
@@ -223,87 +224,286 @@ const Settings = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <h1 className="text-3xl font-bold text-gray-800">Settings</h1>
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* Clean Responsive Header */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6 lg:p-8">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 sm:p-4 rounded-2xl shadow-lg">
+                  <SettingsIcon className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+                </div>
+                <div className="text-center sm:text-left">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-2">
+                    Settings & Configuration
+                  </h1>
+                  <p className="text-gray-600 text-sm sm:text-base lg:text-lg font-medium">
+                    Manage your profile, security, and system preferences
+                  </p>
+                </div>
+              </div>
+              
+              {/* Feature badges - responsive */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-6">
+                <div className="bg-blue-50 text-blue-700 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold">
+                  🔒 Secure
+                </div>
+                <div className="bg-green-50 text-green-700 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold">
+                  ⚡ Fast
+                </div>
+                <div className="bg-purple-50 text-purple-700 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold">
+                  🎨 Modern
+                </div>
+              </div>
+            </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-xl font-semibold mb-4">Personal Information</h3>
-                <form onSubmit={handleProfileSubmit}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {user?.isOwner && (
-                      <div className="md:col-span-2">
-                        <label htmlFor="libraryName" className="block text-sm font-medium text-gray-700">Library Name</label>
-                        <Input id="libraryName" name="libraryName" value={formData.libraryName} onChange={handleChange} />
-                      </div>
-                    )}
-                    <div>
-                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">{user?.isOwner ? 'Owner Name' : 'Full Name'}</label>
-                      <Input id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              {/* Personal Information Card */}
+              <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl border-2 border-blue-200 p-8 relative overflow-hidden group hover:shadow-3xl transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-purple-600/5 group-hover:from-blue-600/10 group-hover:to-purple-600/10 transition-all duration-300"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center mb-6">
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl mr-4 shadow-xl">
+                      <User className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                      <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} />
+                      <h3 className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        👤 Personal Information
+                      </h3>
+                      <p className="text-gray-600 font-medium">Update your profile details</p>
                     </div>
-                    {user?.isOwner && (
+                  </div>
+                  <form onSubmit={handleProfileSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {user?.isOwner && (
+                        <div className="md:col-span-2">
+                          <label htmlFor="libraryName" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                            <Building2 className="h-4 w-4 mr-2 text-blue-600" />
+                            🏛️ Library Name
+                          </label>
+                          <Input 
+                            id="libraryName" 
+                            name="libraryName" 
+                            value={formData.libraryName} 
+                            onChange={handleChange}
+                            className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                          />
+                        </div>
+                      )}
                       <div>
-                        <label htmlFor="ownerPhone" className="block text-sm font-medium text-gray-700">Owner Phone</label>
-                        <Input id="ownerPhone" name="ownerPhone" value={formData.ownerPhone} onChange={handleChange} />
+                        <label htmlFor="fullName" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                          <User className="h-4 w-4 mr-2 text-blue-600" />
+                          {user?.isOwner ? '👑 Owner Name' : '🙋 Full Name'}
+                        </label>
+                        <Input 
+                          id="fullName" 
+                          name="fullName" 
+                          value={formData.fullName} 
+                          onChange={handleChange}
+                          className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                        />
                       </div>
-                    )}
-                  </div>
-                  <div className="mt-4 text-right">
-                    <Button type="submit" disabled={profileMutation.isPending || ownerProfileMutation.isPending}>
-                      {profileMutation.isPending || ownerProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                  </div>
-                </form>
+                      <div>
+                        <label htmlFor="email" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                          <Mail className="h-4 w-4 mr-2 text-blue-600" />
+                          📧 Email Address
+                        </label>
+                        <Input 
+                          id="email" 
+                          name="email" 
+                          type="email" 
+                          value={formData.email} 
+                          onChange={handleChange}
+                          className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                        />
+                      </div>
+                      {user?.isOwner && (
+                        <div>
+                          <label htmlFor="ownerPhone" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                            <Phone className="h-4 w-4 mr-2 text-blue-600" />
+                            📱 Owner Phone
+                          </label>
+                          <Input 
+                            id="ownerPhone" 
+                            name="ownerPhone" 
+                            value={formData.ownerPhone} 
+                            onChange={handleChange}
+                            className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex justify-end">
+                      <Button 
+                        type="submit" 
+                        disabled={profileMutation.isPending || ownerProfileMutation.isPending}
+                        className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white font-bold py-3 px-8 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                      >
+                        <Save className="h-5 w-5 mr-2" />
+                        {profileMutation.isPending || ownerProfileMutation.isPending ? '💾 Saving...' : '✨ Save Changes'}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-xl font-semibold mb-4">Change Password</h3>
-                <form onSubmit={handlePasswordUpdate} className="space-y-4">
-                  <div>
-                    <label htmlFor="oldPassword">Current Password</label>
-                    <Input id="oldPassword" name="oldPassword" value={formData.oldPassword} onChange={handleChange} type="password"/>
+              {/* Password Security Card */}
+              <div className="bg-gradient-to-br from-white via-green-50 to-emerald-50 rounded-3xl shadow-2xl border-2 border-green-200 p-8 relative overflow-hidden group hover:shadow-3xl transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-emerald-600/5 group-hover:from-green-600/10 group-hover:to-emerald-600/10 transition-all duration-300"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center mb-6">
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-3 rounded-2xl mr-4 shadow-xl">
+                      <Lock className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                        🔒 Security Settings
+                      </h3>
+                      <p className="text-gray-600 font-medium">Update your password securely</p>
+                    </div>
                   </div>
-                  <div>
-                    <label htmlFor="newPassword">New Password</label>
-                    <Input id="newPassword" name="newPassword" value={formData.newPassword} onChange={handleChange} type="password"/>
-                  </div>
-                  <div>
-                    <label htmlFor="confirmPassword">Confirm New Password</label>
-                    <Input id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} type="password"/>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button type="submit">Update Password</Button>
-                  </div>
-                </form>
+                  <form onSubmit={handlePasswordUpdate} className="space-y-6">
+                    <div>
+                      <label htmlFor="oldPassword" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                        <Shield className="h-4 w-4 mr-2 text-green-600" />
+                        🔑 Current Password
+                      </label>
+                      <Input 
+                        id="oldPassword" 
+                        name="oldPassword" 
+                        value={formData.oldPassword} 
+                        onChange={handleChange} 
+                        type="password"
+                        className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="newPassword" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                        <Lock className="h-4 w-4 mr-2 text-green-600" />
+                        🆕 New Password
+                      </label>
+                      <Input 
+                        id="newPassword" 
+                        name="newPassword" 
+                        value={formData.newPassword} 
+                        onChange={handleChange} 
+                        type="password"
+                        className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="confirmPassword" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                        <Shield className="h-4 w-4 mr-2 text-green-600" />
+                        ✅ Confirm New Password
+                      </label>
+                      <Input 
+                        id="confirmPassword" 
+                        name="confirmPassword" 
+                        value={formData.confirmPassword} 
+                        onChange={handleChange} 
+                        type="password"
+                        className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <Button 
+                        type="submit"
+                        className="bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 hover:from-green-700 hover:via-emerald-700 hover:to-green-800 text-white font-bold py-3 px-8 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                      >
+                        <Lock className="h-5 w-5 mr-2" />
+                        🔐 Update Password
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
 
             {user.role === 'admin' && (
               <div className="space-y-8">
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                  <h3 className="text-xl font-semibold mb-4">Email Settings</h3>
-                  {settingsLoading ? <div>Loading...</div> : settingsError ? <div>Error...</div> : (
-                    <form onSubmit={handleSettingsUpdate} className="space-y-4">
-                      <div>
-                        <label htmlFor="brevoTemplateId">Brevo Template ID</label>
-                        <Input id="brevoTemplateId" name="brevoTemplateId" value={settingsForm.brevoTemplateId} onChange={handleSettingsChange}/>
+                {/* Email Settings Card */}
+                <div className="bg-gradient-to-br from-white via-orange-50 to-red-50 rounded-3xl shadow-2xl border-2 border-orange-200 p-8 relative overflow-hidden group hover:shadow-3xl transition-all duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 to-red-600/5 group-hover:from-orange-600/10 group-hover:to-red-600/10 transition-all duration-300"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center mb-6">
+                      <div className="bg-gradient-to-r from-orange-600 to-red-600 p-3 rounded-2xl mr-4 shadow-xl">
+                        <Mail className="h-8 w-8 text-white" />
                       </div>
                       <div>
-                        <label htmlFor="daysBeforeExpiration">Remind Before Expiration (Days)</label>
-                        <Input id="daysBeforeExpiration" name="daysBeforeExpiration" type="number" value={settingsForm.daysBeforeExpiration} onChange={handleSettingsChange}/>
+                        <h3 className="text-2xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                          📧 Email Configuration
+                        </h3>
+                        <p className="text-gray-600 font-medium">Configure email templates and notifications</p>
                       </div>
-                      <div className="flex justify-end">
-                        <Button type="submit">Save Email Settings</Button>
+                    </div>
+                    {settingsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                        <span className="ml-3 text-orange-600 font-medium">Loading settings...</span>
                       </div>
-                    </form>
-                  )}
+                    ) : settingsError ? (
+                      <div className="bg-red-100 border-2 border-red-200 rounded-xl p-4 text-red-700 font-medium">
+                        ❌ Error loading settings
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSettingsUpdate} className="space-y-6">
+                        <div>
+                          <label htmlFor="brevoTemplateId" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                            <Globe className="h-4 w-4 mr-2 text-orange-600" />
+                            🌐 Brevo Template ID
+                          </label>
+                          <Input 
+                            id="brevoTemplateId" 
+                            name="brevoTemplateId" 
+                            value={settingsForm.brevoTemplateId} 
+                            onChange={handleSettingsChange}
+                            className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="daysBeforeExpiration" className="flex items-center text-sm font-bold text-gray-700 mb-2">
+                            <Zap className="h-4 w-4 mr-2 text-orange-600" />
+                            ⏰ Remind Before Expiration (Days)
+                          </label>
+                          <Input 
+                            id="daysBeforeExpiration" 
+                            name="daysBeforeExpiration" 
+                            type="number" 
+                            value={settingsForm.daysBeforeExpiration} 
+                            onChange={handleSettingsChange}
+                            className="border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:bg-white font-medium p-4"
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button 
+                            type="submit"
+                            className="bg-gradient-to-r from-orange-600 via-red-600 to-orange-700 hover:from-orange-700 hover:via-red-700 hover:to-orange-800 text-white font-bold py-3 px-8 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                          >
+                            <Save className="h-5 w-5 mr-2" />
+                            📧 Save Email Settings
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
                 </div>
 
-                <StaffManagement />
+                {/* Staff Management Section */}
+                <div className="bg-gradient-to-br from-white via-purple-50 to-indigo-50 rounded-3xl shadow-2xl border-2 border-purple-200 p-8 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-indigo-600/5"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center mb-6">
+                      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-3 rounded-2xl mr-4 shadow-xl">
+                        <Crown className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                          👥 Staff Management
+                        </h3>
+                        <p className="text-gray-600 font-medium">Manage team members and permissions</p>
+                      </div>
+                    </div>
+                    <StaffManagement />
+                  </div>
+                </div>
               </div>
             )}
           </div>
