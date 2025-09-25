@@ -164,15 +164,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     setIsLoading(true);
     try {
-      // Check if current user is an owner
-      if (user && user.isOwner) {
-        // Owner logout
-        await authFetch('/owner-auth/logout', {
-          method: 'POST'
-        });
-      } else {
-        // Admin/staff logout
-        await api.logout();
+      if (user) {
+        if (user.isOwner) {
+          // Owner logout
+          await authFetch('/owner-auth/logout', { method: 'POST' });
+        } else if (user.role === 'student') {
+          // Student logout
+          await authFetch('/student-auth/logout', { method: 'POST' });
+        } else {
+          // Admin/staff logout
+          await api.logout();
+        }
       }
       setUser(null);
       // Redirect to landing page after logout

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import LandingPage from './LandingPage';
 
 const Root: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -14,7 +14,12 @@ const Root: React.FC = () => {
     );
   }
 
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />;
+  if (isAuthenticated) {
+    const dashboardPath = user?.role === 'student' ? '/student-dashboard' : '/dashboard';
+    return <Navigate to={dashboardPath} replace />;
+  }
+
+  return <LandingPage />;
 };
 
 export default Root;
