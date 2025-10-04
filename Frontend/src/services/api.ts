@@ -337,7 +337,9 @@ apiClient.interceptors.response.use(
     const errorData = error.response?.data || { message: error.message };
     console.error('API Error (Axios Interceptor - Response Error):', JSON.stringify(errorData, null, 2));
     const errorMessage = errorData.message || 'An unexpected error occurred while processing your request';
-    return Promise.reject(new Error(errorMessage));
+    // Preserve original error object (including response/status) but add friendly message
+    error.friendlyMessage = errorMessage;
+    return Promise.reject(error);
   }
 );
 
@@ -1069,6 +1071,60 @@ const api = {
       return response.data;
     } catch (error: any) {
       console.error('Error deleting transaction:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  // Advance Payments APIs
+  getAdvancePayments: async () => {
+    try {
+      const response = await apiClient.get('/advance-payments');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching advance payments:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  addAdvancePayment: async (paymentData: { studentId: number; amount: number; paymentDate: string }) => {
+    try {
+      const response = await apiClient.post('/advance-payments', paymentData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error adding advance payment:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  updateAdvancePayment: async (
+    id: number,
+    data: { amount?: number; paymentDate?: string; notes?: string }
+  ) => {
+    try {
+      const response = await apiClient.put(`/advance-payments/${id}`, data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating advance payment:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  toggleAdvancePaymentDone: async (id: number, isDone: boolean) => {
+    try {
+      const response = await apiClient.patch(`/advance-payments/${id}/done`, { isDone });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error toggling advance payment done:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  deleteAdvancePayment: async (id: number) => {
+    try {
+      const response = await apiClient.delete(`/advance-payments/${id}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error deleting advance payment:', error.response?.data || error.message);
       throw error;
     }
   },

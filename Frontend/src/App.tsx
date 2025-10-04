@@ -58,6 +58,7 @@ import AdmissionRequests from './pages/AdmissionRequests';
 import PublicRegistration from './pages/PublicRegistration';
 import ManagePublicRegistration from './pages/ManagePublicRegistration';
 import RegistrationStatus from './pages/RegistrationStatus';
+import AdvancedPayment from './pages/AdvancedPayment';
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,7 @@ function AppRoutes() {
       <Route path="/hostel/collections" element={<ProtectedRoute><HostelCollectionDue /></ProtectedRoute>} />
       <Route path="/hostel/expired" element={<ProtectedRoute><ExpiredHostelMemberships /></ProtectedRoute>} />
       <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+      <Route path="/advanced-payment" element={<ProtectedRoute><AdvancedPayment /></ProtectedRoute>} />
       <Route path="/collections" element={<ProtectedRoute><CollectionDue /></ProtectedRoute>} />
       <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
       <Route path="/profit-loss" element={<ProtectedRoute><ProfitLoss /></ProtectedRoute>} />

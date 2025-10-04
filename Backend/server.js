@@ -205,6 +205,7 @@ const settingsRoutes = initializeRoute('./routes/settings', pool);
 const hostelBranchesRoutes = initializeRoute('./routes/hostelBranches', pool);
 const hostelStudentsRoutes = initializeRoute('./routes/hostelStudents', pool);
 const transactionsRoutes = initializeRoute('./routes/transactions', pool);
+const advancePaymentsRoutes = initializeRoute('./routes/advancePayments', pool);
 const generalCollectionsRoutes = initializeRoute('./routes/collections', pool);
 const expensesRoutes = initializeRoute('./routes/expenses', pool);
 const reportsRoutes = initializeRoute('./routes/reports', pool);
@@ -297,6 +298,14 @@ app.use(
   updateOwnerSubscriptionInfo.bind(null, pool),
   validateSubscription,
   transactionsRoutes
+);
+app.use(
+  '/api/advance-payments',
+  authenticateOwnerOrStaff,
+  ensureDataIsolation,
+  updateOwnerSubscriptionInfo.bind(null, pool),
+  validateSubscription,
+  advancePaymentsRoutes
 );
 app.use(
   '/api/collections',
