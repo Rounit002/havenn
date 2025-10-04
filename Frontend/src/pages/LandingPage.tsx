@@ -2,8 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { BookOpen, Users, GraduationCap, Zap, Shield, Award, Sparkles } from 'lucide-react';
-import FestivalBanner from '../components/FestivalBanner';
+import { BookOpen, Users, GraduationCap, Zap, Shield, Sparkles } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,33 +18,6 @@ const LandingPage: React.FC = () => {
       
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
         <div className="max-w-7xl w-full">
-          {/* Mobile Festival Offer Bar - Simple */}
-          <div className="lg:hidden mb-4 sm:mb-6">
-            <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-5 text-center relative overflow-hidden mx-2 sm:mx-0">
-              <div className="absolute inset-0 bg-black opacity-10"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-center mb-3">
-                  <span className="text-2xl sm:text-3xl mr-2 animate-bounce">🪔</span>
-                  <h3 className="text-lg sm:text-xl font-black text-white tracking-wide drop-shadow-lg">Durga Puja Festival Offer</h3>
-                  <span className="text-2xl sm:text-3xl ml-2 animate-bounce">🎉</span>
-                </div>
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-orange-900 rounded-full px-4 py-2 font-black text-base sm:text-lg shadow-xl mb-3">
-                  <span>UP TO 35% OFF</span>
-                </div>
-                <p className="text-white font-bold text-sm sm:text-base mb-3 drop-shadow-md">
-                  Transform your library management this festive season
-                </p>
-                <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full px-4 py-2 font-black text-sm animate-pulse shadow-xl">
-                  🕉️ LIMITED TIME OFFER - GRAB NOW! 🕉️
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Festival Banner - Minimal */}
-          <div className="hidden lg:block mb-8">
-            <FestivalBanner variant="minimal" clickable={false} />
-          </div>
           
           {/* Responsive Main Content */}
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-start justify-center">
@@ -137,72 +109,17 @@ const LandingPage: React.FC = () => {
                     >
                       🎯 Student Login
                     </Button>
-                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl p-2 sm:p-3 text-center">
+                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl p-2 sm:p-3 text-center mb-3">
                       <div className="text-xs sm:text-sm text-green-800 font-bold">
                         💡 Use library code + phone number
                       </div>
                     </div>
                     <div className="flex items-center justify-center space-x-2 text-xs sm:text-sm text-gray-600 font-medium">
                       <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                      <span>Instant Access</span>
+                      <span>Quick & Easy Access</span>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-            
-            {/* Right Sidebar - Simple Festival Offer Card */}
-            <div className="hidden lg:block lg:w-80 xl:w-96 order-first lg:order-last">
-              <div className="bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-3xl shadow-2xl p-8 text-center relative overflow-hidden sticky top-8 border-4 border-yellow-300 animate-pulse">
-                <div className="absolute inset-0 bg-black opacity-10"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 opacity-20 animate-pulse"></div>
-                
-                <div className="relative z-10">
-                  {/* Main Festival Header */}
-                  <div className="flex items-center justify-center mb-6">
-                    <span className="text-4xl mr-3 animate-bounce">🪔</span>
-                    <h3 className="text-2xl font-black text-white tracking-wide drop-shadow-lg">
-                      Durga Puja Festival
-                    </h3>
-                    <span className="text-4xl ml-3 animate-bounce">🎉</span>
-                  </div>
-                  
-                  {/* Offer Badge */}
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-orange-900 rounded-full px-6 py-4 font-black text-2xl shadow-xl mb-6 transform -rotate-1">
-                    <span>UP TO 35% OFF</span>
-                  </div>
-                  
-                  {/* Description */}
-                  <p className="text-white font-bold text-lg mb-8 drop-shadow-md leading-relaxed">
-                    Transform your library management this festive season with our special pricing
-                  </p>
-                  
-                  {/* Call to Action */}
-                  <div className="space-y-4">
-                    <div className="bg-gradient-to-r from-yellow-300 to-orange-300 text-orange-900 rounded-2xl p-4 shadow-2xl border-2 border-yellow-400">
-                      <div className="text-xl font-black mb-2">🎯 SPECIAL FESTIVAL PRICING</div>
-                      <div className="text-sm font-bold">Multiple plans available with huge discounts!</div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full px-6 py-4 font-black text-lg animate-bounce shadow-xl">
-                      🕉️ LIMITED TIME OFFER - GRAB NOW! 🕉️
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Enhanced Decorative elements */}
-                <div className="absolute top-4 left-4 text-yellow-300 opacity-80 animate-spin" style={{animationDuration: '3s'}}>
-                  <span className="text-3xl">✨</span>
-                </div>
-                <div className="absolute top-4 right-4 text-yellow-300 opacity-80 animate-bounce">
-                  <span className="text-4xl">🌟</span>
-                </div>
-                <div className="absolute bottom-4 left-4 text-yellow-300 opacity-80 animate-pulse">
-                  <span className="text-3xl">🎊</span>
-                </div>
-                <div className="absolute bottom-4 right-4 text-yellow-300 opacity-80 animate-spin" style={{animationDuration: '2s'}}>
-                  <span className="text-3xl">✨</span>
-                </div>
               </div>
             </div>
           </div>

@@ -161,7 +161,7 @@ const SubscriptionPlans = () => {
     return Boolean(subscriptionInfo.isActive) && !!end && end.getTime() > now.getTime();
   };
 
-  // Subscription plans data with Durga Puja Festival Offer
+  // Subscription plans data with standard pricing
   const plans = [
     {
       id: 'free_trial',
@@ -185,73 +185,73 @@ const SubscriptionPlans = () => {
       id: '1_month',
       name: '1-Month Plan',
       description: 'One Month to Build a Routine',
-      price: '₹225',
-      originalPrice: '₹300',
-      amount: 22500, // Amount in paise (₹225 = 22500 paise)
+      price: '₹300',
+      originalPrice: null,
+      amount: 30000, // Amount in paise (₹300 = 30000 paise)
       features: [
         'Unlimited student addition',
         'All library management features',
         'Priority support',
         'No restrictions'
       ],
-      cta: 'Start My Focus Journey',
+      cta: 'Get Started',
       isCurrent: isPlanActive('1_month'),
       disabled: false,
-      discount: '25% OFF'
+      discount: null
     },
     {
       id: '3_month',
       name: '3-Month Plan',
       description: 'Stay Focused for 90 Days',
-      price: '₹650',
-      originalPrice: '₹850',
-      amount: 65000, // Amount in paise (₹650 = 65000 paise)
+      price: '₹850',
+      originalPrice: null,
+      amount: 85000, // Amount in paise (₹850 = 85000 paise)
       features: [
         'Unlimited students',
         'All features included',
-        'Discounted rate',
-        'Priority support'
+        'Priority support',
+        'Save compared to monthly'
       ],
-      cta: "I'm In – Let's Go",
+      cta: 'Choose Plan',
       isCurrent: isPlanActive('3_month'),
       disabled: false,
-      discount: '24% OFF'
+      discount: null
     },
     {
       id: '6_month',
       name: '6-Month Plan',
       description: 'Make This Your Growth Phase',
-      price: '₹1200',
-      originalPrice: '₹1600',
-      amount: 120000, // Amount in paise (₹1200 = 120000 paise)
+      price: '₹1600',
+      originalPrice: null,
+      amount: 160000, // Amount in paise (₹1600 = 160000 paise)
       features: [
         'Great value package',
         'All premium features',
         'Extended support',
         'Best for growing libraries'
       ],
-      cta: 'Fuel My Discipline',
+      cta: 'Get Started',
       isCurrent: isPlanActive('6_month'),
       disabled: false,
-      discount: '25% OFF'
+      discount: null
     },
     {
       id: '12_month',
       name: '12-Month Plan',
       description: 'All In for the Year',
-      price: '₹1999',
-      originalPrice: '₹3000',
-      amount: 199900, // Amount in paise (₹1999 = 199900 paise)
+      price: '₹3000',
+      originalPrice: null,
+      amount: 300000, // Amount in paise (₹3000 = 300000 paise)
       features: [
         'Best value',
         'All features unlocked',
         '24/7 priority support',
         'Focus for the long term'
       ],
-      cta: 'Commit to Success',
+      cta: 'Get Best Value',
       isCurrent: isPlanActive('12_month'),
       disabled: false,
-      discount: '33% OFF'
+      discount: null
     },
     {
       id: '1_day',
@@ -302,40 +302,6 @@ const SubscriptionPlans = () => {
         <Navbar />
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-6xl mx-auto space-y-8">
-        {/* Durga Puja Festival Offer Banner */}
-        <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-3xl shadow-2xl p-10 mb-16 text-center relative overflow-hidden transform hover:scale-105 transition-all duration-300">
-          <div className="absolute inset-0 bg-black opacity-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 opacity-20 animate-pulse"></div>
-          <div className="relative z-10">
-            <div className="flex items-center justify-center mb-6">
-              <span className="text-5xl mr-4 animate-bounce">🪔</span>
-              <h2 className="text-4xl md:text-5xl font-black text-white tracking-wide drop-shadow-lg">Durga Puja Festival Offer</h2>
-              <span className="text-5xl ml-4 animate-bounce">🎉</span>
-            </div>
-            <p className="text-2xl md:text-3xl text-white font-bold mb-4 drop-shadow-md">
-              Celebrate with up to 35% OFF on all plans!
-            </p>
-            <p className="text-xl text-orange-100 font-medium">
-              Limited time offer - Transform your library management this festive season
-            </p>
-            <div className="mt-6 inline-flex items-center bg-gradient-to-r from-yellow-400 to-orange-400 text-orange-900 rounded-full px-8 py-3 font-black text-lg shadow-xl transform hover:scale-110 transition-all duration-300">
-              <span>🕉️ Festival Special Pricing 🕉️</span>
-            </div>
-          </div>
-          {/* Decorative elements */}
-          <div className="absolute top-4 left-4 text-yellow-300 opacity-50">
-            <span className="text-2xl">✨</span>
-          </div>
-          <div className="absolute top-8 right-8 text-yellow-300 opacity-50">
-            <span className="text-3xl">🌟</span>
-          </div>
-          <div className="absolute bottom-4 left-8 text-yellow-300 opacity-50">
-            <span className="text-2xl">✨</span>
-          </div>
-          <div className="absolute bottom-8 right-4 text-yellow-300 opacity-50">
-            <span className="text-2xl">🎊</span>
-          </div>
-        </div>
 
         <div className="text-center mb-16">
           <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-6 tracking-tight">Subscription Plans</h1>
@@ -433,28 +399,19 @@ const SubscriptionPlans = () => {
             </div>
           ))}
           
-          {/* Additional plan for 9-month option */}
+          {/* 9-Month Plan */}
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-gray-200 relative transform hover:scale-105 transition-all duration-300 hover:shadow-3xl">
-            {/* Festival Discount Badge */}
-            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 via-pink-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-black shadow-2xl z-10 animate-pulse">
-              25% OFF
-            </div>
-            
-            {/* Card Header with Gradient */}
-            <div className="h-2 bg-gradient-to-r from-orange-400 to-red-500"></div>
+            {/* Card Header with Standard Gradient */}
+            <div className="h-2 bg-gradient-to-r from-blue-400 to-purple-500"></div>
             
             <div className="p-8">
               <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">9-Month Plan</h3>
               <p className="text-gray-600 mb-6 font-medium text-lg leading-relaxed">The Transformation Period</p>
               
-              {/* Enhanced Pricing with original price strikethrough */}
+              {/* Standard Pricing */}
               <div className="mb-8">
                 <div className="space-y-2">
-                  <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">₹1650</div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 font-medium">Previously:</span>
-                    <div className="text-xl text-red-500 line-through font-bold bg-red-50 px-3 py-1 rounded-full">₹2200</div>
-                  </div>
+                  <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">₹2200</div>
                 </div>
               </div>
               
@@ -489,15 +446,15 @@ const SubscriptionPlans = () => {
                 const current = isPlanActive('9_month');
                 return (
                   <button
-                    onClick={() => handlePayment({ id: '9_month', name: '9-Month Plan', amount: 165000 })}
+                    onClick={() => handlePayment({ id: '9_month', name: '9-Month Plan', amount: 220000 })}
                     disabled={current}
                     className={`w-full py-4 px-6 rounded-xl font-black text-lg transition-all duration-300 transform hover:scale-105 ${
                       current
                         ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 cursor-default shadow-lg'
-                        : 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-600 shadow-2xl hover:shadow-3xl'
+                        : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-2xl hover:shadow-3xl'
                     }`}
                   >
-                    {current ? '✅ Current Plan' : 'Transform My Library'}
+                    {current ? '✅ Current Plan' : 'Get Started'}
                   </button>
                 );
               })()}
