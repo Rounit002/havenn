@@ -774,6 +774,11 @@ const api = {
     }
   },
 
+  deleteStudent: async (id: number): Promise<{ message: string }> => {
+    const response = await apiClient.delete(`/students/${id}`);
+    return response.data;
+  },
+
   updateStudent: async (
     id: number,
     studentData: {
@@ -799,14 +804,37 @@ const api = {
       profileImageUrl: string;
       aadhaarFrontUrl?: string | null;
       aadhaarBackUrl?: string | null;
+      discount?: number;
     }
-  ): Promise<{ student: Student }> => {
-    const response = await apiClient.put(`/students/${id}`, studentData);
-    return response.data;
-  },
+  ) => {
+    // Transform camelCase to snake_case for the backend
+    const payload = {
+      name: studentData.name,
+      email: studentData.email,
+      phone: studentData.phone,
+      address: studentData.address,
+      registration_number: studentData.registrationNumber,
+      father_name: studentData.fatherName,
+      aadhar_number: studentData.aadharNumber,
+      branch_id: studentData.branchId,
+      membership_start: studentData.membershipStart,
+      membership_end: studentData.membershipEnd,
+      total_fee: studentData.totalFee,
+      amount_paid: studentData.amountPaid,
+      cash: studentData.cash,
+      online: studentData.online,
+      security_money: studentData.securityMoney,
+      remark: studentData.remark,
+      discount: studentData.discount || 0,
+      shift_ids: studentData.shiftIds,
+      seat_id: studentData.seatId,
+      locker_id: studentData.lockerId || null,
+      profile_image_url: studentData.profileImageUrl || '',
+      aadhaar_front_url: studentData.aadhaarFrontUrl || null,
+      aadhaar_back_url: studentData.aadhaarBackUrl || null
+    };
 
-  deleteStudent: async (id: number): Promise<{ message: string; student: Student }> => {
-    const response = await apiClient.delete(`/students/${id}`);
+    const response = await apiClient.put(`/students/${id}`, payload);
     return response.data;
   },
 

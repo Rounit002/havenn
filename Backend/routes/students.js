@@ -852,6 +852,12 @@ module.exports = (pool) => {
         );
       }
 
+      // Update student_accounts table to keep login credentials in sync
+      await client.query(
+        'UPDATE student_accounts SET phone = $1, name = $2, email = $3, password = $4 WHERE student_id = $5 AND library_id = $6',
+        [phone, name, email || null, phone, id, req.libraryId]
+      );
+
       let firstShiftId = null;
       await client.query('DELETE FROM seat_assignments WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
       if (shiftIdsNum.length > 0) {
@@ -1091,6 +1097,12 @@ module.exports = (pool) => {
           [id, lockerIdNum]
         );
       }
+
+      // Update student_accounts table to keep login credentials in sync
+      await client.query(
+        'UPDATE student_accounts SET phone = $1, name = $2, email = $3, password = $4 WHERE student_id = $5 AND library_id = $6',
+        [phone, name, email || null, phone, id, req.libraryId]
+      );
 
       let firstShiftId = null;
       await client.query('DELETE FROM seat_assignments WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);

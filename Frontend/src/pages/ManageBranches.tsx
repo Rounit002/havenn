@@ -104,7 +104,6 @@ const ManageBranches: React.FC = () => {
     const fetchBranches = async () => {
       setIsLoading(true);
       try {
-        await refreshUser();
         // First, get all branches
         const branchesData = await api.getBranches();
         
@@ -162,14 +161,27 @@ const ManageBranches: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      await refreshUser();
       if (editingBranch) {
         const updated = await api.updateBranch(editingBranch.id, formData);
-        setBranches(prev => prev.map(b => b.id === updated.id ? updated : b));
+        setBranches(prev => prev.map(b => b.id === updated.id ? {
+          ...updated,
+          studentCount: b.studentCount,
+          color: b.color,
+          cardBg: b.cardBg,
+          accentGradient: b.accentGradient
+        } : b));
         setEditingBranch(null);
       } else {
         const created = await api.addBranch(formData);
-        setBranches(prev => [...prev, created]);
+        const colorIndex = created.id % branchColors.length;
+        const colors = getBranchColor(created.id);
+        setBranches(prev => [...prev, {
+          ...created,
+          studentCount: 0,
+          color: colors.badge,
+          cardBg: `${colors.bg} ${colors.border} ${colors.hover} transition-colors duration-200`,
+          accentGradient: colors.accent
+        }]);
         setFormData({ name: '', code: '', address: '', phone: '', email: '' });
       }
       toast.success('Branch saved successfully');
@@ -182,7 +194,6 @@ const ManageBranches: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure?')) return;
     try {
-      await refreshUser();
       await api.deleteBranch(id);
       setBranches(prev => prev.filter(b => b.id !== id));
       toast.success('Branch deleted');

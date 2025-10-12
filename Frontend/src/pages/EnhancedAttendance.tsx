@@ -18,7 +18,8 @@ import {
   RefreshCw,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MapPin
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Navbar from '../components/Navbar';
@@ -49,6 +50,12 @@ interface DashboardStats {
   monthlyAttendance?: number;
 }
 
+interface Branch {
+  id: number;
+  name: string;
+  code?: string | null;
+}
+
 const EnhancedAttendance: React.FC = () => {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -59,6 +66,10 @@ const EnhancedAttendance: React.FC = () => {
   const [showBarcodeGenerator, setShowBarcodeGenerator] = useState(false);
   const [library, setLibrary] = useState<{id: number; library_code: string; name: string} | null>(null);
   
+  // Branch state for filtering
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
+
   // Enhanced state for new features
   const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('daily');
   const [showFilters, setShowFilters] = useState(false);
@@ -101,6 +112,7 @@ const EnhancedAttendance: React.FC = () => {
     setSelectedDate(new Date().toISOString().split('T')[0]);
     setSelectedMonth(new Date().toISOString().slice(0, 7));
     setFilterStatus('all');
+    setSelectedBranch(null);
     setShowFilters(false);
     setPagination(prev => ({ ...prev, page: 1 }));
   };
@@ -109,6 +121,7 @@ const EnhancedAttendance: React.FC = () => {
     loadAttendance();
     loadStats();
     loadLibraryInfo();
+    loadBranches();
   }, [viewMode, selectedDate, selectedMonth, filterStatus, searchTerm, pagination.page]);
 
   const loadLibraryInfo = async () => {
@@ -124,6 +137,15 @@ const EnhancedAttendance: React.FC = () => {
     }
   };
 
+  const loadBranches = async () => {
+    try {
+      const branchesData = await api.getBranches();
+      setBranches(branchesData);
+    } catch (error) {
+      console.error('Error loading branches:', error);
+    }
+  };
+
   const loadAttendance = async () => {
     setIsLoading(true);
     try {
@@ -133,6 +155,11 @@ const EnhancedAttendance: React.FC = () => {
         view: viewMode,
         search: searchTerm.trim()
       };
+
+      // Add branch filter if selected
+      if (selectedBranch) {
+        filters.branchId = selectedBranch;
+      }
 
       if (viewMode === 'daily') {
         if (showFilters && dateRange.startDate && dateRange.endDate) {
@@ -264,78 +291,81 @@ const EnhancedAttendance: React.FC = () => {
         <div className="flex-1 overflow-auto p-6">
           <div className="space-y-6">
             {/* Enhanced Header with View Mode Toggle */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-              <div className="flex justify-between items-start mb-6">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-6">
                 <div>
-                  <h2 className="text-3xl font-bold mb-2">Attendance Management</h2>
-                  <p className="text-blue-100">Monitor and analyze student attendance patterns</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-2">Attendance Management</h2>
+                  <p className="text-blue-100 text-sm sm:text-base">Monitor and analyze student attendance patterns</p>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
                   {/* View Mode Toggle */}
-                  <div className="flex bg-white/20 backdrop-blur-sm rounded-lg p-1">
+                  <div className="flex bg-white/20 backdrop-blur-sm rounded-lg p-1 w-full sm:w-auto">
                     <button
                       onClick={() => handleViewModeChange('daily')}
-                      className={`px-4 py-2 rounded-md transition-all duration-200 flex items-center space-x-2 ${
+                      className={`px-3 sm:px-4 py-2 rounded-md transition-all duration-200 flex items-center justify-center space-x-2 flex-1 sm:flex-none ${
                         viewMode === 'daily'
                           ? 'bg-white text-blue-600 shadow-lg'
                           : 'text-white hover:bg-white/20'
                       }`}
                     >
                       <CalendarDays className="w-4 h-4" />
-                      <span>Daily</span>
+                      <span className="text-sm sm:text-base">Daily</span>
                     </button>
                     <button
                       onClick={() => handleViewModeChange('monthly')}
-                      className={`px-4 py-2 rounded-md transition-all duration-200 flex items-center space-x-2 ${
+                      className={`px-3 sm:px-4 py-2 rounded-md transition-all duration-200 flex items-center justify-center space-x-2 flex-1 sm:flex-none ${
                         viewMode === 'monthly'
                           ? 'bg-white text-blue-600 shadow-lg'
                           : 'text-white hover:bg-white/20'
                       }`}
                     >
                       <BarChart3 className="w-4 h-4" />
-                      <span>Monthly</span>
+                      <span className="text-sm sm:text-base">Monthly</span>
                     </button>
                   </div>
-                  
-                  {/* Advanced Filters Toggle */}
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`bg-white/20 backdrop-blur-sm hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
-                      showFilters ? 'ring-2 ring-white/50' : ''
-                    }`}
-                  >
-                    <Filter className="w-4 h-4" />
-                    <span>Filters</span>
-                  </button>
-                  
-                  {/* Export Button */}
-                  <button
-                    onClick={exportToCSV}
-                    className="bg-white/20 backdrop-blur-sm hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Export</span>
-                  </button>
-                  
-                  {/* Refresh Button */}
-                  <button
-                    onClick={loadAttendance}
-                    disabled={isLoading}
-                    className="bg-white/20 backdrop-blur-sm hover:bg-white/30 disabled:opacity-50 px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    <span>Refresh</span>
-                  </button>
+
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    {/* Advanced Filters Toggle */}
+                    <button
+                      onClick={() => setShowFilters(!showFilters)}
+                      className={`bg-white/20 backdrop-blur-sm hover:bg-white/30 px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 flex-1 sm:flex-none ${
+                        showFilters ? 'ring-2 ring-white/50' : ''
+                      }`}
+                    >
+                      <Filter className="w-4 h-4" />
+                      <span className="text-sm sm:text-base">Filters</span>
+                    </button>
+
+                    {/* Export Button */}
+                    <button
+                      onClick={exportToCSV}
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 flex-1 sm:flex-none"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span className="text-sm sm:text-base">Export</span>
+                    </button>
+
+                    {/* Refresh Button */}
+                    <button
+                      onClick={loadAttendance}
+                      disabled={isLoading}
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 disabled:opacity-50 px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 flex-1 sm:flex-none"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                      <span className="text-sm sm:text-base">Refresh</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Filters Panel */}
               {showFilters && (
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-4 border border-white/20">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Search Input */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-blue-100">Search Students</label>
+                  {/* Mobile: Stack vertically, Desktop: Grid layout */}
+                  <div className="flex flex-col space-y-4 xl:grid xl:grid-cols-4 xl:gap-4 xl:space-y-0">
+                    {/* Search Input - spans full width on mobile, 2 cols on xl */}
+                    <div className="xl:col-span-2">
+                      <label className="block text-sm font-medium text-blue-100 mb-2">Search Students</label>
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-blue-200" />
                         <input
@@ -343,71 +373,89 @@ const EnhancedAttendance: React.FC = () => {
                           placeholder="Name, phone, or reg. no."
                           value={searchTerm}
                           onChange={(e) => handleSearchChange(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                          className="w-full max-w-lg pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
                         />
                       </div>
                     </div>
 
-                    {/* Date/Month Selector */}
-                    {viewMode === 'daily' ? (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-blue-100">Date Range</label>
-                        <div className="flex space-x-2">
+                    {/* Date/Month Selector and Branch Filter in same row */}
+                    <div className="xl:col-span-2 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-blue-100 mb-2">
+                          {viewMode === 'daily' ? 'Date Range' : 'Select Month'}
+                        </label>
+                        {viewMode === 'daily' ? (
+                          <div className="flex space-x-2">
+                            <input
+                              type="date"
+                              value={dateRange.startDate}
+                              onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                              className="flex-1 px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                            />
+                            <input
+                              type="date"
+                              value={dateRange.endDate}
+                              onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                              className="flex-1 px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                            />
+                          </div>
+                        ) : (
                           <input
-                            type="date"
-                            value={dateRange.startDate}
-                            onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                            className="flex-1 px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+                            type="month"
+                            value={selectedMonth}
+                            onChange={(e) => handleMonthChange(e.target.value)}
+                            className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                           />
-                          <input
-                            type="date"
-                            value={dateRange.endDate}
-                            onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                            className="flex-1 px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50"
-                          />
-                        </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-blue-100">Select Month</label>
-                        <input
-                          type="month"
-                          value={selectedMonth}
-                          onChange={(e) => handleMonthChange(e.target.value)}
-                          className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50"
-                        />
-                      </div>
-                    )}
 
-                    {/* Status Filter */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-blue-100">Filter by Status</label>
-                      <select
-                        value={filterStatus}
-                        onChange={(e) => handleFilterStatusChange(e.target.value as 'all' | 'present' | 'absent')}
-                        className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50"
-                      >
-                        <option value="all" className="text-gray-800">All Students</option>
-                        <option value="present" className="text-gray-800">Present Only</option>
-                        <option value="absent" className="text-gray-800">Absent Only</option>
-                      </select>
+                      <div>
+                        <label className="block text-sm font-medium text-blue-100 mb-2">Branch</label>
+                        <select
+                          value={selectedBranch || ''}
+                          onChange={(e) => setSelectedBranch(e.target.value ? parseInt(e.target.value) : null)}
+                          className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                        >
+                          <option value="" className="text-gray-800">All Branches</option>
+                          {branches.map((branch) => (
+                            <option key={branch.id} value={branch.id} className="text-gray-800">
+                              {branch.name} {branch.code ? `(${branch.code})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
-                    {/* Apply Filters Button */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-blue-100 opacity-0">Action</label>
-                      <button
-                        onClick={loadAttendance}
-                        className="w-full bg-white/30 hover:bg-white/40 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>Apply Filters</span>
-                      </button>
+                    {/* Status Filter and Apply Button in same row */}
+                    <div className="xl:col-span-2 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-blue-100 mb-2">Filter by Status</label>
+                        <select
+                          value={filterStatus}
+                          onChange={(e) => handleFilterStatusChange(e.target.value as 'all' | 'present' | 'absent')}
+                          className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                        >
+                          <option value="all" className="text-gray-800">All Students</option>
+                          <option value="present" className="text-gray-800">Present Only</option>
+                          <option value="absent" className="text-gray-800">Absent Only</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-blue-100 opacity-0 mb-2">Action</label>
+                        <button
+                          onClick={loadAttendance}
+                          className="w-full bg-white/30 hover:bg-white/40 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 text-sm"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>Apply Filters</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Clear Filters */}
-                  {(searchTerm || filterStatus !== 'all') && (
+                  {(searchTerm || filterStatus !== 'all' || selectedBranch) && (
                     <div className="mt-4 pt-4 border-t border-white/20">
                       <button
                         onClick={clearAllFilters}
@@ -477,43 +525,49 @@ const EnhancedAttendance: React.FC = () => {
                 </div>
               ) : attendance.length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full min-w-[800px]">
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                       <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           <div className="flex items-center">
                             <User className="w-4 h-4 mr-2" />
-                            Student Details
+                            <span className="hidden sm:inline">Student Details</span>
+                            <span className="sm:hidden">Student</span>
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-2" />
-                            Date
+                            <span className="hidden sm:inline">Date</span>
+                            <span className="sm:hidden">Date</span>
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-2" />
-                            First In
+                            <span className="hidden sm:inline">First In</span>
+                            <span className="sm:hidden">In</span>
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-2" />
-                            Last Out
+                            <span className="hidden sm:inline">Last Out</span>
+                            <span className="sm:hidden">Out</span>
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           <div className="flex items-center">
                             <BarChart3 className="w-4 h-4 mr-2" />
-                            Total Scans
+                            <span className="hidden sm:inline">Scans</span>
+                            <span className="sm:hidden">#</span>
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           <div className="flex items-center">
                             <CheckCircle className="w-4 h-4 mr-2" />
-                            Status
+                            <span className="hidden sm:inline">Status</span>
+                            <span className="sm:hidden">Status</span>
                           </div>
                         </th>
                       </tr>
@@ -523,18 +577,18 @@ const EnhancedAttendance: React.FC = () => {
                         <tr key={`${record.studentId}-${record.date}`} className={`hover:bg-blue-50 transition-colors duration-150 ${
                           index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                         }`}>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                                <span className="text-white font-semibold text-sm">
+                              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                                <span className="text-white font-semibold text-xs sm:text-sm">
                                   {record.studentName?.charAt(0)?.toUpperCase() || 'S'}
                                 </span>
                               </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-semibold text-gray-900">{record.studentName}</div>
-                                <div className="text-sm text-gray-500 flex items-center">
+                              <div className="ml-2 sm:ml-4 min-w-0 flex-1">
+                                <div className="text-sm font-semibold text-gray-900 truncate">{record.studentName}</div>
+                                <div className="text-xs sm:text-sm text-gray-500 flex items-center">
                                   <Phone className="w-3 h-3 mr-1" />
-                                  {record.phone}
+                                  <span className="truncate">{record.phone}</span>
                                 </div>
                                 {record.registrationNumber && (
                                   <div className="text-xs text-gray-400">
@@ -544,43 +598,43 @@ const EnhancedAttendance: React.FC = () => {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
                               {formatDate(record.date)}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="bg-green-100 p-2 rounded-lg mr-3">
-                                <Clock className="w-4 h-4 text-green-600" />
+                              <div className="bg-green-100 p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3">
+                                <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                               </div>
                               <div className="text-sm font-medium text-gray-900">
                                 {formatTime(record.firstIn)}
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="bg-red-100 p-2 rounded-lg mr-3">
-                                <Clock className="w-4 h-4 text-red-600" />
+                              <div className="bg-red-100 p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3">
+                                <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
                               </div>
                               <div className="text-sm font-medium text-gray-900">
                                 {formatTime(record.lastOut)}
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {record.totalScans} scans
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {record.totalScans}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                               record.lastOut 
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
-                              {record.lastOut ? 'Checked Out' : 'Checked In'}
+                              {record.lastOut ? 'Out' : 'In'}
                             </span>
                           </td>
                         </tr>
@@ -589,10 +643,10 @@ const EnhancedAttendance: React.FC = () => {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No attendance records found</h3>
-                  <p className="text-gray-500">
+                <div className="text-center py-8 sm:py-12">
+                  <AlertTriangle className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No attendance records found</h3>
+                  <p className="text-sm sm:text-base text-gray-500">
                     {searchTerm || filterStatus !== 'all' 
                       ? 'Try adjusting your filters or search terms.'
                       : `No attendance records for ${viewMode === 'daily' ? 'this date' : 'this month'}.`
@@ -604,9 +658,9 @@ const EnhancedAttendance: React.FC = () => {
 
             {/* Pagination */}
             {pagination.total > pagination.limit && (
-              <div className="flex items-center justify-between bg-white px-6 py-3 rounded-lg border border-gray-200">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-4 sm:px-6 py-3 rounded-lg border border-gray-200">
                 <div className="flex items-center text-sm text-gray-700">
-                  <span>
+                  <span className="text-xs sm:text-sm">
                     Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
                   </span>
                 </div>
@@ -614,17 +668,17 @@ const EnhancedAttendance: React.FC = () => {
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
                     disabled={pagination.page === 1}
-                    className="p-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 sm:p-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="px-3 py-1 text-sm font-medium text-gray-700">
+                  <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-gray-700">
                     Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
                   </span>
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: Math.min(Math.ceil(pagination.total / pagination.limit), prev.page + 1) }))}
                     disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-                    className="p-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 sm:p-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
