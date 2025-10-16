@@ -32,6 +32,7 @@ import api from '../services/api';
 import BarcodeScanner from '../components/BarcodeScanner';
 import StudentAnnouncements from '../components/StudentAnnouncements';
 import PublicQueries from './PublicQueries';
+import FestivalBanner from '../components/FestivalBanner';
 
 interface StudentProfile {
   id: number;
@@ -255,10 +256,10 @@ const StudentDashboard: React.FC = () => {
   const handleLogout = async () => {
     try {
       await authFetch('/student-auth/logout', { method: 'POST' });
-      navigate('/student-login');
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
-      navigate('/student-login');
+      navigate('/');
     }
   };
 
@@ -536,6 +537,11 @@ const StudentDashboard: React.FC = () => {
             </p>
           </div>
         )}
+
+        {/* Durga Pooja Special Offer Banner */}
+        <div className="mb-8">
+          <FestivalBanner variant="compact" clickable={true} />
+        </div>
 
         {/* Quick Actions */}
         <div className="mb-8">

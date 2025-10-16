@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
+import FestivalBanner from '../components/FestivalBanner';
 
 // Load Razorpay script
 declare global {
@@ -161,7 +162,7 @@ const SubscriptionPlans = () => {
     return Boolean(subscriptionInfo.isActive) && !!end && end.getTime() > now.getTime();
   };
 
-  // Subscription plans data with standard pricing
+  // Subscription plans data with Durga Pooja special pricing
   const plans = [
     {
       id: 'free_trial',
@@ -185,9 +186,9 @@ const SubscriptionPlans = () => {
       id: '1_month',
       name: '1-Month Plan',
       description: 'One Month to Build a Routine',
-      price: '₹300',
-      originalPrice: null,
-      amount: 30000, // Amount in paise (₹300 = 30000 paise)
+      price: '₹225',
+      originalPrice: '₹300',
+      amount: 22500, // 25% OFF: ₹225 = 22500 paise
       features: [
         'Unlimited student addition',
         'All library management features',
@@ -197,15 +198,15 @@ const SubscriptionPlans = () => {
       cta: 'Get Started',
       isCurrent: isPlanActive('1_month'),
       disabled: false,
-      discount: null
+      discount: '25% OFF'
     },
     {
       id: '3_month',
       name: '3-Month Plan',
       description: 'Stay Focused for 90 Days',
-      price: '₹850',
-      originalPrice: null,
-      amount: 85000, // Amount in paise (₹850 = 85000 paise)
+      price: '₹650',
+      originalPrice: '₹850',
+      amount: 65000, // Special price: ₹650 = 65000 paise
       features: [
         'Unlimited students',
         'All features included',
@@ -215,15 +216,15 @@ const SubscriptionPlans = () => {
       cta: 'Choose Plan',
       isCurrent: isPlanActive('3_month'),
       disabled: false,
-      discount: null
+      discount: '24% OFF'
     },
     {
       id: '6_month',
       name: '6-Month Plan',
       description: 'Make This Your Growth Phase',
-      price: '₹1600',
-      originalPrice: null,
-      amount: 160000, // Amount in paise (₹1600 = 160000 paise)
+      price: '₹1200',
+      originalPrice: '₹1600',
+      amount: 120000, // 25% OFF: ₹1200 = 120000 paise
       features: [
         'Great value package',
         'All premium features',
@@ -233,15 +234,15 @@ const SubscriptionPlans = () => {
       cta: 'Get Started',
       isCurrent: isPlanActive('6_month'),
       disabled: false,
-      discount: null
+      discount: '25% OFF'
     },
     {
       id: '12_month',
       name: '12-Month Plan',
       description: 'All In for the Year',
-      price: '₹3000',
-      originalPrice: null,
-      amount: 300000, // Amount in paise (₹3000 = 300000 paise)
+      price: '₹1999',
+      originalPrice: '₹3000',
+      amount: 199900, // Special price: ₹1999 = 199900 paise
       features: [
         'Best value',
         'All features unlocked',
@@ -251,7 +252,7 @@ const SubscriptionPlans = () => {
       cta: 'Get Best Value',
       isCurrent: isPlanActive('12_month'),
       disabled: false,
-      discount: null
+      discount: '33% OFF'
     },
     {
       id: '1_day',
@@ -259,7 +260,7 @@ const SubscriptionPlans = () => {
       description: 'Full access for 24 hours',
       price: '₹10',
       originalPrice: null,
-      amount: 1000, // Amount in paise (₹10 = 1000 paise)
+      amount: 1000, // No discount: ₹10 = 1000 paise
       features: [
         'All features for 1 day',
         'Great for quick needs',
@@ -303,12 +304,15 @@ const SubscriptionPlans = () => {
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-6xl mx-auto space-y-8">
 
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-6 tracking-tight">Subscription Plans</h1>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium leading-relaxed">
-            Choose a plan that fits your library's growth journey and unlock the full potential of modern library management
-          </p>
-        </div>
+            {/* Durga Pooja Special Offer Banner */}
+            <FestivalBanner variant="full" clickable={false} />
+
+            <div className="text-center mb-16">
+              <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-6 tracking-tight">Subscription Plans</h1>
+              <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium leading-relaxed">
+                Choose a plan that fits your library's growth journey and unlock the full potential of modern library management
+              </p>
+            </div>
 
         {/* Trial status banner */}
         {user?.is_trial && subscriptionInfo?.daysLeft !== null && subscriptionInfo?.daysLeft > 0 && (
@@ -408,10 +412,14 @@ const SubscriptionPlans = () => {
               <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">9-Month Plan</h3>
               <p className="text-gray-600 mb-6 font-medium text-lg leading-relaxed">The Transformation Period</p>
               
-              {/* Standard Pricing */}
+              {/* Enhanced Pricing with original price strikethrough */}
               <div className="mb-8">
                 <div className="space-y-2">
                   <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">₹2200</div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500 font-medium">Previously:</span>
+                    <div className="text-xl text-red-500 line-through font-bold bg-red-50 px-3 py-1 rounded-full">₹2800</div>
+                  </div>
                 </div>
               </div>
               
