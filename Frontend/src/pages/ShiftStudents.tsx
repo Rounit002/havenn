@@ -118,7 +118,11 @@ const ShiftStudents: React.FC = () => {
     if (selectedBranchId === 'all') return students;
     const branchIdNum = parseInt(selectedBranchId, 10);
     if (Number.isNaN(branchIdNum)) return students;
-    return students.filter((s) => s.branchId === branchIdNum);
+    // Backend returns branch_id in snake_case, so we need to check both
+    return students.filter((s) => {
+      const studentBranchId = (s as any).branch_id || s.branchId;
+      return studentBranchId === branchIdNum;
+    });
   }, [students, selectedBranchId]);
 
   return (

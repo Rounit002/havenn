@@ -63,6 +63,13 @@ const checkAdmin = (req, res, next) => {
 
 const checkAdminOrStaff = (req, res, next) => {
   if (req.session.owner) {
+    // Set req.user for owners
+    req.user = {
+      id: req.session.owner.id,
+      libraryId: req.session.owner.id,
+      role: 'owner',
+      email: req.session.owner.email
+    };
     return next(); // Owners are considered admins/staff
   }
   if (!req.session.user) {
@@ -70,6 +77,13 @@ const checkAdminOrStaff = (req, res, next) => {
     return res.status(401).json({ message: 'Unauthorized - Please log in' });
   }
   if (req.session.user.role === 'admin' || req.session.user.role === 'staff') {
+    // Set req.user for staff/admin
+    req.user = {
+      id: req.session.user.id,
+      libraryId: req.session.user.libraryId,
+      role: req.session.user.role,
+      username: req.session.user.username
+    };
     return next();
   }
   console.warn(`[AUTH.JS] Admin/Staff Check Failed: User ${req.session.user.username} (role: ${req.session.user.role}) is not admin/staff for path: ${req.path}`);

@@ -6,7 +6,6 @@ import { Eye, EyeOff, Building2, Mail, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
 import ForgotPassword from '../components/ForgotPassword';
-import FestivalBanner from '../components/FestivalBanner';
 
 interface LoginData {
   phone: string;
@@ -93,7 +92,6 @@ const OwnerLogin: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
       {showForgotPassword ? (
         <div className="w-full max-w-md space-y-6">
-          <FestivalBanner variant="compact" clickable={false} />
           <ForgotPassword 
             mode={mode} 
             onBack={() => setShowForgotPassword(false)} 
@@ -101,7 +99,6 @@ const OwnerLogin: React.FC = () => {
         </div>
       ) : (
         <div className="w-full max-w-md space-y-6">
-          <FestivalBanner variant="compact" clickable={false} />
           
           <div className="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm border border-white/20">
             <div className="text-center mb-8">

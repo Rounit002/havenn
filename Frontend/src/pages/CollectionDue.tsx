@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { Download, Eye, Search, Loader2, AlertCircle, FileText } from 'lucide-react';
+import { Download, Eye, Search, Loader2, AlertCircle, FileText, Trash2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Navbar from '../components/Navbar';
@@ -129,6 +129,20 @@ const CollectionDue: React.FC = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (historyId: number) => api.deleteCollectionRecord(historyId),
+    onSuccess: () => {
+      toast.success('Collection record deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      if (user?.role === 'admin') {
+        queryClient.invalidateQueries({ queryKey: ['collectionStats'] });
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete collection record');
+    },
+  });
+
   // --- Event Handlers ---
 
   const handlePayDue = (collection: CollectionRecord) => {
@@ -153,6 +167,12 @@ const CollectionDue: React.FC = () => {
       amount: payment,
       method: paymentMethod,
     });
+  };
+
+  const handleDeleteRecord = (collection: CollectionRecord) => {
+    if (window.confirm(`Are you sure you want to delete this collection record for ${collection.name}?\n\nThis will:\n- Remove this payment history\n- Update student's total amounts\n- This action cannot be undone!`)) {
+      deleteMutation.mutate(collection.historyId);
+    }
   };
 
   const generateInvoicePdf = async (collection: CollectionRecord, forDownload = true) => {
@@ -394,7 +414,7 @@ const CollectionDue: React.FC = () => {
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{collection.createdAt ? new Date(collection.createdAt).toLocaleDateString() : 'N/A'}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm">
                         {collection.dueAmount > 0 && (
-                          <button onClick={() => handlePayDue(collection)} className="px-2 py-1 text-xs rounded-md bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800">Pay Due</button>
+                          <button onClick={() => handlePayDue(collection)} className="px-2 py-1 text-xs rounded-md bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800 mb-2">Pay Due</button>
                         )}
                         <div className="flex space-x-1">
                           <button
@@ -419,6 +439,19 @@ const CollectionDue: React.FC = () => {
                               <path d="M17.498 14.382v-.002c-.301-.15-1.767-.867-2.04-.966-.273-.101-.473-.15-.673.15-.197.295-.771.964-.944 1.162-.175.195-.349.21-.646.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.484-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.136-.135.297-.354.446-.521.146-.181.194-.296.297-.494.1-.21.049-.375-.025-.524-.075-.15-.672-1.62-.922-2.206-.24-.584-.487-.51-.672-.51-.172-.015-.371-.015-.571-.015-.2 0-.523.074-.797.359-.273.3-1.045 1.02-1.045 2.475s1.07 2.865 1.219 3.075c.15.195 2.105 3.195 5.1 4.485.714.3 1.27.489 1.704.621.714.227 1.365.195 1.88.121.574-.09 1.767-.721 2.016-1.426.255-.705.255-1.29.18-1.425-.074-.135-.27-.21-.57-.36m-5.446 7.443h-.016a9.87 9.87 0 01-5.031-1.379l-.36-.214-3.75.975 1.005-3.645-.239-.375a9.86 9.86 0 01-1.51-5.26c.001-5.445 4.455-9.885 9.942-9.885 2.654 0 5.145 1.035 7.021 2.91 1.875 1.86 2.909 4.35 2.909 6.99-.004 5.444-4.458 9.885-9.933 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.462 0 .103 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a12.01 12.01 0 005.71 1.447h.006c6.585 0 11.946-5.336 11.949-11.896 0-3.176-1.24-6.165-3.495-8.411"/>
                             </svg>
                           </button>
+                          {user?.role === 'admin' && (
+                            <button
+                              className="p-1 text-gray-500 hover:text-red-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteRecord(collection);
+                              }}
+                              title="Delete Record"
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -479,6 +512,16 @@ const CollectionDue: React.FC = () => {
                         <button className="p-1 text-gray-500 hover:text-emerald-600" onClick={(e) => { e.stopPropagation(); shareOnWhatsApp(collection); }} title="Share on WhatsApp">
                           <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.498 14.382v-.002c-.301-.15-1.767-.867-2.04-.966-.273-.101-.473-.15-.673.15-.197.295-.771.964-.944 1.162-.175.195-.349.21-.646.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.484-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.136-.135.297-.354.446-.521.146-.181.194-.296.297-.494.1-.21.049-.375-.025-.524-.075-.15-.672-1.62-.922-2.206-.24-.584-.487-.51-.672-.51-.172-.015-.371-.015-.571-.015-.2 0-.523.074-.797.359-.273.3-1.045 1.02-1.045 2.475s1.07 2.865 1.219 3.075c.15.195 2.105 3.195 5.1 4.485.714.3 1.27.489 1.704.621.714.227 1.365.195 1.88.121.574-.09 1.767-.721 2.016-1.426.255-.705.255-1.29.18-1.425-.074-.135-.27-.21-.57-.36m-5.446 7.443h-.016a9.87 9.87 0 01-5.031-1.379l-.36-.214-3.75.975 1.005-3.645-.239-.375a9.86 9.86 0 01-1.51-5.26c.001-5.445 4.455-9.885 9.942-9.885 2.654 0 5.145 1.035 7.021 2.91 1.875 1.86 2.909 4.35 2.909 6.99-.004 5.444-4.458 9.885-9.933 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.462 0 .103 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a12.01 12.01 0 005.71 1.447h.006c6.585 0 11.946-5.336 11.949-11.896 0-3.176-1.24-6.165-3.495-8.411"/></svg>
                         </button>
+                        {user?.role === 'admin' && (
+                          <button 
+                            className="p-1 text-gray-500 hover:text-red-600" 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteRecord(collection); }} 
+                            title="Delete Record"
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -147,7 +147,9 @@ const createStudentAuthRouter = (pool) => {
 
       const result = await pool.query(
         `SELECT s.id, s.name, s.phone, s.email, s.admission_no as registration_number, s.address, 
-                s.membership_start, s.membership_end, s.status
+                s.membership_start, s.membership_end, s.status, s.total_fee, s.amount_paid, 
+                s.due_amount, s.cash, s.online, s.security_money, s.discount, s.father_name, 
+                s.remark, s.branch_id, s.profile_image_url
          FROM students s
          WHERE s.id = $1 AND s.library_id = $2`,
         [studentId, libraryId]
@@ -162,6 +164,19 @@ const createStudentAuthRouter = (pool) => {
       }
 
       const student = result.rows[0];
+      
+      // Fetch seat assignments
+      const assignmentsResult = await pool.query(
+        `SELECT sa.seat_id, sa.shift_id, seats.seat_number, sch.title AS shift_title
+         FROM seat_assignments sa
+         LEFT JOIN seats ON sa.seat_id = seats.id
+         LEFT JOIN schedules sch ON sa.shift_id = sch.id
+         WHERE sa.student_id = $1 AND sa.library_id = $2`,
+        [studentId, libraryId]
+      );
+      
+      student.assignments = assignmentsResult.rows;
+      
       res.json({ student });
 
     } catch (error) {

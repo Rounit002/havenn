@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authFetch } from '../utils/apiConfig';
 import { Eye, EyeOff, GraduationCap, Code, Phone, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import FestivalBanner from '../components/FestivalBanner';
 
 interface StudentLoginData {
   libraryCode: string;
@@ -73,8 +72,6 @@ const StudentLogin: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-50 to-cyan-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Festival Banner */}
-        <FestivalBanner variant="compact" clickable={false} />
         
         <div className="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm border border-white/20">
           <div className="text-center mb-8">

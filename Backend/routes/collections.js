@@ -242,5 +242,89 @@ module.exports = (pool) => {
     }
   });
 
+  /**
+   * @route   DELETE /api/collections/:historyId
+   * @desc    Delete a specific collection/due record from student_membership_history
+   * @access  Admin only
+   */
+  router.delete('/:historyId', checkAdmin, async (req, res) => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const historyId = parseInt(req.params.historyId, 10);
+      if (isNaN(historyId)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ message: 'Invalid history ID' });
+      }
+
+      // Fetch the history record to get payment details and student_id
+      const historyRes = await client.query(
+        'SELECT * FROM student_membership_history WHERE id = $1 AND library_id = $2 FOR UPDATE',
+        [historyId, req.libraryId]
+      );
+
+      if (historyRes.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ message: 'Collection record not found' });
+      }
+
+      const history = historyRes.rows[0];
+      const studentId = history.student_id;
+      const historyAmountPaid = parseFloat(history.amount_paid) || 0;
+      const historyCash = parseFloat(history.cash) || 0;
+      const historyOnline = parseFloat(history.online) || 0;
+      const historyDueAmount = parseFloat(history.due_amount) || 0;
+      const historyTotalFee = parseFloat(history.total_fee) || 0;
+
+      // Fetch the student record to update aggregate totals
+      const studentRes = await client.query(
+        'SELECT * FROM students WHERE id = $1 AND library_id = $2 FOR UPDATE',
+        [studentId, req.libraryId]
+      );
+
+      if (studentRes.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ message: 'Student not found' });
+      }
+
+      const student = studentRes.rows[0];
+
+      // Recalculate student totals by subtracting the history record amounts
+      const newStudentCash = Math.max(0, (parseFloat(student.cash) || 0) - historyCash);
+      const newStudentOnline = Math.max(0, (parseFloat(student.online) || 0) - historyOnline);
+      const newStudentAmountPaid = Math.max(0, (parseFloat(student.amount_paid) || 0) - historyAmountPaid);
+      const newStudentDueAmount = Math.max(0, (parseFloat(student.due_amount) || 0) - historyDueAmount);
+      const newStudentTotalFee = Math.max(0, (parseFloat(student.total_fee) || 0) - historyTotalFee);
+
+      // Update the student record
+      await client.query(
+        `UPDATE students 
+         SET cash = $1, online = $2, amount_paid = $3, due_amount = $4, total_fee = $5 
+         WHERE id = $6`,
+        [newStudentCash, newStudentOnline, newStudentAmountPaid, newStudentDueAmount, newStudentTotalFee, studentId]
+      );
+
+      // Delete the history record
+      await client.query(
+        'DELETE FROM student_membership_history WHERE id = $1 AND library_id = $2',
+        [historyId, req.libraryId]
+      );
+
+      await client.query('COMMIT');
+      res.json({ 
+        message: 'Collection record deleted successfully',
+        deletedHistoryId: historyId
+      });
+
+    } catch (err) {
+      await client.query('ROLLBACK');
+      console.error('Error deleting collection record:', err);
+      res.status(500).json({ message: 'Server error during deletion', error: err.message });
+    } finally {
+      client.release();
+    }
+  });
+
   return router;
 };

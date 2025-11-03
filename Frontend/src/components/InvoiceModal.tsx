@@ -274,55 +274,158 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
                 </button>
               </div>
             ) : student ? (
-              <div ref={componentRef} className="space-y-6">
-                {/* Student and Payment Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Bill To:</h3>
-                    <p className="text-gray-900">{student.name}</p>
-                    {student.fatherName && <p className="text-gray-600">S/O {student.fatherName}</p>}
-                    {student.registrationNumber && <p className="text-gray-600">Reg: {student.registrationNumber}</p>}
-                    {student.phone && <p className="text-gray-600 flex items-center"><Phone className="h-4 w-4 mr-1" /> {student.phone}</p>}
-                    {student.email && <p className="text-gray-600 flex items-center"><Mail className="h-4 w-4 mr-1" /> {student.email}</p>}
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-blue-800 mb-2">Membership Period</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Start Date</p>
-                        <p className="text-sm font-medium">{formatDate(student.membershipStart)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">End Date</p>
-                        <p className="text-sm font-medium">{formatDate(student.membershipEnd)}</p>
-                      </div>
+              <div ref={componentRef} className="p-8 bg-white">
+                {/* Header */}
+                <div className="border-b-4 border-blue-600 pb-4 mb-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
+                      <p className="text-sm text-gray-600 mt-1">Library Membership Receipt</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600">Invoice Date</p>
+                      <p className="text-lg font-semibold">{formatDate(new Date().toISOString())}</p>
+                      {student.registrationNumber && (
+                        <>
+                          <p className="text-sm text-gray-600 mt-2">Registration No.</p>
+                          <p className="font-semibold">{student.registrationNumber}</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Payment Summary */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Payment Summary</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                {/* Bill To & Membership Info */}
+                <div className="grid grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Bill To:</h3>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold text-gray-900">{student.name}</p>
+                      {student.fatherName && <p className="text-sm text-gray-700">S/O: {student.fatherName}</p>}
+                      <p className="text-sm text-gray-700">{student.phone}</p>
+                      {student.email && <p className="text-sm text-gray-700">{student.email}</p>}
+                      {student.address && <p className="text-sm text-gray-700">{student.address}</p>}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="text-sm font-semibold text-blue-900 uppercase mb-3">Membership Details</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>Total Fee:</span>
-                        <span className="font-medium">{formatCurrency(student.totalFee)}</span>
+                        <span className="text-sm text-gray-700">Start Date:</span>
+                        <span className="text-sm font-semibold">{formatDate(student.membershipStart)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Amount Paid:</span>
-                        <span className="text-green-600">{formatCurrency(student.amountPaid)}</span>
+                        <span className="text-sm text-gray-700">Expiry Date:</span>
+                        <span className="text-sm font-semibold">{formatDate(student.membershipEnd)}</span>
                       </div>
-                      <div className="flex justify-between border-t border-gray-200 pt-2">
-                        <span className="font-medium">Balance Due:</span>
-                        <span className="font-medium">{formatCurrency(student.dueAmount)}</span>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-700">Status:</span>
+                        <span className={`text-sm font-semibold ${
+                          student.status === 'active' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {student.status.toUpperCase()}
+                        </span>
+                      </div>
+                      {student.assignments && student.assignments.length > 0 && (
+                        <div className="flex justify-between border-t border-blue-200 pt-2 mt-2">
+                          <span className="text-sm text-gray-700">Seat Number:</span>
+                          <span className="text-sm font-bold text-blue-900">{student.assignments[0].seatNumber}</span>
+                        </div>
+                      )}
+                      {student.assignments && student.assignments.length > 0 && student.assignments[0].shiftTitle && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-700">Shift:</span>
+                          <span className="text-sm font-semibold">{student.assignments[0].shiftTitle}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Billing Details Table */}
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Billing Details</h3>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold">Description</th>
+                        <th className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-300 px-4 py-3 text-sm">Membership Fee</td>
+                        <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(student.totalFee)}</td>
+                      </tr>
+                      {(student.discount && student.discount > 0) ? (
+                        <tr>
+                          <td className="border border-gray-300 px-4 py-3 text-sm">Discount</td>
+                          <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold text-green-600">- {formatCurrency(student.discount)}</td>
+                        </tr>
+                      ) : null}
+                      {student.securityMoney > 0 ? (
+                        <tr>
+                          <td className="border border-gray-300 px-4 py-3 text-sm">Security Deposit</td>
+                          <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(student.securityMoney)}</td>
+                        </tr>
+                      ) : null}
+                      <tr className="bg-gray-50 font-bold">
+                        <td className="border border-gray-300 px-4 py-3 text-sm">Total Amount</td>
+                        <td className="border border-gray-300 px-4 py-3 text-right text-sm">{formatCurrency((student.totalFee - (student.discount || 0)))}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Payment Details */}
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Payment Details</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-700">Cash Payment:</span>
+                        <span className="text-sm font-semibold">{formatCurrency(student.cash)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-700">Online Payment:</span>
+                        <span className="text-sm font-semibold">{formatCurrency(student.online)}</span>
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-300 pt-4 grid grid-cols-2 gap-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-bold text-gray-900">Total Paid:</span>
+                        <span className="text-sm font-bold text-green-600">{formatCurrency(student.amountPaid)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-bold text-gray-900">Balance Due:</span>
+                        <span className={`text-sm font-bold ${student.dueAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {formatCurrency(student.dueAmount)}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-end space-x-3 mt-6">
+                {/* Additional Information */}
+                {student.remark && (
+                  <div className="mb-8">
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Remarks</h3>
+                    <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">{student.remark}</p>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="mt-12 pt-6 border-t border-gray-300">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-600">This is a computer-generated invoice and does not require a signature.</p>
+                    <p className="text-xs text-gray-600 mt-1">For any queries, please contact the library administration.</p>
+                    <p className="text-xs text-gray-500 mt-4">Generated on: {new Date().toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons - Only visible in modal, not in print/PDF */}
+                <div className="flex justify-end space-x-3 mt-6 no-print">
                   <button
                     onClick={handleDownload}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"

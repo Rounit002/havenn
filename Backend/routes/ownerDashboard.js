@@ -176,6 +176,16 @@ const createOwnerDashboardRouter = (pool) => {
         queryParams.push(`%${search.trim()}%`);
       }
 
+      // Branch filter (if provided)
+      if (req.query.branchId) {
+        const branchIdInt = parseInt(req.query.branchId, 10);
+        if (!isNaN(branchIdInt)) {
+          paramCount++;
+          whereClause += ` AND s.branch_id = $${paramCount}`;
+          queryParams.push(branchIdInt);
+        }
+      }
+
       // This query reads from the correct `student_attendance` table and groups the results
       const attendanceQuery = `
         SELECT

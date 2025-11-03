@@ -1179,6 +1179,11 @@ const api = {
     return response.data;
   },
 
+  deleteCollectionRecord: async (historyId: number): Promise<{ message: string; deletedHistoryId: number }> => {
+    const response = await apiClient.delete(`/collections/${historyId}`);
+    return response.data;
+  },
+
   getExpenses: async (branchId?: number): Promise<{ expenses: Expense[]; products: Product[] }> => {
     const params: any = {};
     if (branchId) params.branchId = branchId;
@@ -1270,6 +1275,7 @@ const api = {
       startDate?: string;
       endDate?: string;
       status?: string;
+      branchId?: number;
     } = {}
   ): Promise<{ attendance: AttendanceRecord[]; pagination: any }> => {
     try {

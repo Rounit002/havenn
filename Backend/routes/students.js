@@ -443,6 +443,7 @@ module.exports = (pool) => {
           s.aadhaar_back_url,
           s.membership_end,
           s.discount,
+          s.branch_id,
           l.locker_number,
           CASE
             WHEN s.membership_end < CURRENT_DATE THEN 'expired'

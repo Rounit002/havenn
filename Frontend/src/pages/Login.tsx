@@ -4,7 +4,6 @@ import { Lock, User } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import FestivalBanner from '../components/FestivalBanner';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -37,8 +36,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Festival Banner */}
-        <FestivalBanner variant="compact" clickable={false} />
         
         <div className="bg-white bg-opacity-95 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm border border-white/20">
           <div className="p-8">

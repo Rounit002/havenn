@@ -32,7 +32,6 @@ import api from '../services/api';
 import BarcodeScanner from '../components/BarcodeScanner';
 import StudentAnnouncements from '../components/StudentAnnouncements';
 import PublicQueries from './PublicQueries';
-import FestivalBanner from '../components/FestivalBanner';
 
 interface StudentProfile {
   id: number;
@@ -45,6 +44,22 @@ interface StudentProfile {
   membershipEnd: string;
   status: string;
   branchId?: number;
+  totalFee: number;
+  amountPaid: number;
+  dueAmount: number;
+  cash: number;
+  online: number;
+  securityMoney: number;
+  discount: number;
+  fatherName?: string;
+  remark?: string;
+  profileImageUrl?: string;
+  assignments?: Array<{
+    seatId: number;
+    shiftId: number;
+    seatNumber: string;
+    shiftTitle: string;
+  }>;
 }
 
 interface AttendanceHistoryRecord {
@@ -416,75 +431,154 @@ const StudentDashboard: React.FC = () => {
                 className="mr-2 shrink-0"
                 id="invoice"
               >
-                <div className="p-6">
-                  <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold">Student Details</h2>
-                    <p className="text-gray-600">Generated on: {new Date().toLocaleDateString()}</p>
+                <div className="p-8 bg-white" style={{ width: '210mm', minHeight: '297mm' }}>
+                  {/* Header */}
+                  <div className="border-b-4 border-blue-600 pb-4 mb-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
+                        <p className="text-sm text-gray-600 mt-1">Library Membership Receipt</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Invoice Date</p>
+                        <p className="text-lg font-semibold">{formatDate(new Date().toISOString())}</p>
+                        {profile.registrationNumber && (
+                          <>
+                            <p className="text-sm text-gray-600 mt-2">Registration No.</p>
+                            <p className="font-semibold">{profile.registrationNumber}</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Bill To & Membership Info */}
+                  <div className="grid grid-cols-2 gap-8 mb-8">
                     <div>
-                      <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
-                      <div className="space-y-2">
-                        <p><span className="font-medium">Name:</span> {profile.name}</p>
-                        <p><span className="font-medium">Email:</span> {profile.email}</p>
-                        <p><span className="font-medium">Phone:</span> {profile.phone}</p>
-                        <p><span className="font-medium">Registration #:</span> {profile.registrationNumber}</p>
+                      <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Bill To:</h3>
+                      <div className="space-y-1">
+                        <p className="text-lg font-bold text-gray-900">{profile.name}</p>
+                        {profile.fatherName && <p className="text-sm text-gray-700">S/O: {profile.fatherName}</p>}
+                        <p className="text-sm text-gray-700">{profile.phone}</p>
+                        {profile.email && <p className="text-sm text-gray-700">{profile.email}</p>}
+                        {profile.address && <p className="text-sm text-gray-700">{profile.address}</p>}
                       </div>
                     </div>
                     
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Membership Status</h3>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h3 className="text-sm font-semibold text-blue-900 uppercase mb-3">Membership Details</h3>
                       <div className="space-y-2">
-                        <p><span className="font-medium">Status:</span> 
-                          <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
-                            profile.status === 'active' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-700">Start Date:</span>
+                          <span className="text-sm font-semibold">{formatDate(profile.membershipStart)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-700">Expiry Date:</span>
+                          <span className="text-sm font-semibold">{formatDate(profile.membershipEnd)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-700">Status:</span>
+                          <span className={`text-sm font-semibold ${
+                            profile.status === 'active' ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            {profile.status}
+                            {profile.status.toUpperCase()}
                           </span>
-                        </p>
-                        <p><span className="font-medium">Start Date:</span> {new Date(profile.membershipStart).toLocaleDateString()}</p>
-                        <p><span className="font-medium">End Date:</span> {new Date(profile.membershipEnd).toLocaleDateString()}</p>
+                        </div>
+                        {profile.assignments && profile.assignments.length > 0 && (
+                          <div className="flex justify-between border-t border-blue-200 pt-2 mt-2">
+                            <span className="text-sm text-gray-700">Seat Number:</span>
+                            <span className="text-sm font-bold text-blue-900">{profile.assignments[0].seatNumber}</span>
+                          </div>
+                        )}
+                        {profile.assignments && profile.assignments.length > 0 && profile.assignments[0].shiftTitle && (
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-700">Shift:</span>
+                            <span className="text-sm font-semibold">{profile.assignments[0].shiftTitle}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                  
-                  {attendanceHistory.length > 0 && (
-                    <div className="mt-8">
-                      <h3 className="text-lg font-semibold mb-4">Recent Attendance</h3>
-                      <div className="border rounded-lg overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First In</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Out</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {attendanceHistory.slice(0, 5).map((record) => (
-                              <tr key={record.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  {new Date(record.date).toLocaleDateString()}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {record.firstIn ? new Date(record.firstIn).toLocaleTimeString() : 'N/A'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {record.lastOut ? new Date(record.lastOut).toLocaleTimeString() : 'N/A'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+
+                  {/* Billing Details Table */}
+                  <div className="mb-8">
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Billing Details</h3>
+                    <table className="w-full border-collapse border border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold">Description</th>
+                          <th className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="border border-gray-300 px-4 py-3 text-sm">Membership Fee</td>
+                          <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(profile.totalFee)}</td>
+                        </tr>
+                        {profile.discount > 0 && (
+                          <tr>
+                            <td className="border border-gray-300 px-4 py-3 text-sm">Discount</td>
+                            <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold text-green-600">- {formatCurrency(profile.discount)}</td>
+                          </tr>
+                        )}
+                        {profile.securityMoney > 0 && (
+                          <tr>
+                            <td className="border border-gray-300 px-4 py-3 text-sm">Security Deposit</td>
+                            <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(profile.securityMoney)}</td>
+                          </tr>
+                        )}
+                        <tr className="bg-gray-50 font-bold">
+                          <td className="border border-gray-300 px-4 py-3 text-sm">Total Amount</td>
+                          <td className="border border-gray-300 px-4 py-3 text-right text-sm">{formatCurrency((profile.amountPaid))}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Payment Details */}
+                  <div className="mb-8">
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Payment Details</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-700">Cash Payment:</span>
+                          <span className="text-sm font-semibold">{formatCurrency(profile.cash)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-700">Online Payment:</span>
+                          <span className="text-sm font-semibold">{formatCurrency(profile.online)}</span>
+                        </div>
+                      </div>
+                      <div className="border-t border-gray-300 pt-4 grid grid-cols-2 gap-4">
+                        <div className="flex justify-between">
+                          <span className="text-sm font-bold text-gray-900">Total Paid:</span>
+                          <span className="text-sm font-bold text-green-600">{formatCurrency(profile.amountPaid)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-bold text-gray-900">Balance Due:</span>
+                          <span className={`text-sm font-bold ${profile.dueAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            {formatCurrency(profile.dueAmount)}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Additional Information */}
+                  {profile.remark && (
+                    <div className="mb-8">
+                      <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Remarks</h3>
+                      <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">{profile.remark}</p>
+                    </div>
                   )}
-                  
-                  <div className="mt-8 text-center text-sm text-gray-500">
-                    <p>This is an auto-generated report. For any discrepancies, please contact support.</p>
+
+                  {/* Footer */}
+                  <div className="mt-12 pt-6 border-t border-gray-300">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-600">This is a computer-generated invoice and does not require a signature.</p>
+                      <p className="text-xs text-gray-600 mt-1">For any queries, please contact the library administration.</p>
+                      <p className="text-xs text-gray-500 mt-4">Generated on: {new Date().toLocaleString()}</p>
+                    </div>
                   </div>
                 </div>
               </InvoiceButton>
@@ -537,11 +631,6 @@ const StudentDashboard: React.FC = () => {
             </p>
           </div>
         )}
-
-        {/* Durga Pooja Special Offer Banner */}
-        <div className="mb-8">
-          <FestivalBanner variant="compact" clickable={true} />
-        </div>
 
         {/* Quick Actions */}
         <div className="mb-8">
@@ -715,7 +804,156 @@ const StudentDashboard: React.FC = () => {
                         className="text-sm"
                         variant="text"
                     >
-                        {/* Invoice Content remains the same */}
+                        <div className="p-8 bg-white" style={{ width: '210mm', minHeight: '297mm' }}>
+                          {/* Header */}
+                          <div className="border-b-4 border-blue-600 pb-4 mb-6">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
+                                <p className="text-sm text-gray-600 mt-1">Library Membership Receipt</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm text-gray-600">Invoice Date</p>
+                                <p className="text-lg font-semibold">{formatDate(new Date().toISOString())}</p>
+                                {profile.registrationNumber && (
+                                  <>
+                                    <p className="text-sm text-gray-600 mt-2">Registration No.</p>
+                                    <p className="font-semibold">{profile.registrationNumber}</p>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Bill To & Membership Info */}
+                          <div className="grid grid-cols-2 gap-8 mb-8">
+                            <div>
+                              <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Bill To:</h3>
+                              <div className="space-y-1">
+                                <p className="text-lg font-bold text-gray-900">{profile.name}</p>
+                                {profile.fatherName && <p className="text-sm text-gray-700">S/O: {profile.fatherName}</p>}
+                                <p className="text-sm text-gray-700">{profile.phone}</p>
+                                {profile.email && <p className="text-sm text-gray-700">{profile.email}</p>}
+                                {profile.address && <p className="text-sm text-gray-700">{profile.address}</p>}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                              <h3 className="text-sm font-semibold text-blue-900 uppercase mb-3">Membership Details</h3>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-gray-700">Start Date:</span>
+                                  <span className="text-sm font-semibold">{formatDate(profile.membershipStart)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-gray-700">Expiry Date:</span>
+                                  <span className="text-sm font-semibold">{formatDate(profile.membershipEnd)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-gray-700">Status:</span>
+                                  <span className={`text-sm font-semibold ${
+                                    profile.status === 'active' ? 'text-green-600' : 'text-red-600'
+                                  }`}>
+                                    {profile.status.toUpperCase()}
+                                  </span>
+                                </div>
+                                {profile.assignments && profile.assignments.length > 0 && (
+                                  <div className="flex justify-between border-t border-blue-200 pt-2 mt-2">
+                                    <span className="text-sm text-gray-700">Seat Number:</span>
+                                    <span className="text-sm font-bold text-blue-900">{profile.assignments[0].seatNumber}</span>
+                                  </div>
+                                )}
+                                {profile.assignments && profile.assignments.length > 0 && profile.assignments[0].shiftTitle && (
+                                  <div className="flex justify-between">
+                                    <span className="text-sm text-gray-700">Shift:</span>
+                                    <span className="text-sm font-semibold">{profile.assignments[0].shiftTitle}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Billing Details Table */}
+                          <div className="mb-8">
+                            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Billing Details</h3>
+                            <table className="w-full border-collapse border border-gray-300">
+                              <thead>
+                                <tr className="bg-gray-100">
+                                  <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold">Description</th>
+                                  <th className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="border border-gray-300 px-4 py-3 text-sm">Membership Fee</td>
+                                  <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(profile.totalFee)}</td>
+                                </tr>
+                                {profile.discount > 0 && (
+                                  <tr>
+                                    <td className="border border-gray-300 px-4 py-3 text-sm">Discount</td>
+                                    <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold text-green-600">- {formatCurrency(profile.discount)}</td>
+                                  </tr>
+                                )}
+                                {profile.securityMoney > 0 && (
+                                  <tr>
+                                    <td className="border border-gray-300 px-4 py-3 text-sm">Security Deposit</td>
+                                    <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(profile.securityMoney)}</td>
+                                  </tr>
+                                )}
+                                <tr className="bg-gray-50 font-bold">
+                                  <td className="border border-gray-300 px-4 py-3 text-sm">Total Amount</td>
+                                  <td className="border border-gray-300 px-4 py-3 text-right text-sm">{formatCurrency((profile.totalFee - profile.discount))}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Payment Details */}
+                          <div className="mb-8">
+                            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Payment Details</h3>
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                              <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-gray-700">Cash Payment:</span>
+                                  <span className="text-sm font-semibold">{formatCurrency(profile.cash)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-gray-700">Online Payment:</span>
+                                  <span className="text-sm font-semibold">{formatCurrency(profile.online)}</span>
+                                </div>
+                              </div>
+                              <div className="border-t border-gray-300 pt-4 grid grid-cols-2 gap-4">
+                                <div className="flex justify-between">
+                                  <span className="text-sm font-bold text-gray-900">Total Paid:</span>
+                                  <span className="text-sm font-bold text-green-600">{formatCurrency(profile.amountPaid)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-sm font-bold text-gray-900">Balance Due:</span>
+                                  <span className={`text-sm font-bold ${profile.dueAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                    {formatCurrency(profile.dueAmount)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Additional Information */}
+                          {profile.remark && (
+                            <div className="mb-8">
+                              <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Remarks</h3>
+                              <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">{profile.remark}</p>
+                            </div>
+                          )}
+
+                          {/* Footer */}
+                          <div className="mt-12 pt-6 border-t border-gray-300">
+                            <div className="text-center">
+                              <p className="text-xs text-gray-600">This is a computer-generated invoice and does not require a signature.</p>
+                              <p className="text-xs text-gray-600 mt-1">For any queries, please contact the library administration.</p>
+                              <p className="text-xs text-gray-500 mt-4">Generated on: {new Date().toLocaleString()}</p>
+                            </div>
+                          </div>
+                        </div>
                     </InvoiceButton>
                 </h3>
               </div>
@@ -744,7 +982,141 @@ const StudentDashboard: React.FC = () => {
                               studentName={profile.name}
                               className="text-xs"
                               variant="text"
-                            />
+                            >
+                              <div className="p-8 bg-white" style={{ width: '210mm', minHeight: '297mm' }}>
+                                {/* Same comprehensive invoice content */}
+                                <div className="border-b-4 border-blue-600 pb-4 mb-6">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
+                                      <p className="text-sm text-gray-600 mt-1">Library Membership Receipt</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm text-gray-600">Invoice Date</p>
+                                      <p className="text-lg font-semibold">{formatDate(new Date().toISOString())}</p>
+                                      {profile.registrationNumber && (
+                                        <>
+                                          <p className="text-sm text-gray-600 mt-2">Registration No.</p>
+                                          <p className="font-semibold">{profile.registrationNumber}</p>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-8 mb-8">
+                                  <div>
+                                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Bill To:</h3>
+                                    <div className="space-y-1">
+                                      <p className="text-lg font-bold text-gray-900">{profile.name}</p>
+                                      {profile.fatherName && <p className="text-sm text-gray-700">S/O: {profile.fatherName}</p>}
+                                      <p className="text-sm text-gray-700">{profile.phone}</p>
+                                      {profile.email && <p className="text-sm text-gray-700">{profile.email}</p>}
+                                      {profile.address && <p className="text-sm text-gray-700">{profile.address}</p>}
+                                    </div>
+                                  </div>
+                                  <div className="bg-blue-50 p-4 rounded-lg">
+                                    <h3 className="text-sm font-semibold text-blue-900 uppercase mb-3">Membership Details</h3>
+                                    <div className="space-y-2">
+                                      <div className="flex justify-between">
+                                        <span className="text-sm text-gray-700">Start Date:</span>
+                                        <span className="text-sm font-semibold">{formatDate(profile.membershipStart)}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-sm text-gray-700">Expiry Date:</span>
+                                        <span className="text-sm font-semibold">{formatDate(profile.membershipEnd)}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-sm text-gray-700">Status:</span>
+                                        <span className={`text-sm font-semibold ${profile.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>{profile.status.toUpperCase()}</span>
+                                      </div>
+                                      {profile.assignments && profile.assignments.length > 0 && (
+                                        <div className="flex justify-between border-t border-blue-200 pt-2 mt-2">
+                                          <span className="text-sm text-gray-700">Seat Number:</span>
+                                          <span className="text-sm font-bold text-blue-900">{profile.assignments[0].seatNumber}</span>
+                                        </div>
+                                      )}
+                                      {profile.assignments && profile.assignments.length > 0 && profile.assignments[0].shiftTitle && (
+                                        <div className="flex justify-between">
+                                          <span className="text-sm text-gray-700">Shift:</span>
+                                          <span className="text-sm font-semibold">{profile.assignments[0].shiftTitle}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="mb-8">
+                                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Billing Details</h3>
+                                  <table className="w-full border-collapse border border-gray-300">
+                                    <thead>
+                                      <tr className="bg-gray-100">
+                                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold">Description</th>
+                                        <th className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">Amount</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td className="border border-gray-300 px-4 py-3 text-sm">Membership Fee</td>
+                                        <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(profile.totalFee)}</td>
+                                      </tr>
+                                      {profile.discount > 0 && (
+                                        <tr>
+                                          <td className="border border-gray-300 px-4 py-3 text-sm">Discount</td>
+                                          <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold text-green-600">- {formatCurrency(profile.discount)}</td>
+                                        </tr>
+                                      )}
+                                      {profile.securityMoney > 0 && (
+                                        <tr>
+                                          <td className="border border-gray-300 px-4 py-3 text-sm">Security Deposit</td>
+                                          <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(profile.securityMoney)}</td>
+                                        </tr>
+                                      )}
+                                      <tr className="bg-gray-50 font-bold">
+                                        <td className="border border-gray-300 px-4 py-3 text-sm">Total Amount</td>
+                                        <td className="border border-gray-300 px-4 py-3 text-right text-sm">{formatCurrency((profile.totalFee - profile.discount) + profile.securityMoney)}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                                <div className="mb-8">
+                                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Payment Details</h3>
+                                  <div className="bg-gray-50 p-4 rounded-lg">
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                      <div className="flex justify-between">
+                                        <span className="text-sm text-gray-700">Cash Payment:</span>
+                                        <span className="text-sm font-semibold">{formatCurrency(profile.cash)}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-sm text-gray-700">Online Payment:</span>
+                                        <span className="text-sm font-semibold">{formatCurrency(profile.online)}</span>
+                                      </div>
+                                    </div>
+                                    <div className="border-t border-gray-300 pt-4 grid grid-cols-2 gap-4">
+                                      <div className="flex justify-between">
+                                        <span className="text-sm font-bold text-gray-900">Total Paid:</span>
+                                        <span className="text-sm font-bold text-green-600">{formatCurrency(profile.amountPaid)}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-sm font-bold text-gray-900">Balance Due:</span>
+                                        <span className={`text-sm font-bold ${profile.dueAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>{formatCurrency(profile.dueAmount)}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                {profile.remark && (
+                                  <div className="mb-8">
+                                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Remarks</h3>
+                                    <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">{profile.remark}</p>
+                                  </div>
+                                )}
+                                <div className="mt-12 pt-6 border-t border-gray-300">
+                                  <div className="text-center">
+                                    <p className="text-xs text-gray-600">This is a computer-generated invoice and does not require a signature.</p>
+                                    <p className="text-xs text-gray-600 mt-1">For any queries, please contact the library administration.</p>
+                                    <p className="text-xs text-gray-500 mt-4">Generated on: {new Date().toLocaleString()}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </InvoiceButton>
                           </li>
                         ))}
                       </ul>

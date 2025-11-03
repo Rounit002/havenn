@@ -107,6 +107,11 @@ const EnhancedAttendance: React.FC = () => {
     setPagination(prev => ({ ...prev, page: 1 }));
   };
 
+  const handleBranchChange = (branchId: number | null) => {
+    setSelectedBranch(branchId);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
   const clearAllFilters = () => {
     setSearchTerm('');
     setSelectedDate(new Date().toISOString().split('T')[0]);
@@ -122,7 +127,7 @@ const EnhancedAttendance: React.FC = () => {
     loadStats();
     loadLibraryInfo();
     loadBranches();
-  }, [viewMode, selectedDate, selectedMonth, filterStatus, searchTerm, pagination.page]);
+  }, [viewMode, selectedDate, selectedMonth, filterStatus, searchTerm, pagination.page, selectedBranch]);
 
   const loadLibraryInfo = async () => {
     try {
@@ -413,7 +418,7 @@ const EnhancedAttendance: React.FC = () => {
                         <label className="block text-sm font-medium text-blue-100 mb-2">Branch</label>
                         <select
                           value={selectedBranch || ''}
-                          onChange={(e) => setSelectedBranch(e.target.value ? parseInt(e.target.value) : null)}
+                          onChange={(e) => handleBranchChange(e.target.value ? parseInt(e.target.value) : null)}
                           className="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                         >
                           <option value="" className="text-gray-800">All Branches</option>

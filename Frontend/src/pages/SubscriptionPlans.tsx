@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
-import FestivalBanner from '../components/FestivalBanner';
 
 // Load Razorpay script
 declare global {
@@ -162,7 +161,7 @@ const SubscriptionPlans = () => {
     return Boolean(subscriptionInfo.isActive) && !!end && end.getTime() > now.getTime();
   };
 
-  // Subscription plans data with Durga Pooja special pricing
+  // Subscription plans data
   const plans = [
     {
       id: 'free_trial',
@@ -186,9 +185,9 @@ const SubscriptionPlans = () => {
       id: '1_month',
       name: '1-Month Plan',
       description: 'One Month to Build a Routine',
-      price: '₹225',
-      originalPrice: '₹300',
-      amount: 22500, // 25% OFF: ₹225 = 22500 paise
+      price: '₹300',
+      originalPrice: null,
+      amount: 30000, // ₹300 = 30000 paise
       features: [
         'Unlimited student addition',
         'All library management features',
@@ -198,15 +197,15 @@ const SubscriptionPlans = () => {
       cta: 'Get Started',
       isCurrent: isPlanActive('1_month'),
       disabled: false,
-      discount: '25% OFF'
+      discount: null
     },
     {
       id: '3_month',
       name: '3-Month Plan',
       description: 'Stay Focused for 90 Days',
-      price: '₹650',
-      originalPrice: '₹850',
-      amount: 65000, // Special price: ₹650 = 65000 paise
+      price: '₹850',
+      originalPrice: null,
+      amount: 85000, // ₹850 = 85000 paise
       features: [
         'Unlimited students',
         'All features included',
@@ -216,15 +215,15 @@ const SubscriptionPlans = () => {
       cta: 'Choose Plan',
       isCurrent: isPlanActive('3_month'),
       disabled: false,
-      discount: '24% OFF'
+      discount: null
     },
     {
       id: '6_month',
       name: '6-Month Plan',
       description: 'Make This Your Growth Phase',
-      price: '₹1200',
-      originalPrice: '₹1600',
-      amount: 120000, // 25% OFF: ₹1200 = 120000 paise
+      price: '₹1600',
+      originalPrice: null,
+      amount: 160000, // ₹1600 = 160000 paise
       features: [
         'Great value package',
         'All premium features',
@@ -234,15 +233,15 @@ const SubscriptionPlans = () => {
       cta: 'Get Started',
       isCurrent: isPlanActive('6_month'),
       disabled: false,
-      discount: '25% OFF'
+      discount: null
     },
     {
       id: '12_month',
       name: '12-Month Plan',
       description: 'All In for the Year',
-      price: '₹1999',
-      originalPrice: '₹3000',
-      amount: 199900, // Special price: ₹1999 = 199900 paise
+      price: '₹3000',
+      originalPrice: null,
+      amount: 300000, // ₹3000 = 300000 paise
       features: [
         'Best value',
         'All features unlocked',
@@ -252,7 +251,7 @@ const SubscriptionPlans = () => {
       cta: 'Get Best Value',
       isCurrent: isPlanActive('12_month'),
       disabled: false,
-      discount: '33% OFF'
+      discount: null
     },
     {
       id: '1_day',
@@ -260,7 +259,7 @@ const SubscriptionPlans = () => {
       description: 'Full access for 24 hours',
       price: '₹10',
       originalPrice: null,
-      amount: 1000, // No discount: ₹10 = 1000 paise
+      amount: 1000, // ₹10 = 1000 paise
       features: [
         'All features for 1 day',
         'Great for quick needs',
@@ -304,9 +303,6 @@ const SubscriptionPlans = () => {
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-6xl mx-auto space-y-8">
 
-            {/* Durga Pooja Special Offer Banner */}
-            <FestivalBanner variant="full" clickable={false} />
-
             <div className="text-center mb-16">
               <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-6 tracking-tight">Subscription Plans</h1>
               <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium leading-relaxed">
@@ -342,33 +338,16 @@ const SubscriptionPlans = () => {
                 plan.isCurrent ? 'border-purple-500 ring-4 ring-purple-200' : 'border-gray-200'
               }`}
             >
-              {/* Festival Discount Badge */}
-              {plan.discount && (
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 via-pink-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-black shadow-2xl z-10 animate-pulse">
-                  {plan.discount}
-                </div>
-              )}
-              
               {/* Card Header with Gradient */}
-              <div className={`h-2 ${plan.discount ? 'bg-gradient-to-r from-orange-400 to-red-500' : 'bg-gradient-to-r from-blue-400 to-purple-500'}`}></div>
+              <div className="h-2 bg-gradient-to-r from-blue-400 to-purple-500"></div>
               
               <div className="p-8">
                 <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">{plan.name}</h3>
                 <p className="text-gray-600 mb-6 font-medium text-lg leading-relaxed">{plan.description}</p>
                 
-                {/* Enhanced Pricing with original price strikethrough */}
+                {/* Pricing */}
                 <div className="mb-8">
-                  {plan.originalPrice ? (
-                    <div className="space-y-2">
-                      <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{plan.price}</div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500 font-medium">Previously:</span>
-                        <div className="text-xl text-red-500 line-through font-bold bg-red-50 px-3 py-1 rounded-full">{plan.originalPrice}</div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{plan.price}</div>
-                  )}
+                  <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{plan.price}</div>
                 </div>
                 
                 <ul className="space-y-4 mb-8">
@@ -392,8 +371,6 @@ const SubscriptionPlans = () => {
                       ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 cursor-default shadow-lg'
                       : plan.disabled
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : plan.discount
-                      ? 'bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white hover:from-orange-600 hover:via-red-600 hover:to-pink-600 shadow-2xl hover:shadow-3xl'
                       : 'bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 text-white hover:from-blue-600 hover:via-purple-600 hover:to-indigo-600 shadow-xl hover:shadow-2xl'
                   }`}
                 >
@@ -412,15 +389,9 @@ const SubscriptionPlans = () => {
               <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">9-Month Plan</h3>
               <p className="text-gray-600 mb-6 font-medium text-lg leading-relaxed">The Transformation Period</p>
               
-              {/* Enhanced Pricing with original price strikethrough */}
+              {/* Pricing */}
               <div className="mb-8">
-                <div className="space-y-2">
-                  <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">₹2200</div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 font-medium">Previously:</span>
-                    <div className="text-xl text-red-500 line-through font-bold bg-red-50 px-3 py-1 rounded-full">₹2800</div>
-                  </div>
-                </div>
+                <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">₹2800</div>
               </div>
               
               <ul className="space-y-4 mb-8">
@@ -454,7 +425,7 @@ const SubscriptionPlans = () => {
                 const current = isPlanActive('9_month');
                 return (
                   <button
-                    onClick={() => handlePayment({ id: '9_month', name: '9-Month Plan', amount: 220000 })}
+                    onClick={() => handlePayment({ id: '9_month', name: '9-Month Plan', amount: 280000 })}
                     disabled={current}
                     className={`w-full py-4 px-6 rounded-xl font-black text-lg transition-all duration-300 transform hover:scale-105 ${
                       current

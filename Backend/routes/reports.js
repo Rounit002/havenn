@@ -5,6 +5,8 @@ module.exports = (pool) => {
   router.get('/profit-loss', checkAdminOrStaff, async (req, res) => {
     try {
       const { month, branchId } = req.query;
+      const libraryId = req.user.libraryId; // Get library ID from authenticated user
+      
       if (!month || !/^\d{4}-\d{2}$/.test(month)) {
         return res.status(400).json({ message: 'Invalid month format, use YYYY-MM' });
       }
@@ -13,17 +15,19 @@ module.exports = (pool) => {
       const startDate = `${year}-${monthNum}-01`;
       const endDate = new Date(year, monthNum, 0).toISOString().split('T')[0];
   
-      let params = [startDate, endDate];
-      let paramIndex = 3;
+      let params = [startDate, endDate, libraryId];
+      let paramIndex = 4;
       let collectionsQuery = `
         SELECT COALESCE(SUM(amount_paid), 0) AS total_collected
         FROM student_membership_history
         WHERE changed_at::date >= $1 AND changed_at::date <= $2
+        AND library_id = $3
       `;
       let expensesQuery = `
         SELECT COALESCE(SUM(amount), 0) AS total_expenses
         FROM expenses
         WHERE date >= $1 AND date <= $2
+        AND library_id = $3
       `;
 
       if (branchId) {

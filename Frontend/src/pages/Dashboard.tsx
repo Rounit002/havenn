@@ -10,7 +10,6 @@ import AddStudentForm from '../components/AddStudentForm';
 import ExpiringMemberships from '../components/ExpiringMemberships';
 import BarcodeGenerator from '../components/BarcodeGenerator';
 import RegistrationLinkCard from '../components/RegistrationLinkCard';
-import FestivalBanner from '../components/FestivalBanner';
 import api, { AttendanceRecord } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -343,10 +342,6 @@ const Dashboard: React.FC = () => {
         <Navbar />
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
-            {/* Festival Banner */}
-            <div className="mb-6">
-              <FestivalBanner variant="compact" clickable={true} />
-            </div>
             
             <div className="bg-gradient-to-r from-indigo-50 via-white to-violet-50 border border-slate-200 rounded-2xl p-4 sm:p-5 mb-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

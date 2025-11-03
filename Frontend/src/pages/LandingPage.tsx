@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { BookOpen, Users, GraduationCap, Zap, Shield, Sparkles } from 'lucide-react';
-import FestivalBanner from '../components/FestivalBanner';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,13 +14,6 @@ const LandingPage: React.FC = () => {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full opacity-20 animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full opacity-20 animate-pulse"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full opacity-10 animate-spin" style={{animationDuration: '20s'}}></div>
-      </div>
-      
-      {/* Durga Pooja Special Offer Banner - Responsive & Compact */}
-      <div className="relative z-20 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-        <div className="max-w-6xl mx-auto">
-          <FestivalBanner variant="compact" clickable={true} />
-        </div>
       </div>
       
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
