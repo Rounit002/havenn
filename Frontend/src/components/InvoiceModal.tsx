@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Share, Download, Printer, User, Phone, Mail, MapPin, Hash, CreditCard, AlertCircle } from 'lucide-react';
+import { X, Share, Download, Printer, AlertCircle } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import api from '../services/api';
+import api from '../services/api'; // Make sure this path is correct
 import { toast } from 'sonner';
 
-// Types
+// --- Interfaces ---
 interface StudentAssignment {
   seatId: number;
   shiftId: number;
@@ -47,15 +47,14 @@ interface Student {
     seatNumber: string;
     shiftTitle: string;
   }>;
-  // Optional discount field since it's not in the API but might be needed
   discount?: number;
 }
 
 interface LibraryInfo {
-  name: string;
-  address?: string;
-  phone?: string;
-  email?: string;
+  libraryName: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone: string;
 }
 
 interface InvoiceModalProps {
@@ -64,8 +63,9 @@ interface InvoiceModalProps {
   studentId: number | null;
 }
 
-// Helper functions
+// --- Helper Functions ---
 const formatDate = (dateString: string) => {
+  if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'short',
@@ -79,29 +79,29 @@ const formatCurrency = (amount: number) => {
     currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(amount || 0);
 };
 
+// --- Component ---
 const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId }) => {
   const [student, setStudent] = useState<Student | null>(null);
+  const [libraryInfo, setLibraryInfo] = useState<LibraryInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const componentRef = useRef<HTMLDivElement>(null);
 
   const fetchStudentData = useCallback(async () => {
     if (!studentId) return;
-    
     setLoading(true);
     setError(null);
-    
     try {
-      const studentData = await api.getStudent(studentId) as Student & { discount?: number };
-      
-      // Create a base student object with all required fields
+      const [studentData, ownerProfile] = await Promise.all([
+        api.getStudent(studentId) as Promise<Student & { discount?: number }>,
+        api.getOwnerProfile()
+      ]);
+
       const formattedStudent: Student = {
-        // Spread all properties from studentData first
         ...studentData,
-        // Ensure all required string fields have a value
         name: studentData.name || '',
         email: studentData.email || '',
         phone: studentData.phone || '',
@@ -109,7 +109,6 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
         membershipStart: studentData.membershipStart || new Date().toISOString(),
         membershipEnd: studentData.membershipEnd || new Date().toISOString(),
         status: studentData.status || 'active',
-        // Ensure all required number fields have a value
         totalFee: studentData.totalFee ?? 0,
         amountPaid: studentData.amountPaid ?? 0,
         dueAmount: studentData.dueAmount ?? 0,
@@ -117,19 +116,22 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
         online: studentData.online ?? 0,
         securityMoney: studentData.securityMoney ?? 0,
         branchId: studentData.branchId ?? 0,
-        // Handle potentially null/undefined fields
         remark: studentData.remark || null,
         createdAt: studentData.createdAt || new Date().toISOString(),
-        // Initialize discount with a default value of 0
-        discount: 0
+        discount: Number(studentData.discount) || 0
       };
       
-      // Update discount if it exists in studentData
-      if (studentData.discount !== undefined) {
-        formattedStudent.discount = Number(studentData.discount) || 0;
-      }
-      
       setStudent(formattedStudent);
+
+      if (ownerProfile && ownerProfile.owner) {
+        setLibraryInfo({
+          libraryName: ownerProfile.owner.libraryName || 'Library',
+          ownerName: ownerProfile.owner.ownerName || '',
+          ownerEmail: ownerProfile.owner.ownerEmail || '',
+          ownerPhone: ownerProfile.owner.ownerPhone || ''
+        });
+      }
+
     } catch (err) {
       console.error('Error fetching student data:', err);
       setError('Failed to load student data');
@@ -140,20 +142,28 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
   }, [studentId]);
 
   useEffect(() => {
-    if (isOpen && studentId) fetchStudentData();
+    if (isOpen && studentId) {
+      fetchStudentData();
+    }
   }, [isOpen, studentId, fetchStudentData]);
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-    onAfterPrint: () => toast.success('Invoice printed successfully!'),
     pageStyle: `
       @page { 
-        size: A4;
-        margin: 10mm;
+        size: A5 portrait; 
+        margin: 0;
       }
       @media print {
         body { 
-          -webkit-print-color-adjust: exact; 
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          margin: 0;
+          padding: 0;
+        }
+        * {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
         .no-print { 
           display: none !important; 
@@ -161,43 +171,43 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
       }
     `,
     documentTitle: `Invoice_${student?.name || 'Student'}_${new Date().toISOString().split('T')[0]}`,
-    removeAfterPrint: false,
-  } as any); // Using 'as any' to bypass TypeScript errors with the pageStyle property
+  });
 
   const generatePdf = useCallback(async () => {
-    if (!componentRef.current) return null;
-    
     const element = componentRef.current;
+    if (!element) return null;
+    
     const canvas = await html2canvas(element, {
-      scale: 2, // Higher scale for better quality
+      scale: 2.5,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
     });
+
+    const imgData = canvas.toDataURL('image/png', 1.0);
+
+    const pageWidth = 148.5;
+    const pageHeight = 210;
     
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdf = new jsPDF('p', 'mm', [pageWidth, pageHeight]);
     
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
     return pdf;
   }, []);
 
   const handleDownload = useCallback(async () => {
     if (!student) return;
-    
+    toast.info('Generating PDF...');
     try {
       const pdf = await generatePdf();
-      if (!pdf) return;
+      if (!pdf) throw new Error('PDF generation failed');
       
       const fileName = `invoice_${student.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
-      toast.success('Invoice downloaded as PDF!');
+      toast.success('Invoice downloaded successfully!');
     } catch (error) {
       console.error('Error generating PDF:', error);
-      toast.error('Failed to generate PDF');
+      toast.error('Failed to generate PDF. Please try again.');
     }
   }, [student, generatePdf]);
 
@@ -208,11 +218,9 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
       const pdf = await generatePdf();
       if (!pdf) return;
       
-      // Generate a blob URL for the PDF
       const pdfBlob = pdf.output('blob');
       const pdfUrl = URL.createObjectURL(pdfBlob);
       
-      // Create a temporary link to download the PDF
       const a = document.createElement('a');
       a.href = pdfUrl;
       a.download = `invoice_${student.name.replace(/\s+/g, '_')}.pdf`;
@@ -220,10 +228,8 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
       a.click();
       document.body.removeChild(a);
       
-      // Clean up
       setTimeout(() => URL.revokeObjectURL(pdfUrl), 100);
       
-      // Open WhatsApp with a message (user will need to manually attach the downloaded file)
       const message = `Here's the invoice for ${student.name}`;
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
@@ -239,10 +245,11 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75"></div>
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-4 py-3 sm:px-6 flex justify-between items-center">
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={onClose}></div>
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+          
+          <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-blue-800 px-4 py-3 sm:px-6 flex justify-between items-center">
             <h3 className="text-lg leading-6 font-medium text-white">
               {student ? `Invoice - ${student.name}` : 'Invoice'}
             </h3>
@@ -256,7 +263,8 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
             </div>
           </div>
 
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+          {/* Modal body with scroll */}
+          <div className="flex-grow overflow-y-auto p-4 sm:p-6">
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -274,157 +282,187 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, studentId 
                 </button>
               </div>
             ) : student ? (
-              <div ref={componentRef} className="p-8 bg-white">
-                {/* Header */}
-                <div className="border-b-4 border-blue-600 pb-4 mb-6">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
-                      <p className="text-sm text-gray-600 mt-1">Library Membership Receipt</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">Invoice Date</p>
-                      <p className="text-lg font-semibold">{formatDate(new Date().toISOString())}</p>
-                      {student.registrationNumber && (
-                        <>
-                          <p className="text-sm text-gray-600 mt-2">Registration No.</p>
-                          <p className="font-semibold">{student.registrationNumber}</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bill To & Membership Info */}
-                <div className="grid grid-cols-2 gap-8 mb-8">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Bill To:</h3>
-                    <div className="space-y-1">
-                      <p className="text-lg font-bold text-gray-900">{student.name}</p>
-                      {student.fatherName && <p className="text-sm text-gray-700">S/O: {student.fatherName}</p>}
-                      <p className="text-sm text-gray-700">{student.phone}</p>
-                      {student.email && <p className="text-sm text-gray-700">{student.email}</p>}
-                      {student.address && <p className="text-sm text-gray-700">{student.address}</p>}
-                    </div>
-                  </div>
-                  
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-semibold text-blue-900 uppercase mb-3">Membership Details</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-700">Start Date:</span>
-                        <span className="text-sm font-semibold">{formatDate(student.membershipStart)}</span>
+              <div>
+                <div
+                  ref={componentRef}
+                  className="bg-white"
+                  style={{
+                    width: '800px',
+                    height: '1132px',
+                    margin: '0 auto',
+                    padding: '40px',
+                    boxSizing: 'border-box',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {/* Header */}
+                  <div style={{ paddingBottom: '8px', marginBottom: '20px' }} className="border-b-2 border-blue-600">
+                    <div className="flex justify-between items-center mb-0">
+                      <div className="flex-1 text-center">
+                        <h1 className="font-bold text-blue-800 uppercase" style={{ fontSize: '24px', lineHeight: '1.3' }}>
+                          {libraryInfo?.libraryName || 'Library'}
+                        </h1>
+                        <p style={{ fontSize: '16px', lineHeight: '1.3' }} className="text-gray-600">Membership Invoice</p>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-700">Expiry Date:</span>
-                        <span className="text-sm font-semibold">{formatDate(student.membershipEnd)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-700">Status:</span>
-                        <span className={`text-sm font-semibold ${
-                          student.status === 'active' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {student.status.toUpperCase()}
-                        </span>
-                      </div>
-                      {student.assignments && student.assignments.length > 0 && (
-                        <div className="flex justify-between border-t border-blue-200 pt-2 mt-2">
-                          <span className="text-sm text-gray-700">Seat Number:</span>
-                          <span className="text-sm font-bold text-blue-900">{student.assignments[0].seatNumber}</span>
+                      {student.assignments && student.assignments.length > 0 && student.assignments[0].seatNumber && (
+                        <div className="bg-blue-600 text-white px-3 py-1 rounded">
+                          <p style={{ fontSize: '14px', lineHeight: '1.3' }} className="font-semibold uppercase">Seat</p>
+                          <p className="font-bold" style={{ fontSize: '24px', lineHeight: '1.3' }}>
+                            {student.assignments[0].seatNumber}
+                          </p>
                         </div>
                       )}
+                    </div>
+                    <div className="flex justify-between items-center" style={{ fontSize: '16px', lineHeight: '1.4' }}>
+                      <div>
+                        <p className="text-gray-600">Date: <span className="font-semibold">{formatDate(new Date().toISOString())}</span></p>
+                        {student.registrationNumber && (
+                          <p className="text-gray-600">Reg: <span className="font-semibold">{student.registrationNumber}</span></p>
+                        )}
+                      </div>
                       {student.assignments && student.assignments.length > 0 && student.assignments[0].shiftTitle && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-700">Shift:</span>
-                          <span className="text-sm font-semibold">{student.assignments[0].shiftTitle}</span>
+                        <div className="text-right">
+                          <p className="text-gray-600">Shift: <span className="font-semibold">{student.assignments[0].shiftTitle}</span></p>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Billing Details Table */}
-                <div className="mb-8">
-                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Billing Details</h3>
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold">Description</th>
-                        <th className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="border border-gray-300 px-4 py-3 text-sm">Membership Fee</td>
-                        <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(student.totalFee)}</td>
-                      </tr>
-                      {(student.discount && student.discount > 0) ? (
-                        <tr>
-                          <td className="border border-gray-300 px-4 py-3 text-sm">Discount</td>
-                          <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold text-green-600">- {formatCurrency(student.discount)}</td>
-                        </tr>
-                      ) : null}
-                      {student.securityMoney > 0 ? (
-                        <tr>
-                          <td className="border border-gray-300 px-4 py-3 text-sm">Security Deposit</td>
-                          <td className="border border-gray-300 px-4 py-3 text-right text-sm font-semibold">{formatCurrency(student.securityMoney)}</td>
-                        </tr>
-                      ) : null}
-                      <tr className="bg-gray-50 font-bold">
-                        <td className="border border-gray-300 px-4 py-3 text-sm">Total Amount</td>
-                        <td className="border border-gray-300 px-4 py-3 text-right text-sm">{formatCurrency((student.totalFee - (student.discount || 0)))}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Payment Details */}
-                <div className="mb-8">
-                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Payment Details</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-700">Cash Payment:</span>
-                        <span className="text-sm font-semibold">{formatCurrency(student.cash)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-700">Online Payment:</span>
-                        <span className="text-sm font-semibold">{formatCurrency(student.online)}</span>
+                  {/* Student & Membership Info */}
+                  <div style={{ marginBottom: '20px', gap: '12px' }} className="grid grid-cols-2">
+                    <div>
+                      <h3 style={{ fontSize: '16px', lineHeight: '1.4', marginBottom: '8px' }} className="font-semibold text-gray-600 uppercase">Student Details:</h3>
+                      <div style={{ lineHeight: '1.5' }}>
+                        <p style={{ fontSize: '18px', lineHeight: '1.5' }} className="font-bold text-gray-900">{student.name}</p>
+                        {student.fatherName && <p style={{ fontSize: '16px', lineHeight: '1.5' }} className="text-gray-600">S/O: {student.fatherName}</p>}
+                        <p style={{ fontSize: '16px', lineHeight: '1.5' }} className="text-gray-600">{student.phone}</p>
+                        {student.branchName && <p style={{ fontSize: '16px', lineHeight: '1.5' }} className="text-gray-600">Branch: {student.branchName}</p>}
+                        {/* 💡 REMOVED: student.address was here */}
                       </div>
                     </div>
-                    <div className="border-t border-gray-300 pt-4 grid grid-cols-2 gap-4">
-                      <div className="flex justify-between">
-                        <span className="text-sm font-bold text-gray-900">Total Paid:</span>
-                        <span className="text-sm font-bold text-green-600">{formatCurrency(student.amountPaid)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-bold text-gray-900">Balance Due:</span>
-                        <span className={`text-sm font-bold ${student.dueAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                          {formatCurrency(student.dueAmount)}
-                        </span>
+                    <div style={{ padding: '12px' }} className="bg-blue-50 rounded">
+                      <h3 style={{ fontSize: '16px', lineHeight: '1.4', marginBottom: '8px' }} className="font-semibold text-blue-900 uppercase">Membership</h3>
+                      <div style={{ lineHeight: '1.5' }}>
+                        <div className="flex justify-between" style={{ fontSize: '16px', lineHeight: '1.5' }}>
+                          <span className="text-gray-600">Start:</span>
+                          <span className="font-semibold">{formatDate(student.membershipStart)}</span>
+                        </div>
+                        <div className="flex justify-between" style={{ fontSize: '16px', lineHeight: '1.5' }}>
+                          <span className="text-gray-600">Expiry:</span>
+                          <span className="font-semibold">{formatDate(student.membershipEnd)}</span>
+                        </div>
+                        <div className="flex justify-between" style={{ fontSize: '16px', lineHeight: '1.5' }}>
+                          <span className="text-gray-600">Status:</span>
+                          <span className={`font-semibold ${student.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
+                            {student.status.toUpperCase()}
+                          </span>
+                        </div>
+                        {student.assignments && student.assignments.length > 0 && student.assignments[0].shiftTitle && (
+                          <div className="flex justify-between border-t border-blue-200" style={{ fontSize: '16px', lineHeight: '1.5', paddingTop: '8px', marginTop: '8px' }}>
+                            <span className="text-gray-600">Shift:</span>
+                            <span className="font-semibold">{student.assignments[0].shiftTitle}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
+
+                  {/* Billing Details */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '16px', lineHeight: '1.4', marginBottom: '8px' }} className="font-semibold text-gray-600 uppercase">Billing Details</h3>
+                    <table className="w-full border-collapse border border-gray-300" style={{ fontSize: '16px', lineHeight: '1.4' }}>
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th style={{ padding: '10px 12px' }} className="border border-gray-300 text-left font-semibold">Description</th>
+                          <th style={{ padding: '10px 12px' }} className="border border-gray-300 text-right font-semibold">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style={{ padding: '10px 12px' }} className="border border-gray-300">Membership Fee</td>
+                          <td style={{ padding: '10px 12px' }} className="border border-gray-300 text-right font-semibold">{formatCurrency(student.totalFee)}</td>
+                        </tr>
+                        {(student.discount && student.discount > 0) && (
+                          <tr>
+                            <td style={{ padding: '10px 12px' }} className="border border-gray-300">Discount</td>
+                            <td style={{ padding: '10px 12px' }} className="border border-gray-300 text-right font-semibold text-green-600">- {formatCurrency(student.discount)}</td>
+                          </tr>
+                        )}
+                        {student.securityMoney > 0 && (
+                          <tr>
+                            <td style={{ padding: '10px 12px' }} className="border border-gray-300">Security Deposit</td>
+                            <td style={{ padding: '10px 12px' }} className="border border-gray-300 text-right font-semibold">{formatCurrency(student.securityMoney)}</td>
+                          </tr>
+                        )}
+                        {/* 💡 REMOVED: The extra <tr> that was rendering "0" */}
+                        <tr className="bg-gray-50 font-bold">
+                          <td style={{ padding: '10px 12px' }} className="border border-gray-300">Total Amount</td>
+                          <td style={{ padding: '10px 12px' }} className="border border-gray-300 text-right">{formatCurrency((student.totalFee - (student.discount || 0)))}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Payment Details */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '16px', lineHeight: '1.4', marginBottom: '8px' }} className="font-semibold text-gray-600 uppercase">Payment Details</h3>
+                    <div style={{ padding: '12px' }} className="bg-gray-50 rounded">
+                      <div className="grid grid-cols-2" style={{ gap: '4px', marginBottom: '8px', fontSize: '16px', lineHeight: '1.5' }}>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Cash:</span>
+                          <span className="font-semibold">{formatCurrency(student.cash)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Online:</span>
+                          <span className="font-semibold">{formatCurrency(student.online)}</span>
+                        </div>
+                      </div>
+                      <div className="border-t border-gray-300 grid grid-cols-2" style={{ paddingTop: '8px', gap: '4px', fontSize: '16px', lineHeight: '1.5' }}>
+                        <div className="flex justify-between">
+                          <span className="font-bold text-gray-900">Total Paid:</span>
+                          <span className="font-bold text-green-600">{formatCurrency(student.amountPaid)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-bold text-gray-900">Balance Due:</span>
+                          <span className={`font-bold ${student.dueAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            {formatCurrency(student.dueAmount)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Remarks */}
+                  {student.remark && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <h3 style={{ fontSize: '16px', lineHeight: '1.4', marginBottom: '8px' }} className="font-semibold text-gray-600 uppercase">Remarks</h3>
+                      <p style={{ fontSize: '16px', lineHeight: '1.5', padding: '12px' }} className="text-gray-700 bg-yellow-50 rounded border-l-2 border-yellow-400">
+                        {student.remark}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Footer (uses margin-top: auto to push to bottom) */}
+                  <div style={{ marginTop: 'auto', paddingTop: '12px' }} className="border-t border-gray-300">
+                    <div className="text-center" style={{ lineHeight: '1.4' }}>
+                      <p style={{ fontSize: '14px', lineHeight: '1.4' }} className="text-gray-600">Computer-generated invoice. No signature required.</p>
+                      {libraryInfo?.ownerPhone && (
+                        <p style={{ fontSize: '14px', lineHeight: '1.4' }} className="text-gray-600">Contact: {libraryInfo.ownerPhone}</p>
+                      )}
+                      <p style={{ fontSize: '13px', lineHeight: '1.4' }} className="text-gray-500">Generated: {new Date().toLocaleString('en-IN', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Additional Information */}
-                {student.remark && (
-                  <div className="mb-8">
-                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Remarks</h3>
-                    <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">{student.remark}</p>
-                  </div>
-                )}
-
-                {/* Footer */}
-                <div className="mt-12 pt-6 border-t border-gray-300">
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600">This is a computer-generated invoice and does not require a signature.</p>
-                    <p className="text-xs text-gray-600 mt-1">For any queries, please contact the library administration.</p>
-                    <p className="text-xs text-gray-500 mt-4">Generated on: {new Date().toLocaleString()}</p>
-                  </div>
-                </div>
-
-                {/* Action Buttons - Only visible in modal, not in print/PDF */}
+                {/* Action Buttons (not part of printed/PDF content) */}
                 <div className="flex justify-end space-x-3 mt-6 no-print">
                   <button
                     onClick={handleDownload}
