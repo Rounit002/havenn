@@ -3163,3 +3163,87 @@
 {"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-03T13:00:04.599Z"}
 {"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-03T13:00:04.612Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-11-03T13:00:04.639Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:10:44.459Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:10:44.559Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:10:44.619Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:10:44.728Z"}
+{"level":"error","message":"Unhandled error: Not allowed by CORS","method":"GET","path":"/assets/index-BmAMFztA.js","stack":"Error: Not allowed by CORS\n    at origin (D:\\WebSoftware\\HavennMain\\Backend\\server.js:53:16)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handle [as handle_request] (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at expressInit (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\middleware\\init.js:40:5)","timestamp":"2025-11-26T18:10:52.027Z"}
+{"level":"error","message":"Unhandled error: Not allowed by CORS","method":"GET","path":"/assets/index-D-O7wyIH.css","stack":"Error: Not allowed by CORS\n    at origin (D:\\WebSoftware\\HavennMain\\Backend\\server.js:53:16)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handle [as handle_request] (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at expressInit (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\middleware\\init.js:40:5)","timestamp":"2025-11-26T18:10:52.035Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:11:57.598Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:11:57.618Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:11:57.635Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:11:57.684Z"}
+{"level":"error","message":"Unhandled error: Not allowed by CORS","method":"GET","path":"/assets/index-BmAMFztA.js","stack":"Error: Not allowed by CORS\n    at origin (D:\\WebSoftware\\HavennMain\\Backend\\server.js:53:16)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handle [as handle_request] (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at expressInit (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\middleware\\init.js:40:5)","timestamp":"2025-11-26T18:12:03.481Z"}
+{"level":"error","message":"Unhandled error: Not allowed by CORS","method":"GET","path":"/assets/index-D-O7wyIH.css","stack":"Error: Not allowed by CORS\n    at origin (D:\\WebSoftware\\HavennMain\\Backend\\server.js:53:16)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:219:13\n    at optionsCallback (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:199:9)\n    at corsMiddleware (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\cors\\lib\\index.js:204:7)\n    at Layer.handle [as handle_request] (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at expressInit (D:\\WebSoftware\\HavennMain\\Backend\\node_modules\\express\\lib\\middleware\\init.js:40:5)","timestamp":"2025-11-26T18:12:03.489Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:13:06.279Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:13:06.326Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:13:06.369Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:13:06.424Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:21:03.633Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:21:03.666Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:21:03.691Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:21:03.766Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:21:17.461Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:21:17.481Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:21:17.492Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:21:17.529Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:31:55.316Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:31:55.333Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:31:55.345Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:31:55.385Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:32:30.732Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:32:30.747Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:32:30.760Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:32:30.801Z"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:33:25.486Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:33:25.499Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:33:25.534Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:33:25.563Z","user":"pos***res"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:33:32.602Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:33:32.609Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:33:32.618Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:33:32.647Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:33:37.184Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:33:37.197Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:33:37.206Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:33:37.237Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:33:43.267Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:33:43.279Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:33:43.286Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:33:43.315Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:33:50.835Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:33:50.846Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:33:50.855Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:33:50.883Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:33:55.354Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:33:55.366Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:33:55.375Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:33:55.408Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:34:26.735Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:34:26.764Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:34:26.778Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:34:26.829Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:36:27.681Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:36:27.697Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:36:27.709Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:36:27.744Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:36:46.564Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:36:46.579Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:36:46.589Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:36:46.621Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:41:01.241Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:41:01.258Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:41:01.272Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:41:01.313Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:41:08.823Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:41:08.967Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:41:08.986Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:41:09.049Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:44:09.856Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:44:09.873Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:44:09.885Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:44:09.916Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-11-26T18:44:11.782Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-11-26T18:44:11.797Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-11-26T18:44:11.807Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-11-26T18:44:11.850Z"}

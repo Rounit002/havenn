@@ -496,7 +496,7 @@ module.exports = (pool) => {
       const {
         name, email, phone, address, branch_id, membership_start, membership_end,
         total_fee, amount_paid, shift_ids, seat_id, cash, online, security_money, remark, profile_image_url,
-        registration_number, father_name, aadhar_number, locker_id, aadhaar_front_url, aadhaar_back_url, discount
+        registration_number, father_name, aadhar_number, locker_id, aadhaar_front_url, aadhaar_back_url, discount, created_at
       } = req.body;
 
       console.log('Received request body for POST /students:', req.body);
@@ -599,6 +599,9 @@ module.exports = (pool) => {
 
       const status = new Date(membership_end) < new Date() ? 'expired' : 'active';
 
+      // Use the provided createdAt date or default to current date
+      const createdAt = created_at ? new Date(created_at).toISOString() : new Date().toISOString();
+      
       const result = await client.query(
         `INSERT INTO students (
           name, email, phone, address, branch_id, membership_start, membership_end,
@@ -606,13 +609,13 @@ module.exports = (pool) => {
           profile_image_url, aadhaar_front_url, aadhaar_back_url, status, locker_id,
           registration_number, father_name, aadhar_number, discount, is_active, created_at, library_id
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, NOW(), $25
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
         ) RETURNING *`,
         [
           name, email, phone, address, branchIdNum, membership_start, membership_end,
           feeValue, paidValue, dueAmount, cashValue, onlineValue, securityMoneyValue, remark || null, 
           profile_image_url || null, aadhaar_front_url || null, aadhaar_back_url || null, status, lockerIdNum,
-          registration_number || null, father_name || null, aadhar_number || null, discountValue, true, req.libraryId
+          registration_number || null, father_name || null, aadhar_number || null, discountValue, true, createdAt, req.libraryId
         ]
       );
       const student = result.rows[0];
@@ -635,6 +638,7 @@ module.exports = (pool) => {
         }
       }
 
+      // Use the same created_at date for the membership history
       await client.query(
         `INSERT INTO student_membership_history (
           student_id, name, email, phone, address,
@@ -645,7 +649,7 @@ module.exports = (pool) => {
           registration_number, father_name, aadhar_number,
           profile_image_url, aadhaar_front_url, aadhaar_back_url,
           locker_id, discount, changed_at, library_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, NOW(), $27)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)`,
         [
           student.id, student.name, student.email, student.phone, student.address,
           student.membership_start, student.membership_end, student.status,
@@ -654,7 +658,7 @@ module.exports = (pool) => {
           seatIdNum, firstShiftId, branchIdNum,
           student.registration_number, student.father_name, student.aadhar_number,
           student.profile_image_url || '', student.aadhaar_front_url || '', student.aadhaar_back_url || '',
-          lockerIdNum, student.discount, req.libraryId
+          lockerIdNum, student.discount, createdAt, req.libraryId
         ]
       );
 
