@@ -63,6 +63,7 @@ interface FormData {
   branchId: number | null;
   membershipStart: string;
   membershipEnd: string;
+  createdAt: string; // Added createdAt field
   seatId: number | null;
   shiftIds: number[];
   lockerId: number | null;
@@ -92,8 +93,9 @@ const AddStudentForm: React.FC = () => {
     phone: '',
     address: '',
     branchId: null,
-    membershipStart: '',
+    membershipStart: new Date().toISOString().split('T')[0],
     membershipEnd: '',
+    createdAt: new Date().toISOString().split('T')[0], // Set default to today
     seatId: null,
     shiftIds: [],
     lockerId: null,
@@ -424,6 +426,7 @@ const AddStudentForm: React.FC = () => {
         branchId: formData.branchId!,
         membershipStart: formData.membershipStart,
         membershipEnd: formData.membershipEnd,
+        createdAt: formData.createdAt, // Include the custom creation date
         totalFee: formData.totalFee ? parseFloat(formData.totalFee) : 0,
         amountPaid: (parseFloat(formData.cash) || 0) + (parseFloat(formData.online) || 0),
         cash: parseFloat(formData.cash) || 0,
@@ -481,22 +484,23 @@ const AddStudentForm: React.FC = () => {
             {/* Content Card */}
             {error && <div className="text-red-500 mb-4">{error}</div>}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-              <div className="p-6 space-y-5">
+              <div className="p-6">
                 {/* Form Fields */}
-                <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Name *
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
-            required
-          />
-        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              Name *
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+              required
+            />
+          </div>
         <div>
           <label htmlFor="registrationNumber" className="block text-sm font-medium text-gray-700 mb-1">
             Registration Number *
@@ -613,6 +617,20 @@ const AddStudentForm: React.FC = () => {
             id="membershipEnd"
             name="membershipEnd"
             value={formData.membershipEnd}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="createdAt" className="block text-sm font-medium text-gray-700 mb-1">
+            Registration Date *
+          </label>
+          <input
+            type="date"
+            id="createdAt"
+            name="createdAt"
+            value={formData.createdAt}
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
             required
@@ -829,6 +847,7 @@ const AddStudentForm: React.FC = () => {
             onChange={handleAadhaarBackChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg"
           />
+        </div>
         </div>
         <button
           onClick={handleSubmit}
