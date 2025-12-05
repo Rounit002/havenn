@@ -1114,8 +1114,8 @@ module.exports = (pool) => {
       if (shiftIdsNum.length > 0) {
         for (const shiftId of shiftIdsNum) {
           await client.query(
-            'INSERT INTO seat_assignments (seat_id, shift_id, student_id) VALUES ($1, $2, $3)',
-            [seatIdNum, shiftId, id]
+            'INSERT INTO seat_assignments (seat_id, shift_id, student_id, library_id) VALUES ($1, $2, $3, $4)',
+            [seatIdNum, shiftId, id, req.libraryId]
           );
           if (!firstShiftId) firstShiftId = shiftId;
         }
