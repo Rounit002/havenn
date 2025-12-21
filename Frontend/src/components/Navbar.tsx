@@ -23,23 +23,22 @@ const Navbar = () => {
 
   const daysLeft = calculateDaysLeft();
 
-  // Get subscription plan display name
-  const getSubscriptionPlanName = () => {
-    if (!user?.subscription_plan) return 'No Plan';
-    
-    const planNames: Record<string, string> = {
-      'free_trial': 'Free Trial',
-      '1_month': 'Monthly Plan',
-      '3_month': 'Quarterly Plan',
-      '6_month': 'Half-Yearly Plan',
-      '9_month': 'Nine-Month Plan',
-      '12_month': 'Annual Plan'
+  const formatDateRange = () => {
+    const formatDate = (dateString?: string) => {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return 'N/A';
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
     };
-    
-    return planNames[user.subscription_plan] || user.subscription_plan;
+
+    return `${formatDate(user?.subscription_start_date)} → ${formatDate(user?.subscription_end_date)}`;
   };
 
-  const subscriptionPlanName = getSubscriptionPlanName();
+  const subscriptionDateRange = formatDateRange();
 
   const handleLogout = () => {
     logout();
@@ -52,7 +51,7 @@ const Navbar = () => {
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 text-center text-sm font-medium">
           <div className="flex items-center justify-center space-x-2">
             <Star className="h-4 w-4" />
-            <span>{subscriptionPlanName} Active - {daysLeft} Days Left</span>
+            <span>{subscriptionDateRange} · {daysLeft} Days Left</span>
           </div>
         </div>
       )}
@@ -60,7 +59,7 @@ const Navbar = () => {
         <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 text-center text-sm font-medium">
           <div className="flex items-center justify-center space-x-2">
             <Award className="h-4 w-4" />
-            <span>{subscriptionPlanName} Active</span>
+            <span>{subscriptionDateRange}</span>
           </div>
         </div>
       )}

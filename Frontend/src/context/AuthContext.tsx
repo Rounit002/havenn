@@ -11,6 +11,7 @@ interface User {
   libraryCode?: string; // For owners - their library code
   isOwner?: boolean; // Flag to identify owners
   is_trial?: boolean; // Subscription trial status
+  subscription_start_date?: string; // Subscription start date
   subscription_end_date?: string; // Subscription end date
   subscription_plan?: string; // Current subscription plan
   is_subscription_active?: boolean; // Whether subscription is active
@@ -116,6 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   const subscriptionData = await subscriptionResponse.json();
                   subscriptionInfo = {
                     is_trial: subscriptionData.subscription.isTrial,
+                    subscription_start_date: subscriptionData.subscription.startDate,
                     subscription_end_date: subscriptionData.subscription.endDate,
                     subscription_plan: subscriptionData.subscription.plan,
                     is_subscription_active: subscriptionData.subscription.isActive,
