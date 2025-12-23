@@ -3279,3 +3279,15 @@
 {"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-12-21T15:40:51.678Z"}
 {"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-12-21T15:40:51.694Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-12-21T15:40:51.731Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-12-21T15:45:06.437Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-12-21T15:45:06.455Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-12-21T15:45:06.469Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-12-21T15:45:06.500Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-12-23T18:49:46.197Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-12-23T18:49:46.236Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-12-23T18:49:46.264Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-12-23T18:49:46.360Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2025-12-23T18:57:12.616Z","user":"pos***res"}
+{"level":"info","message":"Session table checked/initialized successfully","timestamp":"2025-12-23T18:57:12.641Z"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2025-12-23T18:57:12.659Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-12-23T18:57:12.705Z"}

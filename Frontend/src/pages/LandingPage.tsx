@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { BookOpen, Users, GraduationCap, Zap, Shield, Sparkles } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, Zap, Shield, Sparkles, Gift, PartyPopper } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,6 +37,35 @@ const LandingPage: React.FC = () => {
                     <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-700 mt-2 lg:mt-3">
                       Library Management System
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Seasonal Offer Banner */}
+              <div className="relative mb-8 sm:mb-12">
+                <div className="absolute inset-0 blur-xl bg-gradient-to-r from-red-500/30 via-pink-500/30 to-amber-400/30 rounded-3xl"></div>
+                <div className="relative bg-white/90 backdrop-blur border border-red-200 shadow-2xl rounded-3xl p-6 sm:p-8">
+                  <div className="flex flex-col lg:flex-row items-center gap-6">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-rose-500 via-red-500 to-amber-500 text-white shadow-xl">
+                      <Gift className="h-10 w-10" />
+                    </div>
+                    <div className="flex-1 text-center lg:text-left">
+                      <p className="uppercase text-xs sm:text-sm tracking-[0.3em] font-bold text-rose-500">Limited-Time Celebration</p>
+                      <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mt-2 mb-3 flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                        <span className="bg-gradient-to-r from-red-500 via-pink-500 to-amber-500 bg-clip-text text-transparent">Christmas Offer</span>
+                        <PartyPopper className="h-8 w-8 text-amber-500" />
+                        <span className="bg-gradient-to-r from-green-500 via-emerald-500 to-cyan-500 bg-clip-text text-transparent">New Year Offer</span>
+                      </h2>
+                      <p className="text-gray-700 text-base sm:text-lg font-semibold">
+                        Starting today — 20% OFF (3 Months) · 25% OFF (6 Months) · 33% OFF (1 Year) down to ₹2000.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => navigate('/owner-login')}
+                      className="px-6 py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-red-500 via-pink-500 to-amber-500 shadow-2xl hover:scale-105 transition"
+                    >
+                      Activate Offer
+                    </button>
                   </div>
                 </div>
               </div>

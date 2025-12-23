@@ -203,9 +203,9 @@ const SubscriptionPlans = () => {
       id: '3_month',
       name: '3-Month Plan',
       description: 'Stay Focused for 90 Days',
-      price: '₹850',
-      originalPrice: null,
-      amount: 85000, // ₹850 = 85000 paise
+      price: '₹680',
+      originalPrice: '₹850',
+      amount: 68000, // ₹680 = 68000 paise
       features: [
         'Unlimited students',
         'All features included',
@@ -215,15 +215,15 @@ const SubscriptionPlans = () => {
       cta: 'Choose Plan',
       isCurrent: isPlanActive('3_month'),
       disabled: false,
-      discount: null
+      discount: '🎄 Christmas & 🎉 New Year Offer – 20% OFF'
     },
     {
       id: '6_month',
       name: '6-Month Plan',
       description: 'Make This Your Growth Phase',
-      price: '₹1600',
-      originalPrice: null,
-      amount: 160000, // ₹1600 = 160000 paise
+      price: '₹1200',
+      originalPrice: '₹1600',
+      amount: 120000, // ₹1200 = 120000 paise
       features: [
         'Great value package',
         'All premium features',
@@ -233,15 +233,15 @@ const SubscriptionPlans = () => {
       cta: 'Get Started',
       isCurrent: isPlanActive('6_month'),
       disabled: false,
-      discount: null
+      discount: '🎄 Christmas & 🎉 New Year Offer – 25% OFF'
     },
     {
       id: '12_month',
       name: '12-Month Plan',
       description: 'All In for the Year',
-      price: '₹3000',
-      originalPrice: null,
-      amount: 300000, // ₹3000 = 300000 paise
+      price: '₹2000',
+      originalPrice: '₹3000',
+      amount: 200000, // ₹2000 = 200000 paise
       features: [
         'Best value',
         'All features unlocked',
@@ -251,7 +251,7 @@ const SubscriptionPlans = () => {
       cta: 'Get Best Value',
       isCurrent: isPlanActive('12_month'),
       disabled: false,
-      discount: null
+      discount: '🎄 Christmas & 🎉 New Year Offer – 33% OFF'
     },
     {
       id: '1_day',
@@ -346,8 +346,16 @@ const SubscriptionPlans = () => {
                 <p className="text-gray-600 mb-6 font-medium text-lg leading-relaxed">{plan.description}</p>
                 
                 {/* Pricing */}
-                <div className="mb-8">
+                <div className="mb-8 space-y-2">
+                  {plan.originalPrice && (
+                    <div className="text-lg font-semibold text-gray-400 line-through">{plan.originalPrice}</div>
+                  )}
                   <div className="text-4xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{plan.price}</div>
+                  {plan.discount && (
+                    <span className="inline-flex items-center px-3 py-1 text-sm font-bold text-white rounded-full bg-gradient-to-r from-red-500 via-pink-500 to-rose-500 shadow-lg">
+                      {plan.discount}
+                    </span>
+                  )}
                 </div>
                 
                 <ul className="space-y-4 mb-8">
