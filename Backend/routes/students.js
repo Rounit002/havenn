@@ -89,7 +89,10 @@ module.exports = (pool) => {
       }
 
       if (is_active === false) {
-        await client.query('DELETE FROM seat_assignments WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
+        await client.query(
+        'DELETE FROM seat_assignments WHERE student_id = $1 AND (library_id = $2 OR library_id IS NULL)',
+        [id, req.libraryId]
+      );
         await client.query('UPDATE students SET locker_id = NULL WHERE id = $1 AND library_id = $2', [id, req.libraryId]);
         await client.query('UPDATE locker SET is_assigned = false, student_id = NULL WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
       }
@@ -864,7 +867,10 @@ module.exports = (pool) => {
       );
 
       let firstShiftId = null;
-      await client.query('DELETE FROM seat_assignments WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
+      await client.query(
+        'DELETE FROM seat_assignments WHERE student_id = $1 AND (library_id = $2 OR library_id IS NULL)',
+        [id, req.libraryId]
+      );
       if (shiftIdsNum.length > 0) {
         for (const shiftId of shiftIdsNum) {
           await client.query(
@@ -922,7 +928,10 @@ module.exports = (pool) => {
   router.delete('/:id', checkAdminOrStaff, async (req, res) => {
     try {
       const id = parseInt(req.params.id, 10);
-      await pool.query('DELETE FROM seat_assignments WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
+      await pool.query(
+        'DELETE FROM seat_assignments WHERE student_id = $1 AND (library_id = $2 OR library_id IS NULL)',
+        [id, req.libraryId]
+      );
       await pool.query('UPDATE locker SET is_assigned = false, student_id = NULL WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
       await pool.query('DELETE FROM student_membership_history WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
       const del = await pool.query('DELETE FROM students WHERE id = $1 AND library_id = $2 RETURNING *', [id, req.libraryId]);
@@ -1110,7 +1119,10 @@ module.exports = (pool) => {
       );
 
       let firstShiftId = null;
-      await client.query('DELETE FROM seat_assignments WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
+      await client.query(
+        'DELETE FROM seat_assignments WHERE student_id = $1 AND (library_id = $2 OR library_id IS NULL)',
+        [id, req.libraryId]
+      );
       if (shiftIdsNum.length > 0) {
         for (const shiftId of shiftIdsNum) {
           await client.query(
