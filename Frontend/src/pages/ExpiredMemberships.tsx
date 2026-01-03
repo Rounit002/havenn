@@ -383,6 +383,9 @@ const ExpiredMemberships = () => {
       const resp = await api.getExpiredMemberships(selectedBranchFilter?.value);
       setStudents(resp.students);
 
+      // Navigate to the renewed student's details page to show updated seat information
+      navigate(`/students/${selectedStudent.id}`);
+
     } catch (err: any) {
       console.error('Renew error:', err.response?.data || err.message);
       toast.error(err.response?.data?.message || 'Failed to renew membership');

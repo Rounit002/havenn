@@ -14,8 +14,10 @@ import { useAuth } from '../context/AuthContext';
 // Interface for a single collection record (renamed to avoid DOM Collection collision)
 interface CollectionRecord {
   historyId: number;
-  studentId: number;
+  studentId: number | null;
   name: string;
+  phone?: string;
+  studentStatus?: 'Active' | 'Deleted';
   shiftTitle: string | null;
   totalFee: number;
   amountPaid: number;
@@ -26,6 +28,7 @@ interface CollectionRecord {
   remark: string;
   createdAt: string | null;
   branchId?: number;
+  branchName?: string;
   seatNumber?: string | null;
 }
 
@@ -173,6 +176,73 @@ const CollectionDue: React.FC = () => {
     if (window.confirm(`Are you sure you want to delete this collection record for ${collection.name}?\n\nThis will:\n- Remove this payment history\n- Update student's total amounts\n- This action cannot be undone!`)) {
       deleteMutation.mutate(collection.historyId);
     }
+  };
+
+  const csvEscape = (value: string) =>
+    `"${value.replace(/"/g, '""').replace(/\r?\n|\r/g, ' ').trim()}"`;
+
+  const formatCurrency = (value: number) => `₹${(value ?? 0).toFixed(2)}`;
+
+  const getBranchLabel = (record: CollectionRecord) => {
+    if (record.branchName) return record.branchName;
+    if (record.branchId) {
+      const branch = branches.find((b) => b.id === record.branchId);
+      if (branch) return branch.name;
+    }
+    return 'N/A';
+  };
+
+  const handleExportCollectionsCsv = () => {
+    const data: CollectionRecord[] = collectionsData?.collections || [];
+    if (!data.length) {
+      toast.error('No collection data available to export.');
+      return;
+    }
+
+    const headers = [
+      'Student Name',
+      'Status',
+      'Phone',
+      'Branch',
+      'Shift',
+      'Seat',
+      'Total Fee',
+      'Amount Paid',
+      'Due Amount',
+      'Cash',
+      'Online',
+      'Security Money',
+      'Remark',
+      'Date',
+    ];
+
+    const rows = data.map((record) => [
+      csvEscape(record.name || 'N/A'),
+      csvEscape(record.studentStatus || 'Active'),
+      csvEscape(record.phone || 'N/A'),
+      csvEscape(getBranchLabel(record)),
+      csvEscape(record.shiftTitle || 'N/A'),
+      csvEscape(record.seatNumber || 'N/A'),
+      csvEscape(formatCurrency(record.totalFee)),
+      csvEscape(formatCurrency(record.amountPaid)),
+      csvEscape(formatCurrency(record.dueAmount)),
+      csvEscape(formatCurrency(record.cash)),
+      csvEscape(formatCurrency(record.online)),
+      csvEscape(formatCurrency(record.securityMoney)),
+      csvEscape(record.remark || 'N/A'),
+      csvEscape(record.createdAt ? new Date(record.createdAt).toLocaleDateString() : 'N/A'),
+    ]);
+
+    const csvContent = [headers.map(csvEscape).join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `collections-${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const generateInvoicePdf = async (collection: CollectionRecord, forDownload = true) => {
@@ -361,7 +431,7 @@ const CollectionDue: React.FC = () => {
         )}
 
         {/* View Toggle */}
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xs font-semibold px-2 py-1 rounded-md bg-gradient-to-r from-indigo-500 via-amber-500 to-rose-500 text-white shadow-sm">View</span>
             <div className="inline-flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 ring-1 ring-indigo-200/60 dark:ring-indigo-900/40 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
@@ -369,6 +439,13 @@ const CollectionDue: React.FC = () => {
               <button className={`px-3 py-1.5 text-sm transition-colors ${viewMode==='cards' ? 'bg-indigo-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setViewMode('cards')}>Cards</button>
             </div>
           </div>
+          <button
+            onClick={handleExportCollectionsCsv}
+            className="inline-flex items-center gap-2 text-sm font-semibold px-3 py-2 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </button>
         </div>
 
         {viewMode === 'table' ? (
@@ -574,13 +651,19 @@ const StatCard = ({ title, value, isLoading, isCurrency = false, color = 'indigo
     violet: 'from-violet-500 to-fuchsia-500',
   } as const;
   const grad = (palette as any)[color] || palette.indigo;
+  const numericValue =
+    typeof value === 'number'
+      ? value
+      : value !== undefined && value !== null
+        ? Number(value) || 0
+        : 0;
   return (
     <div className="rounded-xl border border-white/20 bg-gradient-to-br text-white shadow-sm ring-1 ring-white/10 overflow-hidden"
          style={{ backgroundImage: undefined }}>
       <div className={`bg-gradient-to-r ${grad} px-4 py-2 text-xs font-semibold`}>{title}</div>
       <div className="bg-white/95 dark:bg-gray-800/95 px-4 py-3">
         <div className={`text-xl font-bold ${color === 'rose' ? 'text-rose-600 dark:text-rose-300' : color === 'emerald' ? 'text-emerald-600 dark:text-emerald-300' : color === 'sky' ? 'text-sky-600 dark:text-sky-300' : color === 'violet' ? 'text-violet-600 dark:text-violet-300' : 'text-indigo-600 dark:text-indigo-300'}`}>
-          {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isCurrency ? `₹${(value || 0).toFixed(2)}` : (value || 0))}
+          {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isCurrency ? `₹${numericValue.toFixed(2)}` : numericValue)}
         </div>
       </div>
     </div>

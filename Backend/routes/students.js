@@ -16,34 +16,76 @@ module.exports = (pool) => {
 
   router.get('/', checkAdminOrStaff, async (req, res) => {
     try {
-      const { branchId } = req.query;
+      const { branchId, fromDate, toDate } = req.query;
       const branchIdNum = branchId ? parseInt(branchId, 10) : null;
-      
+
       let query = `
         SELECT
-          s.id, s.name, s.phone, s.registration_number, s.father_name, s.aadhar_number,
-          s.is_active, s.profile_image_url, s.aadhaar_front_url, s.aadhaar_back_url,
-          TO_CHAR(s.membership_end, 'YYYY-MM-DD') AS membership_end,
-          TO_CHAR(s.created_at, 'YYYY-MM-DD') AS created_at,
+          s.id,
+          s.name,
+          s.registration_number AS "registrationNumber",
+          s.father_name AS "fatherName",
+          s.aadhar_number AS "aadharNumber",
+          s.email,
+          s.phone,
+          s.address,
+          s.branch_id AS "branchId",
+          b.name AS "branchName",
+          TO_CHAR(s.membership_start, 'YYYY-MM-DD') AS "membershipStart",
+          TO_CHAR(s.membership_end, 'YYYY-MM-DD') AS "membershipEnd",
+          s.total_fee AS "totalFee",
+          s.amount_paid AS "amountPaid",
+          s.due_amount AS "dueAmount",
+          s.cash,
+          s.online,
+          s.security_money AS "securityMoney",
+          s.remark,
+          s.is_active AS "isActive",
+          s.profile_image_url AS "profileImageUrl",
+          s.aadhaar_front_url AS "aadhaarFrontUrl",
+          s.aadhaar_back_url AS "aadhaarBackUrl",
           s.discount,
+          TO_CHAR(s.created_at, 'YYYY-MM-DD') AS "createdAt",
+          TO_CHAR(s.updated_at, 'YYYY-MM-DD') AS "updatedAt",
           CASE
             WHEN s.membership_end < CURRENT_DATE THEN 'expired'
             ELSE 'active'
           END AS status,
-          (SELECT seats.seat_number FROM seat_assignments sa LEFT JOIN seats ON sa.seat_id = seats.id WHERE sa.student_id = s.id ORDER BY sa.id DESC LIMIT 1) AS seat_number,
-          l.locker_number
+          (SELECT seats.seat_number
+             FROM seat_assignments sa
+             LEFT JOIN seats ON sa.seat_id = seats.id
+             WHERE sa.student_id = s.id
+             ORDER BY sa.id DESC
+             LIMIT 1) AS "seatNumber",
+          l.locker_number AS "lockerNumber"
         FROM students s
         LEFT JOIN locker l ON s.locker_id = l.id
+        LEFT JOIN branches b ON s.branch_id = b.id
         WHERE s.library_id = $1
       `;
       const params = [req.libraryId];
+      let paramIndex = 2;
 
       if (branchIdNum) {
-        query += ` AND s.branch_id = $2`;
+        query += ` AND s.branch_id = $${paramIndex}`;
         params.push(branchIdNum);
+        paramIndex++;
       }
+
+      if (fromDate) {
+        query += ` AND s.created_at::date >= $${paramIndex}`;
+        params.push(fromDate);
+        paramIndex++;
+      }
+
+      if (toDate) {
+        query += ` AND s.created_at::date <= $${paramIndex}`;
+        params.push(toDate);
+        paramIndex++;
+      }
+
       query += ` ORDER BY s.name`;
-      
+
       const result = await pool.query(query, params);
       res.json({ students: result.rows });
     } catch (err) {
@@ -396,7 +438,7 @@ module.exports = (pool) => {
         FROM seat_assignments sa
         LEFT JOIN seats ON sa.seat_id = seats.id
         LEFT JOIN schedules sch ON sa.shift_id = sch.id
-        WHERE sa.student_id = $1 AND sa.library_id = $2
+        WHERE sa.student_id = $1 AND (sa.library_id = $2 OR sa.library_id IS NULL)
       `, [id, req.libraryId]);
       res.json({
         ...studentData,
@@ -926,22 +968,61 @@ module.exports = (pool) => {
   });
 
   router.delete('/:id', checkAdminOrStaff, async (req, res) => {
+    const client = await pool.connect();
     try {
+      await client.query('BEGIN');
       const id = parseInt(req.params.id, 10);
-      await pool.query(
+
+      // Break foreign-key style relationships so historical data remains
+      await client.query(
+        'UPDATE student_membership_history SET student_id = NULL WHERE student_id = $1 AND library_id = $2',
+        [id, req.libraryId]
+      );
+      await client.query(
+        'UPDATE attendance SET student_id = NULL WHERE student_id = $1 AND library_id = $2',
+        [id, req.libraryId]
+      );
+      await client.query(
+        'UPDATE student_accounts SET student_id = NULL WHERE student_id = $1 AND library_id = $2',
+        [id, req.libraryId]
+      );
+      await client.query(
+        'UPDATE queries SET student_id = NULL WHERE student_id = $1 AND library_id = $2',
+        [id, req.libraryId]
+      );
+      await client.query(
+        'UPDATE query_votes SET student_id = NULL WHERE student_id = $1 AND library_id = $2',
+        [id, req.libraryId]
+      );
+      await client.query(
+        'UPDATE query_comments SET commenter_id = NULL WHERE commenter_id = $1 AND commenter_role = $2 AND library_id = $3',
+        [id, 'student', req.libraryId]
+      );
+
+      // Clean up seat/locker assignments
+      await client.query(
         'DELETE FROM seat_assignments WHERE student_id = $1 AND (library_id = $2 OR library_id IS NULL)',
         [id, req.libraryId]
       );
-      await pool.query('UPDATE locker SET is_assigned = false, student_id = NULL WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
-      await pool.query('DELETE FROM student_membership_history WHERE student_id = $1 AND library_id = $2', [id, req.libraryId]);
-      const del = await pool.query('DELETE FROM students WHERE id = $1 AND library_id = $2 RETURNING *', [id, req.libraryId]);
+      await client.query(
+        'UPDATE locker SET is_assigned = false, student_id = NULL WHERE student_id = $1 AND library_id = $2',
+        [id, req.libraryId]
+      );
+
+      const del = await client.query('DELETE FROM students WHERE id = $1 AND library_id = $2 RETURNING *', [id, req.libraryId]);
       if (!del.rows[0]) {
+        await client.query('ROLLBACK');
         return res.status(404).json({ message: 'Student not found' });
       }
-      return res.json({ message: 'Student deleted', student: del.rows[0] });
+
+      await client.query('COMMIT');
+      return res.json({ message: 'Student deleted (collection data preserved)', student: del.rows[0] });
     } catch (err) {
+      await client.query('ROLLBACK');
       console.error('DELETE /students/:id error:', err);
       return res.status(500).json({ message: 'Server error deleting student', error: err.message });
+    } finally {
+      client.release();
     }
   });
 
@@ -964,14 +1045,14 @@ module.exports = (pool) => {
         let totalCollectionQuery = `
             SELECT COALESCE(SUM(h.amount_paid), 0) AS total 
             FROM student_membership_history h
-            JOIN students s ON h.student_id = s.id
-            WHERE s.library_id = $1 AND h.changed_at BETWEEN $2 AND $3`;
+            LEFT JOIN students s ON h.student_id = s.id
+            WHERE h.library_id = $1 AND h.changed_at BETWEEN $2 AND $3`;
             
         let totalDueQuery = `
             SELECT COALESCE(SUM(h.due_amount), 0) AS total 
             FROM student_membership_history h
-            JOIN students s ON h.student_id = s.id
-            WHERE s.library_id = $1 AND h.changed_at BETWEEN $2 AND $3`;
+            LEFT JOIN students s ON h.student_id = s.id
+            WHERE h.library_id = $1 AND h.changed_at BETWEEN $2 AND $3`;
             
         let totalExpenseQuery = `
             SELECT COALESCE(SUM(e.amount), 0) AS total 
@@ -1157,21 +1238,64 @@ module.exports = (pool) => {
       );
 
       await client.query('COMMIT');
+
+      // Fetch the complete updated student data with assignments
+      const completeStudentQuery = `
+        SELECT 
+          s.id, s.name, s.phone, s.email, s.address, s.registration_number, 
+          s.father_name, s.aadhar_number, s.membership_start, s.membership_end,
+          s.total_fee, s.amount_paid, s.due_amount, s.cash, s.online, 
+          s.security_money, s.remark, s.profile_image_url, s.aadhaar_front_url, 
+          s.aadhaar_back_url, s.branch_id, s.discount, s.created_at,
+          b.name as branch_name,
+          l.locker_number,
+          CASE
+            WHEN s.membership_end < CURRENT_DATE THEN 'expired'
+            ELSE 'active'
+          END AS status
+        FROM students s
+        LEFT JOIN branches b ON s.branch_id = b.id
+        LEFT JOIN locker l ON s.locker_id = l.id
+        WHERE s.id = $1 AND s.library_id = $2
+      `;
+      
+      const studentResult = await client.query(completeStudentQuery, [id, req.libraryId]);
+      
+      // Fetch seat assignments
+      const assignmentsQuery = `
+        SELECT 
+          sa.seat_id, sa.shift_id, 
+          se.seat_number, 
+          sh.title as shift_title
+        FROM seat_assignments sa
+        LEFT JOIN seats se ON sa.seat_id = se.id
+        LEFT JOIN schedules sh ON sa.shift_id = sh.id
+        WHERE sa.student_id = $1 AND (sa.library_id = $2 OR sa.library_id IS NULL)
+      `;
+      
+      const assignmentsResult = await client.query(assignmentsQuery, [id, req.libraryId]);
+      
+      const studentData = studentResult.rows[0];
+      if (!studentData) {
+        return res.status(404).json({ message: 'Student not found after renewal' });
+      }
+
       res.json({
         message: 'Membership renewed',
         student: {
-          ...updated,
-          total_fee: parseFloat(updated.total_fee || 0),
-          amount_paid: parseFloat(updated.amount_paid || 0),
-          due_amount: parseFloat(updated.due_amount || 0),
-          cash: parseFloat(updated.cash || 0),
-          online: parseFloat(updated.online || 0),
-          security_money: parseFloat(updated.security_money || 0),
-          discount: parseFloat(updated.discount || 0),
-          remark: updated.remark || '',
-          profile_image_url: updated.profile_image_url || '',
-          aadhaar_front_url: updated.aadhaar_front_url || '',
-          aadhaar_back_url: updated.aadhaar_back_url || '',
+          ...studentData,
+          total_fee: parseFloat(studentData.total_fee || 0),
+          amount_paid: parseFloat(studentData.amount_paid || 0),
+          due_amount: parseFloat(studentData.due_amount || 0),
+          cash: parseFloat(studentData.cash || 0),
+          online: parseFloat(studentData.online || 0),
+          security_money: parseFloat(studentData.security_money || 0),
+          discount: parseFloat(studentData.discount || 0),
+          remark: studentData.remark || '',
+          profile_image_url: studentData.profile_image_url || '',
+          aadhaar_front_url: studentData.aadhaar_front_url || '',
+          aadhaar_back_url: studentData.aadhaar_back_url || '',
+          assignments: assignmentsResult.rows
         }
       });
     } catch (err) {

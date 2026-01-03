@@ -14,19 +14,40 @@ interface Branch {
   phone?: string;
   email?: string;
 }
-import { Search, ChevronLeft, ChevronRight, Trash2, Eye, ArrowUp, ArrowDown, ToggleLeft, ToggleRight, FileText, ChevronUp, ChevronDown, Grid, Rows3, Phone, IdCard, Armchair, Calendar, CheckCircle2, AlertTriangle, XCircle, Users, UserCheck, Clock } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Trash2, Eye, ArrowUp, ArrowDown, ToggleLeft, ToggleRight, FileText, ChevronUp, ChevronDown, Grid, Rows3, Phone, IdCard, Armchair, Calendar, CheckCircle2, AlertTriangle, XCircle, Users, UserCheck, Clock, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
 
 interface Student {
   id: number;
   name: string;
   registrationNumber?: string | null;
+  fatherName?: string | null;
+  aadharNumber?: string | null;
+  email?: string;
   phone: string;
+  address?: string | null;
+  branchId?: number;
+  branchName?: string | null;
+  membershipStart?: string;
   membershipEnd: string;
+  totalFee?: number;
+  amountPaid?: number;
+  dueAmount?: number;
+  cash?: number;
+  online?: number;
+  securityMoney?: number;
+  remark?: string | null;
+  profileImageUrl?: string | null;
+  aadhaarFrontUrl?: string | null;
+  aadhaarBackUrl?: string | null;
+  discount?: number;
   createdAt: string;
+  updatedAt?: string;
   status: string;
   seatNumber?: string | null;
+  lockerNumber?: string | null;
   isActive: boolean;
   assignments?: Array<{
     seatId: number;
@@ -101,15 +122,24 @@ const AllStudents = () => {
       setLoading(true);
       const response = await api.getStudents(fromDate || undefined, toDate || undefined, selectedBranchId);
       const updatedStudents = response.students.map((student: any) => {
-        const membershipEndDate = new Date(student.membershipEnd);
-        const currentDate = new Date();
-        const isExpired = membershipEndDate < currentDate;
+        const membershipEndDate = student.membershipEnd ? new Date(student.membershipEnd) : null;
+        const isExpired = membershipEndDate ? membershipEndDate < new Date() : false;
         return {
           ...student,
-          status: isExpired ? 'expired' : 'active',
+          status: student.status || (isExpired ? 'expired' : 'active'),
           createdAt: student.createdAt || 'N/A',
-          isActive: student.isActive,
-        };
+          updatedAt: student.updatedAt || 'N/A',
+          membershipStart: student.membershipStart || 'N/A',
+          membershipEnd: student.membershipEnd || 'N/A',
+          totalFee: typeof student.totalFee === 'number' ? student.totalFee : Number(student.totalFee) || 0,
+          amountPaid: typeof student.amountPaid === 'number' ? student.amountPaid : Number(student.amountPaid) || 0,
+          dueAmount: typeof student.dueAmount === 'number' ? student.dueAmount : Number(student.dueAmount) || 0,
+          cash: typeof student.cash === 'number' ? student.cash : Number(student.cash) || 0,
+          online: typeof student.online === 'number' ? student.online : Number(student.online) || 0,
+          securityMoney: typeof student.securityMoney === 'number' ? student.securityMoney : Number(student.securityMoney) || 0,
+          discount: typeof student.discount === 'number' ? student.discount : Number(student.discount) || 0,
+          isActive: Boolean(student.isActive),
+        } as Student;
       });
       setStudents(updatedStudents);
     } catch (error: any) {
@@ -244,6 +274,164 @@ const AllStudents = () => {
     navigate(`/students/${id}`);
   };
 
+  const getSeatDisplay = (student: Student) =>
+    student.seatNumber || student.assignments?.[0]?.seatNumber || 'N/A';
+
+  const getBranchDisplay = (student: Student) => {
+    if (student.branchName) return student.branchName;
+    if (student.branchId) {
+      const branch = branches.find((b) => b.id === student.branchId);
+      if (branch) return branch.name;
+    }
+    return 'N/A';
+  };
+
+  const getStatusDisplay = (student: Student) => {
+    if (!student.isActive) return 'Inactive';
+    return student.status === 'active' ? 'Active' : 'Expired';
+  };
+
+  const formatCurrencyValue = (value?: number) => {
+    if (value === null || value === undefined) return '0.00';
+    const numeric = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(numeric) ? numeric.toFixed(2) : '0.00';
+  };
+
+  const formatCurrencyLabel = (value?: number) => `₹${formatCurrencyValue(value)}`;
+
+  const formatDisplay = (value?: string | number | null) => {
+    if (value === null || value === undefined || value === '') return 'N/A';
+    return String(value);
+  };
+
+  const formatDateValue = (value?: string) => (value && value !== 'N/A' ? value : 'N/A');
+
+  const essentialFields = React.useMemo(
+    () => [
+      { label: 'Name', getValue: (s: Student) => formatDisplay(s.name) },
+      { label: "Father's Name", getValue: (s: Student) => formatDisplay(s.fatherName) },
+      { label: 'Registration Number', getValue: (s: Student) => formatDisplay(s.registrationNumber) },
+      { label: 'Phone', getValue: (s: Student) => formatDisplay(s.phone) },
+      { label: 'Branch', getValue: (s: Student) => getBranchDisplay(s) },
+      { label: 'Status', getValue: (s: Student) => getStatusDisplay(s) },
+      { label: 'Seat Number', getValue: (s: Student) => getSeatDisplay(s) },
+      { label: 'Total Fee', getValue: (s: Student) => formatCurrencyLabel(s.totalFee) },
+      { label: 'Amount Paid', getValue: (s: Student) => formatCurrencyLabel(s.amountPaid) },
+      { label: 'Created On', getValue: (s: Student) => formatDateValue(s.createdAt) },
+    ],
+    [branches]
+  );
+
+  const csvEscape = (value: string) =>
+    `"${value.replace(/"/g, '""').replace(/\r?\n|\r/g, ' ').trim()}"`;
+
+  const handleExportCSV = () => {
+    if (!filteredStudents.length) {
+      toast.error('No students available to export.');
+      return;
+    }
+
+    const headers = essentialFields.map((field) => csvEscape(field.label)).join(',');
+    const rows = filteredStudents.map((student) =>
+      essentialFields
+        .map((field) => csvEscape(field.getValue(student)))
+        .join(',')
+    );
+
+    const csvContent = [headers, ...rows].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `students-${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportPDF = () => {
+    if (!filteredStudents.length) {
+      toast.error('No students available to export.');
+      return;
+    }
+
+    const pdf = new jsPDF('landscape', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const marginX = 14;
+    const marginY = 18;
+    const lineHeight = 6;
+    const columnGap = 1;
+    const contentWidth = pageWidth - marginX * 2;
+
+    const columnWidths = [32, 32, 28, 28, 30, 18, 22, 24, 24, 31];
+    const pdfColumns = essentialFields.map((field, idx) => ({
+      ...field,
+      width: columnWidths[idx] || contentWidth / essentialFields.length,
+    }));
+
+    const columnPositions: number[] = [];
+    pdfColumns.forEach((column, idx) => {
+      const prevPos = columnPositions[idx - 1] ?? marginX;
+      const prevWidth = pdfColumns[idx - 1]?.width ?? 0;
+      columnPositions[idx] = idx === 0 ? marginX : prevPos + prevWidth + columnGap;
+    });
+
+    pdf.setFontSize(16);
+    pdf.text('All Students Export (Essential Fields)', marginX, marginY - 6);
+    pdf.setFontSize(10);
+    pdf.text(
+      `Generated on ${new Date().toLocaleString()}`,
+      marginX,
+      marginY - 1
+    );
+
+    let currentY = marginY;
+
+    const drawHeader = () => {
+      pdf.setFont(undefined, 'bold');
+      pdfColumns.forEach((column, idx) => {
+        pdf.text(column.label, columnPositions[idx], currentY, {
+          baseline: 'top',
+        });
+      });
+      currentY += lineHeight;
+      pdf.setFont(undefined, 'normal');
+      pdf.line(marginX, currentY - 2, pageWidth - marginX, currentY - 2);
+    };
+
+    drawHeader();
+
+    filteredStudents.forEach((student) => {
+      if (currentY + lineHeight * 2 > pageHeight - marginY) {
+        pdf.addPage();
+        currentY = marginY;
+        drawHeader();
+      }
+
+      let rowHeight = lineHeight;
+      const wrappedValues = pdfColumns.map((column, idx) => {
+        const text = column.getValue(student);
+        const wrapped = pdf.splitTextToSize(text, column.width - 1);
+        const height = wrapped.length * lineHeight;
+        if (height > rowHeight) rowHeight = height;
+        return { wrapped, idx };
+      });
+
+      wrappedValues.forEach(({ wrapped, idx }) => {
+        pdf.text(wrapped, columnPositions[idx], currentY, {
+          baseline: 'top',
+        });
+      });
+
+      currentY += rowHeight + 1.5;
+    });
+
+    pdf.save(`students-${Date.now()}.pdf`);
+  };
+
   const selectedBranchName = selectedBranchId
     ? branches.find(branch => branch.id === selectedBranchId)?.name
     : null;
@@ -351,6 +539,24 @@ const AllStudents = () => {
                 <div className="flex items-center space-x-2">
                   <label className="text-sm text-gray-500">To:</label>
                   <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="p-2 border rounded" />
+                </div>
+                <div className="flex items-center gap-2 ml-auto flex-wrap">
+                  <button
+                    onClick={handleExportCSV}
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                    title="Export table as CSV"
+                  >
+                    <Download className="h-4 w-4" />
+                    CSV
+                  </button>
+                  <button
+                    onClick={handleExportPDF}
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                    title="Export table as PDF"
+                  >
+                    <FileText className="h-4 w-4" />
+                    PDF
+                  </button>
                 </div>
               </div>
               {viewMode === 'list' ? (

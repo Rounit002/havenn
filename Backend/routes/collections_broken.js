@@ -84,12 +84,18 @@ module.exports = (pool) => {
         SELECT 
           smh.id as "historyId", 
           smh.student_id as "studentId", 
-          COALESCE(s.name, smh.name, '[Deleted Student]') AS "studentName",
-          COALESCE(s.phone, smh.phone, '') AS "studentPhone",
+          CASE 
+            WHEN s.id IS NOT NULL THEN s.name 
+            ELSE '[Deleted Student]'
+          END as "studentName",
+          CASE 
+            WHEN s.id IS NOT NULL THEN s.phone 
+            ELSE smh.phone
+          END as "studentPhone",
           CASE 
             WHEN s.id IS NOT NULL THEN 'Active'
             ELSE 'Deleted'
-          END AS "studentStatus",
+          END as "studentStatus",
           sch.title as "shiftTitle", 
           smh.total_fee as "totalFee", 
           smh.amount_paid as "amountPaid", 
@@ -143,28 +149,18 @@ module.exports = (pool) => {
         params.push(branchId);
       }
 
-      query += whereClause + ` ORDER BY "studentName";`;
+      query += whereClause + ` ORDER BY smh.name;`;
       
       const result = await pool.query(query, params);
 
       const collections = result.rows.map(row => ({
-        historyId: row.historyId,
-        studentId: row.studentId,
-        name: row.studentName,
-        phone: row.studentPhone,
-        studentStatus: row.studentStatus,
-        shiftTitle: row.shiftTitle,
+        ...row,
         totalFee: parseFloat(row.totalFee || 0),
         amountPaid: parseFloat(row.amountPaid || 0),
         dueAmount: parseFloat(row.dueAmount || 0),
         cash: parseFloat(row.cash || 0),
         online: parseFloat(row.online || 0),
         securityMoney: parseFloat(row.securityMoney || 0),
-        remark: row.remark,
-        createdAt: row.createdAt,
-        branchId: row.branchId,
-        branchName: row.branchName,
-        seatNumber: row.seatNumber
       }));
 
       res.json({ collections });
@@ -288,16 +284,118 @@ module.exports = (pool) => {
       const history = historyRes.rows[0];
       const studentId = history.student_id;
       const historyAmountPaid = parseFloat(history.amount_paid) || 0;
-      const historyCash = parseFloat(history.cash) || 0;
-      const historyOnline = parseFloat(history.online) || 0;
-      const historyDueAmount = parseFloat(history.due_amount) || 0;
-      const historyTotalFee = parseFloat(history.total_fee) || 0;
 
-      if (studentId !== null) {
-        // Fetch the student record to update aggregate totals
+    // --- 1. Validate Input ---
+    if (typeof payment_amount !== 'number' || payment_amount <= 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'Invalid payment amount' });
+    }
+    if (!['cash', 'online'].includes(payment_method)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'Invalid payment method' });
+    }
+
+    // --- 2. Fetch the specific history record to get its due amount and student_id ---
+    const historyRes = await client.query('SELECT * FROM student_membership_history WHERE id = $1 AND library_id = $2 FOR UPDATE', [historyId, req.libraryId]);
+    if (historyRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'History record not found' });
+    }
+    const history = historyRes.rows[0];
+    const studentId = history.student_id;
+    const history_due_amount = parseFloat(history.due_amount) || 0;
+
+    // --- 3. Check for overpayment against THIS transaction's due amount ---
+    if (payment_amount > history_due_amount + 0.01) { // Use a small tolerance for float math
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: `Payment of ${payment_amount.toFixed(2)} exceeds the due amount of ${history_due_amount.toFixed(2)} for this specific transaction.` });
+    }
+
+    // --- 4. Fetch the main student record to get the aggregate totals ---
+    const studentRes = await client.query('SELECT * FROM students WHERE id = $1 AND library_id = $2 FOR UPDATE', [studentId, req.libraryId]);
+    if (studentRes.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ message: `Student with ID ${studentId} not found.` });
+    }
+    const student = studentRes.rows[0];
+
+    // --- 5. Update the totals for the main STUDENT record ---
+    const new_student_cash = (parseFloat(student.cash) || 0) + (payment_method === 'cash' ? payment_amount : 0);
+    const new_student_online = (parseFloat(student.online) || 0) + (payment_method === 'online' ? payment_amount : 0);
+    const new_student_amount_paid = (parseFloat(student.amount_paid) || 0) + payment_amount;
+    const new_student_due_amount = (parseFloat(student.due_amount) || 0) - payment_amount;
+
+    const updateStudentQuery = `
+      UPDATE students 
+      SET cash = $1, online = $2, amount_paid = $3, due_amount = $4 
+      WHERE id = $5`;
+    await client.query(updateStudentQuery, [new_student_cash, new_student_online, new_student_amount_paid, new_student_due_amount, studentId]);
+
+    // --- 6. Update the specific HISTORY record that is being paid ---
+    const new_history_cash = (parseFloat(history.cash) || 0) + (payment_method === 'cash' ? payment_amount : 0);
+    const new_history_online = (parseFloat(history.online) || 0) + (payment_method === 'online' ? payment_amount : 0);
+    const new_history_amount_paid = (parseFloat(history.amount_paid) || 0) + payment_amount;
+    const new_history_due_amount = history_due_amount - payment_amount;
+
+    const updateHistoryQuery = `
+      UPDATE student_membership_history 
+      SET cash = $1, online = $2, amount_paid = $3, due_amount = $4 
+      WHERE id = $5`;
+    await client.query(updateHistoryQuery, [new_history_cash, new_history_online, new_history_amount_paid, new_history_due_amount, historyId]);
+    
+    // --- 7. Commit and respond ---
+    await client.query('COMMIT');
+    res.json({ message: 'Payment updated successfully' });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error updating payment:', err);
+    res.status(500).json({ message: 'Server error during payment update', error: err.message });
+  } finally {
+    client.release();
+  }
+
+      /**
+   * @route   DELETE /api/collections/:historyId
+   * @desc    Delete a specific collection/due record from student_membership_history
+   * @access  Admin only
+   */
+  router.delete('/:historyId', checkAdmin, async (req, res) => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const historyId = parseInt(req.params.historyId, 10);
+      if (isNaN(historyId)) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ message: 'Invalid history ID' });
+      }
+
+      // Fetch the history record to get payment details and student_id
+      const deleteHistoryRes = await client.query(
+        'SELECT * FROM student_membership_history WHERE id = $1 AND library_id = $2 FOR UPDATE',
+        [historyId, req.libraryId]
+      );
+
+      if (deleteHistoryRes.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ message: 'Collection record not found' });
+      }
+
+      const deleteHistory = deleteHistoryRes.rows[0];
+      const deleteStudentId = deleteHistory.student_id;
+      const historyAmountPaid = parseFloat(deleteHistory.amount_paid) || 0;
+      const historyCash = parseFloat(deleteHistory.cash) || 0;
+      const historyOnline = parseFloat(deleteHistory.online) || 0;
+      const historyDueAmount = parseFloat(deleteHistory.due_amount) || 0;
+      const historyTotalFee = parseFloat(deleteHistory.total_fee) || 0;
+
+      // Fetch student record to update aggregate totals
+      // Skip this step if student_id is NULL (student was deleted)
+      if (deleteStudentId !== null) {
         const studentRes = await client.query(
           'SELECT * FROM students WHERE id = $1 AND library_id = $2 FOR UPDATE',
-          [studentId, req.libraryId]
+          [deleteStudentId, req.libraryId]
         );
 
         if (studentRes.rows.length === 0) {
@@ -307,19 +405,19 @@ module.exports = (pool) => {
 
         const student = studentRes.rows[0];
 
-        // Recalculate student totals by subtracting the history record amounts
+        // Recalculate student totals by subtracting history record amounts
         const newStudentCash = Math.max(0, (parseFloat(student.cash) || 0) - historyCash);
         const newStudentOnline = Math.max(0, (parseFloat(student.online) || 0) - historyOnline);
         const newStudentAmountPaid = Math.max(0, (parseFloat(student.amount_paid) || 0) - historyAmountPaid);
         const newStudentDueAmount = Math.max(0, (parseFloat(student.due_amount) || 0) - historyDueAmount);
         const newStudentTotalFee = Math.max(0, (parseFloat(student.total_fee) || 0) - historyTotalFee);
 
-        // Update the student record
+        // Update student record
         await client.query(
           `UPDATE students 
-           SET cash = $1, online = $2, amount_paid = $3, due_amount = $4, total_fee = $5 
-           WHERE id = $6`,
-          [newStudentCash, newStudentOnline, newStudentAmountPaid, newStudentDueAmount, newStudentTotalFee, studentId]
+             SET cash = $1, online = $2, amount_paid = $3, due_amount = $4, total_fee = $5 
+             WHERE id = $6`,
+          [newStudentCash, newStudentOnline, newStudentAmountPaid, newStudentDueAmount, newStudentTotalFee, deleteStudentId]
         );
       }
 
