@@ -322,6 +322,31 @@ const AllStudents = () => {
     [branches]
   );
 
+  const formatNumberForExport = (value?: number) => {
+    if (value === null || value === undefined) return '0';
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return '0';
+    return Number.isInteger(numeric) ? numeric.toString() : numeric.toFixed(2);
+  };
+
+  const csvFields = React.useMemo(
+    () => [
+      { label: 'Name', getValue: (s: Student) => formatDisplay(s.name) },
+      { label: "Father's Name", getValue: (s: Student) => formatDisplay(s.fatherName) },
+      { label: 'Registration Number', getValue: (s: Student) => formatDisplay(s.registrationNumber) },
+      { label: 'Phone', getValue: (s: Student) => formatDisplay(s.phone) },
+      { label: 'Branch', getValue: (s: Student) => getBranchDisplay(s) },
+      { label: 'Status', getValue: (s: Student) => getStatusDisplay(s) },
+      { label: 'Seat Number', getValue: (s: Student) => getSeatDisplay(s) },
+      { label: 'Membership Start', getValue: (s: Student) => formatDateValue(s.membershipStart) },
+      { label: 'Membership End', getValue: (s: Student) => formatDateValue(s.membershipEnd) },
+      { label: 'Total Fee', getValue: (s: Student) => formatNumberForExport(s.totalFee) },
+      { label: 'Amount Paid', getValue: (s: Student) => formatNumberForExport(s.amountPaid) },
+      { label: 'Created On', getValue: (s: Student) => formatDateValue(s.createdAt) },
+    ],
+    [branches]
+  );
+
   const csvEscape = (value: string) =>
     `"${value.replace(/"/g, '""').replace(/\r?\n|\r/g, ' ').trim()}"`;
 
@@ -331,9 +356,9 @@ const AllStudents = () => {
       return;
     }
 
-    const headers = essentialFields.map((field) => csvEscape(field.label)).join(',');
+    const headers = csvFields.map((field) => csvEscape(field.label)).join(',');
     const rows = filteredStudents.map((student) =>
-      essentialFields
+      csvFields
         .map((field) => csvEscape(field.getValue(student)))
         .join(',')
     );
