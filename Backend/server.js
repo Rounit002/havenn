@@ -60,41 +60,45 @@ app.use(cors({
 }));
 
 // Build PG configuration (support DATABASE_URL or discrete DB_* vars)
+// Build PG configuration (Optimized for Supabase Free Tier Pooler)
 const buildPgConfig = () => {
-  // If you set DATABASE_URL, prefer it but still ensure SSL
   if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '') {
     return {
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
+      ssl: { rejectUnauthorized: false },
+      // Critical for Session Pooler compatibility
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 1000, // Forces the pool to drop the connection after 1s of idle time
+      max: 1 // Keep at 1 for Free Tier to avoid "too many clients" errors
     };
   }
-  // Otherwise use discrete environment variables
+  
   return {
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  ssl: {
-    rejectUnauthorized: false
-  },
-    connectionTimeoutMillis: 10000,
-    max: 1,                       // reduce further
-    idleTimeoutMillis: 10000,     // shorter idle lifetime
-
-};
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: parseInt(process.env.DB_PORT || '5432'),
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 1000,
+    max: 1,
+  };
 };
 
 const pgConfig = buildPgConfig();
-const pool = new Pool({
-  ...pgConfig,
-  max: 1,
-  idleTimeoutMillis: 0, // never keep idle clients
+const pool = new Pool(pgConfig);
+
+// This is crucial: It catches errors on clients that are sitting in the pool
+pool.on('error', (err, client) => {
+  logger.error('Unexpected PG pool error:', err.message);
+  // No need to manually release; pg-pool removes the broken client automatically
 });
 
 pool.on('connect', (client) => {
-  client.on('error', () => {
-    client.release(true); // destroy broken client
+  client.on('error', (err) => {
+    logger.error('Database client error detected, destroying client:', err.message);
+    client.release(true); 
   });
 });
 
