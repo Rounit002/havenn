@@ -233,3 +233,5 @@
 {"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T17:01:43.879Z"}
 {"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T18:28:15.670Z"}
 {"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T18:28:15.767Z"}
+{"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T19:27:51.197Z"}
+{"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T19:27:51.269Z"}
