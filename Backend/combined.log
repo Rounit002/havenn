@@ -3636,3 +3636,15 @@
 {"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T16:46:58.457Z"}
 {"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T16:46:58.533Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2026-02-13T16:46:58.537Z"}
+{"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T16:55:38.024Z"}
+{"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T16:55:38.084Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2026-02-13T16:55:38.088Z"}
+{"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T16:56:13.571Z"}
+{"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T16:56:13.774Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2026-02-13T16:56:13.779Z"}
+{"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T17:01:33.776Z"}
+{"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T17:01:33.838Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2026-02-13T17:01:33.841Z"}
+{"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T17:01:43.818Z"}
+{"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T17:01:43.879Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2026-02-13T17:01:43.882Z"}

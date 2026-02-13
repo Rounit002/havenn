@@ -62,21 +62,18 @@ app.use(cors({
 // Build PG configuration (support DATABASE_URL or discrete DB_* vars)
 // Build PG configuration (Optimized for Supabase Free Tier Pooler)
 const buildPgConfig = () => {
-  const isProduction = process.env.NODE_ENV === 'production';
-  
   const baseConfig = {
     ssl: { rejectUnauthorized: false },
-    max: 1, // Stay at 1 for Free Tier to avoid "too many clients"
-    connectionTimeoutMillis: 15000, // Increased to 15s for Render/Supabase latency
-    idleTimeoutMillis: 1, // KILL connection immediately after use to avoid zombies
+    max: 1, 
+    // Reduced from 15000 to 5000 to fail fast and trigger the retry logic quicker
+    connectionTimeoutMillis: 5000, 
+    // Setting this to 0 ensures the pool never keeps a connection open
+    idleTimeoutMillis: 0, 
     allowExitOnIdle: true
   };
 
   if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '') {
-    return {
-      ...baseConfig,
-      connectionString: process.env.DATABASE_URL,
-    };
+    return { ...baseConfig, connectionString: process.env.DATABASE_URL };
   }
   
   return {

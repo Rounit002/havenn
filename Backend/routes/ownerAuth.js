@@ -164,19 +164,21 @@ const createOwnerAuthRouter = (pool) => {
 
       // Find library by owner phone
       // Find library by owner phone (with retry for terminated connections)
+      // Find library by owner phone with Bulletproof Retry
       let result;
+      const loginQuery = 'SELECT id, library_code, library_name, owner_name, owner_email, password, status FROM libraries WHERE owner_phone = $1';
+      
       try {
-        result = await pool.query(
-          'SELECT id, library_code, library_name, owner_name, owner_email, password, status FROM libraries WHERE owner_phone = $1',
-          [phone]
-        );
+        result = await pool.query(loginQuery, [phone]);
       } catch (err) {
-        if (err.message.includes('terminated')) {
-          result = await pool.query(
-            'SELECT id, library_code, library_name, owner_name, owner_email, password, status FROM libraries WHERE owner_phone = $1',
-            [phone]
-          );
-        } else { throw err; }
+        // If the pooler dropped the connection, wait 250ms and try one last time
+        if (err.message.includes('terminated') || err.message.includes('timeout')) {
+          console.warn('[OWNER_AUTH] Connection dropped. Retrying in 250ms...');
+          await new Promise(resolve => setTimeout(resolve, 250)); // Give the pooler time to reset
+          result = await pool.query(loginQuery, [phone]);
+        } else { 
+          throw err; 
+        }
       }
 
       if (result.rows.length === 0) {
