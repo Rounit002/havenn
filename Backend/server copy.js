@@ -78,9 +78,7 @@ const buildPgConfig = () => {
   ssl: {
     rejectUnauthorized: false
   },
-  connectionTimeoutMillis: 10000,
-  max: 3,                // 🔥 limit connections
-  idleTimeoutMillis: 30000
+  connectionTimeoutMillis: 10000
 };
 };
 
