@@ -23,7 +23,10 @@ module.exports = (pool) => {
   };
 
   // Fire and forget; routes will still work even if this finishes slightly later
+  // Only run schema ensure in development
+if (process.env.NODE_ENV !== 'production') {
   ensureSchema();
+}
 
   // Get all advance payments
   router.get('/', checkAdminOrStaff, async (req, res) => {
