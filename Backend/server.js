@@ -64,27 +64,19 @@ app.use(cors({
 // Build PG configuration (support DATABASE_URL or discrete DB_* vars)
 // Build PG configuration (Optimized for Supabase Free Tier Pooler)
 const buildPgConfig = () => {
-  const baseConfig = {
-    ssl: { rejectUnauthorized: false },
-    max: 1, 
-    // Reduced from 15000 to 5000 to fail fast and trigger the retry logic quicker
-    connectionTimeoutMillis: 5000, 
-    // Setting this to 0 ensures the pool never keeps a connection open
-    idleTimeoutMillis: 0, 
-    allowExitOnIdle: true
-  };
-
-  if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '') {
-    return { ...baseConfig, connectionString: process.env.DATABASE_URL };
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not defined");
   }
-  
+
   return {
-    ...baseConfig,
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT || '5432'),
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    family: 4,                 // 🔥 FORCE IPv4 (THIS FIXES ENETUNREACH)
+    max: 5,
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 10000,
   };
 };
 
