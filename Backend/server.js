@@ -81,13 +81,22 @@ const buildPgConfig = () => {
     connectionTimeoutMillis: 10000,
     max: 1,                       // reduce further
     idleTimeoutMillis: 10000,     // shorter idle lifetime
-    allowExitOnIdle: true,
 
 };
 };
 
 const pgConfig = buildPgConfig();
-const pool = new Pool(pgConfig);
+const pool = new Pool({
+  ...pgConfig,
+  max: 1,
+  idleTimeoutMillis: 0, // never keep idle clients
+});
+
+pool.on('connect', (client) => {
+  client.on('error', () => {
+    client.release(true); // destroy broken client
+  });
+});
 
 pool.on('error', (err) => {
   console.error('Unexpected PG pool error:', err);
