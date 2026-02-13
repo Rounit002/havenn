@@ -33,7 +33,7 @@ if (process.env.NODE_ENV !== 'production') {
 // CORS - secure configuration for production and mobile apps
 const allowedOrigins = [
   'https://havenn.onrender.com',
-  'https://havennp.up.railway.app',
+  'https://havenn.up.railway.app',
   'file://', // Cordova file:// protocol
   'null', // Some WebViews send Origin: null for file:// apps
   'https://localhost', // Cordova WebView origin (needed for mobile app)
