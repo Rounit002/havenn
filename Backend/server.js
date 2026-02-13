@@ -78,14 +78,20 @@ const buildPgConfig = () => {
   ssl: {
     rejectUnauthorized: false
   },
-  connectionTimeoutMillis: 10000,
-  max: 3,                // 🔥 limit connections
-  idleTimeoutMillis: 30000
+    connectionTimeoutMillis: 10000,
+    max: 2,                       // reduce further
+    idleTimeoutMillis: 10000,     // shorter idle lifetime
+    allowExitOnIdle: true,
+
 };
 };
 
 const pgConfig = buildPgConfig();
 const pool = new Pool(pgConfig);
+
+pool.on('error', (err) => {
+  console.error('Unexpected PG pool error:', err);
+});
 
 // Small helper to mask sensitive values for logs
 const mask = (s) => {
