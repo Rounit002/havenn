@@ -135,7 +135,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
   // Keep server-side session alive for the same duration as the cookie (30 days)
-  store: new pgSession({ pool: pool, ttl: 30 * 24 * 60 * 60 }),
+  // store: new pgSession({ pool: pool, ttl: 30 * 24 * 60 * 60 }),
   secret: process.env.SESSION_SECRET || 'your-very-secure-secret-key-please-change',
   resave: false,
   saveUninitialized: false,
