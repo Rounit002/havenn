@@ -79,7 +79,7 @@ const buildPgConfig = () => {
     rejectUnauthorized: false
   },
     connectionTimeoutMillis: 10000,
-    max: 2,                       // reduce further
+    max: 1,                       // reduce further
     idleTimeoutMillis: 10000,     // shorter idle lifetime
     allowExitOnIdle: true,
 
@@ -492,12 +492,12 @@ async function createDefaultAdmin() {
 // Single server start; cron jobs started in same process
 (async () => {
   try {
-    await initializeSessionTable();
+    // await initializeSessionTable();
     await createDefaultAdmin();
 
     // start cron jobs with pool so cron queries work
     if (typeof setupCronJobs === 'function') {
-      setupCronJobs(pool);
+      // setupCronJobs(pool);
     } else {
       logger.warn('setupCronJobs is not a function, cron jobs not started.');
     }
