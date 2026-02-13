@@ -58,10 +58,15 @@ const createOwnerAuthRouter = (pool) => {
       }
 
       // Check if email already exists
-      const emailExists = await pool.query(
-        'SELECT id FROM libraries WHERE owner_email = $1',
-        [ownerEmail]
-      );
+      // Check if email already exists (with retry for terminated connections)
+      let emailExists;
+      try {
+        emailExists = await pool.query('SELECT id FROM libraries WHERE owner_email = $1', [ownerEmail]);
+      } catch (err) {
+        if (err.message.includes('terminated')) {
+          emailExists = await pool.query('SELECT id FROM libraries WHERE owner_email = $1', [ownerEmail]);
+        } else { throw err; }
+      }
 
       if (emailExists.rows.length > 0) {
         return res.status(400).json({ message: 'Email already registered' });
@@ -158,10 +163,21 @@ const createOwnerAuthRouter = (pool) => {
       }
 
       // Find library by owner phone
-      const result = await pool.query(
-        'SELECT id, library_code, library_name, owner_name, owner_email, password, status FROM libraries WHERE owner_phone = $1',
-        [phone]
-      );
+      // Find library by owner phone (with retry for terminated connections)
+      let result;
+      try {
+        result = await pool.query(
+          'SELECT id, library_code, library_name, owner_name, owner_email, password, status FROM libraries WHERE owner_phone = $1',
+          [phone]
+        );
+      } catch (err) {
+        if (err.message.includes('terminated')) {
+          result = await pool.query(
+            'SELECT id, library_code, library_name, owner_name, owner_email, password, status FROM libraries WHERE owner_phone = $1',
+            [phone]
+          );
+        } else { throw err; }
+      }
 
       if (result.rows.length === 0) {
         return res.status(401).json({ message: 'Invalid credentials' });
