@@ -73,10 +73,9 @@ const buildPgConfig = () => {
     ssl: {
       rejectUnauthorized: false
     },
-    family: 4,                 // 🔥 FORCE IPv4 (THIS FIXES ENETUNREACH)
-    max: 5,
-    connectionTimeoutMillis: 10000,
-    idleTimeoutMillis: 10000,
+    max: 10,
+    connectionTimeoutMillis: 15000,
+    idleTimeoutMillis: 30000,
   };
 };
 
