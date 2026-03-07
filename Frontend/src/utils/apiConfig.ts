@@ -18,7 +18,13 @@ export const getApiUrl = () => {
     // Use relative path so Vite dev proxy forwards to backend and cookies remain same-site
     return '/api';
   }
-  
+
+  // In browser production builds, prefer same-origin API so cookie-based sessions work reliably
+  // when the frontend is served from the same domain as the backend (e.g., Render).
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/api`;
+  }
+
   return 'https://havennproduction.up.railway.app/api';
 };
 

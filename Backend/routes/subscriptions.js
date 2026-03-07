@@ -27,7 +27,14 @@ const createSubscriptionRouter = (pool) => {
   // Get subscription status for the logged-in library owner
   router.get('/status', authenticateOwnerOrStaff, async (req, res) => {
     try {
-      const libraryId = req.session.owner.id;
+      const libraryId =
+        req.libraryId ||
+        req.session?.owner?.id ||
+        req.session?.user?.libraryId;
+
+      if (!libraryId) {
+        return res.status(401).json({ message: 'Unauthorized - Library ID not found in session' });
+      }
       
       const result = await pool.query(
         `SELECT subscription_plan, subscription_start_date, subscription_end_date, 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import { authFetch } from '../utils/apiConfig';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 
@@ -38,8 +38,12 @@ const SubscriptionPlans = () => {
   useEffect(() => {
     const fetchSubscriptionInfo = async () => {
       try {
-        const response = await axios.get('/api/subscriptions/status');
-        setSubscriptionInfo(response.data.subscription);
+        const resp = await authFetch('/subscriptions/status');
+        if (!resp.ok) {
+          throw new Error(`Request failed with status ${resp.status}`);
+        }
+        const data = await resp.json();
+        setSubscriptionInfo(data.subscription);
       } catch (error) {
         console.error('Error fetching subscription info:', error);
       } finally {
@@ -53,17 +57,29 @@ const SubscriptionPlans = () => {
   // Verify payment and update subscription
   const verifyPayment = async (paymentResponse: any, plan: any) => {
     try {
-      const verifyResponse = await axios.post('/api/subscriptions/verify-payment', {
-        razorpay_order_id: paymentResponse.razorpay_order_id,
-        razorpay_payment_id: paymentResponse.razorpay_payment_id,
-        razorpay_signature: paymentResponse.razorpay_signature,
-        planId: plan.id
+      const verifyResp = await authFetch('/subscriptions/verify-payment', {
+        method: 'POST',
+        body: JSON.stringify({
+          razorpay_order_id: paymentResponse.razorpay_order_id,
+          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_signature: paymentResponse.razorpay_signature,
+          planId: plan.id
+        })
       });
+
+      if (!verifyResp.ok) {
+        throw new Error(`Request failed with status ${verifyResp.status}`);
+      }
+
+      const verifyResponse = await verifyResp.json();
 
       if (verifyResponse.data.success) {
         // Refresh subscription info
-        const response = await axios.get('/api/subscriptions/status');
-        setSubscriptionInfo(response.data.subscription);
+        const statusResp = await authFetch('/subscriptions/status');
+        if (statusResp.ok) {
+          const statusData = await statusResp.json();
+          setSubscriptionInfo(statusData.subscription);
+        }
         alert('Payment successful! Your subscription has been activated.');
       } else {
         alert('Payment verification failed. Please contact support.');
@@ -86,10 +102,19 @@ const SubscriptionPlans = () => {
 
     // Get order details from backend
     try {
-      const orderResponse = await axios.post('/api/subscriptions/create-order', {
-        planId: plan.id,
-        amount: plan.amount
+      const orderResp = await authFetch('/subscriptions/create-order', {
+        method: 'POST',
+        body: JSON.stringify({
+          planId: plan.id,
+          amount: plan.amount
+        })
       });
+
+      if (!orderResp.ok) {
+        throw new Error(`Request failed with status ${orderResp.status}`);
+      }
+
+      const orderResponse = await orderResp.json();
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',

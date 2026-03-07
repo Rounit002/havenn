@@ -3669,3 +3669,12 @@
 {"hint":"If you use Render or Supabase, ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render env and ssl is enabled.","level":"error","message":"Postgres connection test FAILED. Check DB credentials and SSL settings. The server does not support SSL connections","timestamp":"2026-02-13T21:10:59.749Z"}
 {"level":"error","message":"Error creating default admin user:","timestamp":"2026-02-13T21:10:59.824Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2026-02-13T21:10:59.827Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2026-03-07T07:21:09.139Z","user":"pos***res"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2026-03-07T07:21:09.234Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2026-03-07T07:21:09.237Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2026-03-07T07:24:34.414Z","user":"pos***res"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2026-03-07T07:24:34.454Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2026-03-07T07:24:34.458Z"}
+{"host":"loc***ost","level":"info","message":"Postgres connection test succeeded","timestamp":"2026-03-07T07:32:36.326Z","user":"pos***res"}
+{"level":"info","message":"Admin user(s) already exist, skipping default admin creation.","timestamp":"2026-03-07T07:32:36.366Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2026-03-07T07:32:36.369Z"}
