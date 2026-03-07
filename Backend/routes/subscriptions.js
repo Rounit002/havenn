@@ -170,7 +170,8 @@ const createSubscriptionRouter = (pool) => {
   // Create order for Razorpay checkout
   router.post('/create-order', authenticateOwnerOrStaff, async (req, res) => {
     try {
-      const { planId, amount } = req.body;
+      const planId = req.body?.planId || req.body?.plan_id;
+      const amount = req.body?.amount;
       const libraryId = req.session.owner.id;
   
       // Validate plan and amount
@@ -213,7 +214,12 @@ const createSubscriptionRouter = (pool) => {
   // Verify payment after checkout
   router.post('/verify-payment', authenticateOwnerOrStaff, async (req, res) => {
     try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } = req.body;
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+      } = req.body;
+      const planId = req.body?.planId || req.body?.plan_id;
       const libraryId = req.session.owner.id;
       
       // Validate plan
