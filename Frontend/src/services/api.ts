@@ -362,6 +362,35 @@ const api = {
     }
   },
 
+  getSubscriptionStatus: async (): Promise<{
+    subscription: {
+      plan: string | null;
+      startDate: string | null;
+      endDate: string | null;
+      isTrial: boolean;
+      isActive: boolean;
+      daysLeft: number | null;
+    };
+  }> => {
+    const response = await apiClient.get('/subscriptions/status');
+    return response.data;
+  },
+
+  createRazorpayOrder: async ({ planId, amount }: { planId: string; amount: number }) => {
+    const response = await apiClient.post('/subscriptions/create-order', { planId, amount });
+    return response.data;
+  },
+
+  verifyRazorpayPayment: async (payload: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    planId: string;
+  }) => {
+    const response = await apiClient.post('/subscriptions/verify-payment', payload);
+    return response.data as { success: boolean; message?: string };
+  },
+
   logout: async () => {
     try {
       const response = await apiClient.get('/auth/logout');
